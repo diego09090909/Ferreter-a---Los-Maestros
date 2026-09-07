@@ -1,0 +1,35 @@
+/* ===== Pagina del Carrito ===== */
+body {
+    padding-top: 80px;
+}
+
+.logo-nav {
+    object-fit: contain;
+}
+
+.icono-carrito {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.offcanvas {
+    width: 310px;
+}
+
+.offcanvas .nav-link {
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.5rem;
+    color: #212529;
+}
+
+.offcanvas .nav-link:hover {
+    background-color: #f1f3f5;
+}
+
+.offcanvas .nav-link.active {
+    background-color: #198754;
+    color: #ffffff;
+    font-weight: 600;
+}
