@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <meta name="description" content="Carrito de compras de Ferretería Los Maestros. Revisa tus productos, cantidades y total antes de confirmar.">
+    <link rel="icon" href="imagenes/logo_maestros.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar bg-body-tertiary fixed-top shadow-sm">
+            <div class="container-fluid">
+
+                <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                    <img src="imagenes/logo_maestros.png" alt="Logo Ferretería Los Maestros" width="46" height="46" class="logo-nav">
+                    <span>Ferretería Los Maestros</span>
+                </a>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a class="btn btn-outline-secondary border-0 position-relative p-2" href="carrito.html" aria-label="Ver carrito">
+                        <img src="imagenes/carrito_fondo.jpg" alt="Carrito de compras" class="icono-carrito">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menú">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasNavbarLabel">
+                            <img src="imagenes/logo_maestros.png" alt="" width="32" height="32" class="logo-nav">
+                            Menú
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="offcanvas-body d-flex flex-column">
+
+                        <!-- 1. Buscador -->
+                        <form class="d-flex gap-2 mb-3" role="search">
+                            <input class="form-control" type="search" placeholder="Buscar producto" aria-label="Buscar producto">
+                            <button class="btn btn-outline-success" type="submit">Buscar</button>
+                        </form>
+
+                        <p class="text-uppercase text-secondary small fw-bold mb-1">Navegación</p>
+                        <ul class="navbar-nav mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="catalogo.html">Catálogo de Productos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="cobertura.html">Cobertura y Ubicación</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="carrito.html">Mi Carrito</a>
+                            </li>
+                        </ul>
+
+                        <p class="text-uppercase text-secondary small fw-bold mb-1">Cuenta</p>
+                        <ul class="navbar-nav mb-3">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Mi Cuenta
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="login.html">Iniciar sesión</a></li>
+                                    <li><a class="dropdown-item" href="login.html">Crear cuenta</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="admin.html">Panel de control</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="mt-auto pt-3 border-top">
+                            <p class="mb-1 small text-secondary">Atención: 09:00 - 19:00 hrs</p>
+                            <p class="mb-0 small text-secondary">Teléfono: +56 9 3284 8760</p>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1 class="mt-5 pt-4 mb-4">Mi Carrito de Compras</h1>
+
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Precio Unitario</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <h4>Total: $0.00</h4>
+            <button class="btn btn-success" id="checkoutButton" disabled>Proceder al Pago</button>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+
+</html>
