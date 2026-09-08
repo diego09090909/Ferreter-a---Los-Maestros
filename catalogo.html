@@ -9,6 +9,7 @@
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="icon" href="imagenes/logo_maestros.png">
     <link rel="stylesheet" href="css/estilos.css">
+
 </head>
 
 <body>
@@ -102,80 +103,237 @@
             </div>
         </nav>
     </header>
-    <main>
-        <div>
-            <h1>Catalogo de productos</h1>
-        </div>
-        <section id="sidebar-filtro" class="py-4">
-            <div class="container-fluid px-0">
-                <div class="row g-4">
-                    <aside class="col-12 col-lg-3 ">
-                        <div class="sticky-top" style="top: 90px; z-index: 100;">
-                            <h4>Categorías</h4>
-                            <div class="btn-group-vertical w-80" role="group"
-                                aria-label="Basic checkbox toggle button group">
-                                <input type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck1">Herramientas </label>
 
-                                <input type="checkbox" class="btn-check" id="btncheck2" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck2">Construcción</label>
+    <main class="container-fluid py-4 bg-light">
 
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Electricidad</label>
+        <div class="row g-4">
+            <aside class="col-12 col-lg-2">
+                <div class="bg-white p-3 rounded border shadow-sm sticky-top" style="top: 90px; z-index: 100;">
+                    <div>
+                        <h2>Filtros</h2>
+                    </div>
+                    <div class="accordion accordion-flush" id="accordionFlushExample">
+                        <div id="categorias" class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseOne" aria-expanded="false"
+                                    aria-controls="flush-collapseOne">
+                                    Categoria de Productos
+                                </button>
+                            </h2>
+                            <div id="flush-collapseOne" class="accordion-collapse collapse"
+                                data-bs-parent="#accordionFlushExample">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="herramientas">
+                                    <label class="form-check-label" for="herramientas">
+                                        Herramientas
+                                    </label>
+                                </div>
 
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Tornilleria</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="construccion">
+                                    <label class="form-check-label" for="construccion">
+                                        Construcción
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="electricidad">
+                                    <label class="form-check-label" for="electricidad">
+                                        Electricidad
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="pinturas">
+                                    <label class="form-check-label" for="pinturas">
+                                        Pinturas
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="plomeria">
+                                    <label class="form-check-label" for="plomeria">
+                                        Plomería
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="jardineria">
+                                    <label class="form-check-label" for="jardineria">
+                                        Jardinería
+                                    </label>
+                                </div>
 
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Pinturas</label>
-
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Gasfiteria</label>
-
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Madera</label>
-
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Seguridad</label>
-
-                                <input type="checkbox" class="btn-check" id="btncheck3" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btncheck3">Jardin</label>
                             </div>
                         </div>
-                    </aside>
-                </div>
-            </div>
+                        <div id="marcas" class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseTwo" aria-expanded="false"
+                                    aria-controls="flush-collapseTwo">
+                                    Marcas
+                                </button>
+                            </h2>
+                            <div id="flush-collapseTwo" class="accordion-collapse collapse"
+                                data-bs-parent="#accordionFlushExample">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="m1" checked>
+                                    <label class="form-check-label" for="m1">
+                                        m1
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="m2" checked>
+                                    <label class="form-check-label" for="m2">
+                                        m2
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="m3" checked>
+                                    <label class="form-check-label" for="m3">
+                                        m3
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
 
-        </section>
-        <section id="catalogo">
-
-            <div class="col-12 col-lg-9">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-                    <div class="col">
-                        <div class="card h-100">
-                            <img src="..." class="card-img-top" alt="...">
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">Card title</h5>
-                                <p class="card-text">Some quick example text to build on the card title and make up the
-                                    bulk
-                                    of the
-                                    card’s content.</p>
-                                <a href="#" class="btn btn-primary">Go somewhere</a>
+                        <div id="rango-precio" class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseThree" aria-expanded="false"
+                                    aria-controls="flush-collapseThree">
+                                    Rango de precio
+                                </button>
+                            </h2>
+                            <div id="flush-collapseThree" class="accordion-collapse collapse"
+                                data-bs-parent="#accordionFlushExample">
+                                <label class="form-label small fw-bold">
+                                    Precio máximo: $<span id="precioMaximoTexto">100.000</span>
+                                </label>
+                                <input type="range" class="form-range" min="0" max="1000000" step="1000" value="100000"
+                                    id="rango">
                             </div>
                         </div>
                     </div>
+            </aside>
+
+
+            <section id="catalogo" class="col-12 col-lg-10 bg-white p-3 rounded shadow-sm">
+                <div>
+                    <h2 class="h5 m-0 fw-bold">Todos los Productos</h2>
                 </div>
-            </div>
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <span class="text-muted small">Mostrando 8 productos</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="ordenar" class="small text-nowrap">Ordenar por:</label>
+                        <select id="ordenar" class="form-select form-select-sm" style="width: auto;">
+                            <option selected>Destacados</option>
+                            <option value="1">Menor a mayor precio</option>
+                            <option value="2">Mayor a menor precio</option>
+                        </select>
+                    </div>
+                </div>
 
-        </section>
+                <div class="overflow-y-auto overflow-x-hidden pe-2" style="max-height: 70vh;">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mx-0">
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Taladro Percutor</h5>
+                                    <p class="card-text flex-grow-1">Taladro de alta potencia para trabajos de
+                                        construcción.
+                                    </p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
 
 
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Cemento 25kg</h5>
+                                    <p class="card-text flex-grow-1">Saco de cemento de alta resistencia para
+                                        estructuras.
+                                    </p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Caja de Clavos</h5>
+                                    <p class="card-text flex-grow-1">Caja de clavos de acero de 2 pulgadas.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Sierra Circular</h5>
+                                    <p class="card-text flex-grow-1">Sierra profesional de corte rápido para madera.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Sierra Circular</h5>
+                                    <p class="card-text flex-grow-1">Sierra profesional de corte rápido para madera.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Sierra Circular</h5>
+                                    <p class="card-text flex-grow-1">Sierra profesional de corte rápido para madera.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Sierra Circular</h5>
+                                    <p class="card-text flex-grow-1">Sierra profesional de corte rápido para madera.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card h-100 border-0">
+                                <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">Sierra Circular</h5>
+                                    <p class="card-text flex-grow-1">Sierra profesional de corte rápido para madera.</p>
+                                    <a href="#" class="btn btn-primary mt-auto">Añadir al Carrito</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
-
-
-
-
+    <script src="js/catalogo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
