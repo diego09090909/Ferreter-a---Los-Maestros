@@ -33,3 +33,28 @@ body {
     color: #ffffff;
     font-weight: 600;
 }
+
+/* ===== Tabla del Carrito ===== */
+.celda-imagen {
+    width: 90px;
+}
+
+.img-producto {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    padding: 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+}
+
+.input-cantidad {
+    width: 80px;
+    margin: 0 auto;
+}
+
+.total-carrito {
+    color: #fd7e14;
+    font-weight: 700;
+}

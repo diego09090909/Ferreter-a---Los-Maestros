@@ -17,11 +17,13 @@
         <nav class="navbar bg-body-tertiary fixed-top shadow-sm">
             <div class="container-fluid">
 
+                <!-- Marca: logo + nombre de la tienda -->
                 <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
                     <img src="imagenes/logo_maestros.png" alt="Logo Ferretería Los Maestros" width="46" height="46" class="logo-nav">
                     <span>Ferretería Los Maestros</span>
                 </a>
 
+                <!-- Iconos de la derecha: carrito + botón del menú lateral -->
                 <div class="d-flex align-items-center gap-2">
                     <a class="btn btn-outline-secondary border-0 position-relative p-2" href="carrito.html" aria-label="Ver carrito">
                         <img src="imagenes/carrito_fondo.jpg" alt="Carrito de compras" class="icono-carrito">
@@ -33,6 +35,7 @@
                     </button>
                 </div>
 
+                <!-- ===== BARRA LATERAL (menú offcanvas) ===== -->
                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
 
                     <div class="offcanvas-header border-bottom">
@@ -51,6 +54,7 @@
                             <button class="btn btn-outline-success" type="submit">Buscar</button>
                         </form>
 
+                        <!-- 2. Navegación principal -->
                         <p class="text-uppercase text-secondary small fw-bold mb-1">Navegación</p>
                         <ul class="navbar-nav mb-3">
                             <li class="nav-item">
@@ -67,6 +71,7 @@
                             </li>
                         </ul>
 
+                        <!-- 3. Cuenta del usuario -->
                         <p class="text-uppercase text-secondary small fw-bold mb-1">Cuenta</p>
                         <ul class="navbar-nav mb-3">
                             <li class="nav-item dropdown">
@@ -84,6 +89,7 @@
                             </li>
                         </ul>
 
+                        <!-- 4. Pie de la barra lateral -->
                         <div class="mt-auto pt-3 border-top">
                             <p class="mb-1 small text-secondary">Atención: 09:00 - 19:00 hrs</p>
                             <p class="mb-0 small text-secondary">Teléfono: +56 9 3284 8760</p>
@@ -91,36 +97,148 @@
 
                     </div>
                 </div>
-
+                <!-- ===== FIN BARRA LATERAL ===== -->
 
             </div>
         </nav>
     </header>
 
-    <main class="container">
-        <h1 class="mt-5 pt-4 mb-4">Mi Carrito de Compras</h1>
+    <main class="container py-4">
 
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th scope="col">Producto</th>
-                        <th scope="col">Cantidad</th>
-                        <th scope="col">Precio Unitario</th>
-                        <th scope="col">Subtotal</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                </tbody>
-            </table>
-        </div>
+        <h1 class="h3 fw-bold mb-4">TU CARRITO</h1>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <h4>Total: $0.00</h4>
-            <button class="btn btn-success" id="checkoutButton" disabled>Proceder al Pago</button>
-        </div>
+        <form id="formCarrito" novalidate>
+
+            <!-- ===== TABLA DE PRODUCTOS ===== -->
+            <div class="table-responsive">
+                <table class="table align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" colspan="2">Producto</th>
+                            <th scope="col" class="text-center">Cantidad</th>
+                            <th scope="col" class="text-end">Precio Unidad</th>
+                            <th scope="col" class="text-end">Subtotal</th>
+                            <th scope="col"><span class="visually-hidden">Eliminar</span></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <!-- Producto 1 -->
+                        <tr>
+                            <td class="celda-imagen">
+                                <!-- TODO: reemplazar por la foto real del producto -->
+                                <img src="imagenes/logo_maestros.png" alt="Taladro percutor 650W" class="img-producto">
+                            </td>
+                            <td>
+                                <p class="mb-1 fw-semibold">Taladro percutor 650W</p>
+                                <span class="badge text-bg-success">En Stock</span>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm input-cantidad" value="1" min="1" max="10" aria-label="Cantidad de Taladro percutor 650W">
+                            </td>
+                            <td class="text-end">$39.990</td>
+                            <td class="text-end fw-semibold">$39.990</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Taladro percutor 650W">&times;</button>
+                            </td>
+                        </tr>
+
+                        <!-- Producto 2 -->
+                        <tr>
+                            <td class="celda-imagen">
+                                <!-- TODO: reemplazar por la foto real del producto -->
+                                <img src="imagenes/logo_maestros.png" alt="Cemento Polpaico 25 kg" class="img-producto">
+                            </td>
+                            <td>
+                                <p class="mb-1 fw-semibold">Cemento Polpaico 25 kg</p>
+                                <span class="badge text-bg-danger">Últimas Unidades</span>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm input-cantidad" value="3" min="1" max="10" aria-label="Cantidad de Cemento Polpaico 25 kg">
+                            </td>
+                            <td class="text-end">$6.490</td>
+                            <td class="text-end fw-semibold">$19.470</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Cemento Polpaico 25 kg">&times;</button>
+                            </td>
+                        </tr>
+
+                        <!-- Producto 3 -->
+                        <tr>
+                            <td class="celda-imagen">
+                                <!-- TODO: reemplazar por la foto real del producto -->
+                                <img src="imagenes/logo_maestros.png" alt="Set de destornilladores 12 piezas" class="img-producto">
+                            </td>
+                            <td>
+                                <p class="mb-1 fw-semibold">Set de destornilladores 12 piezas</p>
+                                <span class="badge text-bg-success">En Stock</span>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm input-cantidad" value="2" min="1" max="10" aria-label="Cantidad de Set de destornilladores 12 piezas">
+                            </td>
+                            <td class="text-end">$12.990</td>
+                            <td class="text-end fw-semibold">$25.980</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Set de destornilladores 12 piezas">&times;</button>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ===== TOTAL ===== -->
+            <div class="d-flex justify-content-end align-items-baseline gap-3 mb-4">
+                <span class="h5 mb-0">Total:</span>
+                <span class="h4 mb-0 total-carrito">$85.440</span>
+            </div>
+
+            <!-- ===== OPCIONES DE ENTREGA Y PAGO ===== -->
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <fieldset>
+                        <legend class="h6 fw-bold">Tipo de Entrega</legend>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="entrega" id="entregaRetiro" value="retiro" checked>
+                            <label class="form-check-label" for="entregaRetiro">Retiro en tienda</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="entrega" id="entregaDespacho" value="despacho">
+                            <label class="form-check-label" for="entregaDespacho">Despacho a domicilio</label>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="col-md-6">
+                    <fieldset>
+                        <legend class="h6 fw-bold">Método de Pago</legend>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pago" id="pagoCredito" value="credito" checked>
+                            <label class="form-check-label" for="pagoCredito">Crédito</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pago" id="pagoCuentaCorriente" value="cuenta_corriente">
+                            <label class="form-check-label" for="pagoCuentaCorriente">Cuenta Corriente</label>
+                        </div>
+                    </fieldset>
+                </div>
+
+            </div>
+
+            <!-- ===== BOTÓN CONFIRMAR ===== -->
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-success btn-lg">Confirmar</button>
+            </div>
+
+        </form>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
