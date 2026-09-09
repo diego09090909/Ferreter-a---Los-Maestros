@@ -27,7 +27,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <a class="btn btn-outline-secondary border-0 position-relative p-2" href="carrito.html" aria-label="Ver carrito">
                         <img src="imagenes/carrito_fondo.jpg" alt="Carrito de compras" class="icono-carrito">
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador-carrito">6</span>
                     </a>
 
                     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menú">
@@ -107,7 +107,7 @@
 
         <h1 class="h3 fw-bold mb-4">TU CARRITO</h1>
 
-        <form id="formCarrito" novalidate>
+        <form id="formulario-carrito" novalidate>
 
             
             <div class="table-responsive">
@@ -126,7 +126,7 @@
                     <tbody>
 
                         
-                        <tr>
+                        <tr class="fila-producto" data-precio="39990">
                             <td class="celda-imagen">
                                 
                                 <img src="imagenes/logo_maestros.png" alt="Taladro percutor 650W" class="img-producto">
@@ -139,14 +139,14 @@
                                 <input type="number" class="form-control form-control-sm input-cantidad" value="1" min="1" max="10" aria-label="Cantidad de Taladro percutor 650W">
                             </td>
                             <td class="text-end">$39.990</td>
-                            <td class="text-end fw-semibold">$39.990</td>
+                            <td class="text-end fw-semibold subtotal">$39.990</td>
                             <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Taladro percutor 650W">&times;</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Taladro percutor 650W">&times;</button>
                             </td>
                         </tr>
 
                         
-                        <tr>
+                        <tr class="fila-producto" data-precio="6490">
                             <td class="celda-imagen">
                                 
                                 <img src="imagenes/logo_maestros.png" alt="Cemento Polpaico 25 kg" class="img-producto">
@@ -159,14 +159,14 @@
                                 <input type="number" class="form-control form-control-sm input-cantidad" value="3" min="1" max="10" aria-label="Cantidad de Cemento Polpaico 25 kg">
                             </td>
                             <td class="text-end">$6.490</td>
-                            <td class="text-end fw-semibold">$19.470</td>
+                            <td class="text-end fw-semibold subtotal">$19.470</td>
                             <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Cemento Polpaico 25 kg">&times;</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Cemento Polpaico 25 kg">&times;</button>
                             </td>
                         </tr>
 
                         
-                        <tr>
+                        <tr class="fila-producto" data-precio="12990">
                             <td class="celda-imagen">
                                 
                                 <img src="imagenes/logo_maestros.png" alt="Set de destornilladores 12 piezas" class="img-producto">
@@ -179,9 +179,9 @@
                                 <input type="number" class="form-control form-control-sm input-cantidad" value="2" min="1" max="10" aria-label="Cantidad de Set de destornilladores 12 piezas">
                             </td>
                             <td class="text-end">$12.990</td>
-                            <td class="text-end fw-semibold">$25.980</td>
+                            <td class="text-end fw-semibold subtotal">$25.980</td>
                             <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar Set de destornilladores 12 piezas">&times;</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Set de destornilladores 12 piezas">&times;</button>
                             </td>
                         </tr>
 
@@ -192,7 +192,7 @@
 
             <div class="d-flex justify-content-end align-items-baseline gap-3 mb-4">
                 <span class="h5 mb-0">Total:</span>
-                <span class="h4 mb-0 total-carrito">$85.440</span>
+                <span class="h4 mb-0 total-carrito" id="total-carrito">$85.440</span>
             </div>
 
             
@@ -203,12 +203,12 @@
                         <legend class="h6 fw-bold">Tipo de Entrega</legend>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="entrega" id="entregaRetiro" value="retiro" checked>
+                            <input class="form-check-input" type="radio" name="entrega" id="entregaRetiro" value="Retiro en tienda" checked>
                             <label class="form-check-label" for="entregaRetiro">Retiro en tienda</label>
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="entrega" id="entregaDespacho" value="despacho">
+                            <input class="form-check-input" type="radio" name="entrega" id="entregaDespacho" value="Despacho a domicilio">
                             <label class="form-check-label" for="entregaDespacho">Despacho a domicilio</label>
                         </div>
                     </fieldset>
@@ -219,12 +219,12 @@
                         <legend class="h6 fw-bold">Método de Pago</legend>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="pago" id="pagoCredito" value="credito" checked>
+                            <input class="form-check-input" type="radio" name="pago" id="pagoCredito" value="Crédito" checked>
                             <label class="form-check-label" for="pagoCredito">Crédito</label>
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="pago" id="pagoCuentaCorriente" value="cuenta_corriente">
+                            <input class="form-check-input" type="radio" name="pago" id="pagoCuentaCorriente" value="Cuenta Corriente">
                             <label class="form-check-label" for="pagoCuentaCorriente">Cuenta Corriente</label>
                         </div>
                     </fieldset>
@@ -233,6 +233,8 @@
             </div>
 
             
+            <div id="mensaje-resultado"></div>
+
             <div class="text-end mt-4">
                 <button type="submit" class="btn btn-success btn-lg">Confirmar</button>
             </div>
@@ -242,6 +244,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="js/carrito.js"></script>
 </body>
 
 </html>
