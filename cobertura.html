@@ -27,7 +27,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <a class="btn btn-outline-secondary border-0 position-relative p-2" href="carrito.html" aria-label="Ver carrito">
                         <img src="imagenes/carrito_fondo.jpg" alt="Carrito de compras" class="icono-carrito">
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador-carrito">0</span>
                     </a>
 
                     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menú">
@@ -117,8 +117,8 @@
                                 <div>
                                     <p class="fw-semibold mb-1">Dirección</p>
                                     <p class="text-secondary mb-0">
-                                        Av. Los Maestros 1234, Local 5<br>
-                                        Viña del Mar, Región de Valparaíso
+                                        Av. Francisco de Aguirre 1450, Local 5<br>
+                                        La Serena, Región de Coquimbo
                                     </p>
                                 </div>
                             </li>
@@ -173,7 +173,7 @@
                     <div class="card-body p-0">
                         <div class="ratio ratio-16x9 mapa-tienda">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2812.6813003271686!2d-71.53488717542899!3d-33.03380249317444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9689de64d74fd4af%3A0x8004f381e9055a38!2sDuoc%20UC%20Vi%C3%B1a%20Del%20Mar!5e0!3m2!1ses!2scl!4v1788822390702!5m2!1ses!2scl"
+                                src="https://www.google.com/maps?q=Av.+Francisco+de+Aguirre+1450,+La+Serena,+Chile&hl=es&z=14&output=embed"
                                 title="Mapa de ubicación de Ferretería Los Maestros"
                                 allowfullscreen
                                 loading="lazy"
@@ -209,37 +209,37 @@
 
                 <tbody>
                     <tr>
-                        <td class="fw-semibold">Viña del Mar</td>
+                        <td class="fw-semibold">La Serena</td>
                         <td>24 horas</td>
                         <td class="text-end">$3.990</td>
                         <td class="text-center"><span class="badge text-bg-success">Con cobertura</span></td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Valparaíso</td>
+                        <td class="fw-semibold">Coquimbo</td>
                         <td>24 horas</td>
-                        <td class="text-end">$4.990</td>
+                        <td class="text-end">$4.490</td>
                         <td class="text-center"><span class="badge text-bg-success">Con cobertura</span></td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Concón</td>
+                        <td class="fw-semibold">Andacollo</td>
                         <td>48 horas</td>
-                        <td class="text-end">$5.990</td>
+                        <td class="text-end">$7.990</td>
                         <td class="text-center"><span class="badge text-bg-success">Con cobertura</span></td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Quilpué</td>
+                        <td class="fw-semibold">Vicuña</td>
                         <td>48 horas</td>
-                        <td class="text-end">$5.990</td>
+                        <td class="text-end">$8.990</td>
                         <td class="text-center"><span class="badge text-bg-success">Con cobertura</span></td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Villa Alemana</td>
+                        <td class="fw-semibold">Ovalle</td>
                         <td>72 horas</td>
-                        <td class="text-end">$6.990</td>
+                        <td class="text-end">$11.990</td>
                         <td class="text-center"><span class="badge text-bg-warning">Días acordados</span></td>
                     </tr>
                     <tr>
-                        <td class="fw-semibold">Casablanca</td>
+                        <td class="fw-semibold">La Higuera</td>
                         <td>-</td>
                         <td class="text-end">-</td>
                         <td class="text-center"><span class="badge text-bg-secondary">Sin cobertura</span></td>
@@ -250,11 +250,72 @@
         </div>
 
         <p class="text-secondary small">
-            Despacho gratis en Viña del Mar y Valparaíso por compras sobre $50.000.
+            Despacho gratis en La Serena y Coquimbo por compras sobre $50.000. Contratistas con cuenta corriente coordinan despacho directo a obra.
         </p>
 
     </main>
 
+    <footer class="footer-sitio mt-5">
+        <div class="container py-5">
+            <div class="row g-4">
+
+                <!--  Marca -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="imagenes/logo_maestros.png" alt="Logo Ferretería Los Maestros" width="40" height="40" class="logo-nav">
+                        <span class="fw-bold">Ferretería Los Maestros</span>
+                    </div>
+                    <p class="footer-texto mb-0">
+                        Materiales de construcción, herramientas y ferretería general con despacho en La Serena y Coquimbo.
+                        Atendemos a maestros, contratistas y particulares desde 2004.
+                    </p>
+                </div>
+
+                <!--  Navegación -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h2 class="footer-titulo">Navegación</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="catalogo.html">Catálogo</a></li>
+                        <li><a href="cobertura.html">Cobertura</a></li>
+                        <li><a href="carrito.html">Mi Carrito</a></li>
+                    </ul>
+                </div>
+
+                <!--  Cuenta -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h2 class="footer-titulo">Mi Cuenta</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li><a href="login.html">Iniciar sesión</a></li>
+                        <li><a href="login.html">Crear cuenta</a></li>
+                        <li><a href="admin.html">Panel de control</a></li>
+                    </ul>
+                </div>
+
+                <!--  Contacto -->
+                <div class="col-lg-4 col-md-6">
+                    <h2 class="footer-titulo">Contacto</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li>Av. Francisco de Aguirre 1450, Local 5<br>La Serena, Región de Coquimbo</li>
+                        <li><a href="tel:+56932848760">+56 9 3284 8760</a></li>
+                        <li><a href="mailto:contacto@losmaestros.cl">contacto@losmaestros.cl</a></li>
+                        <li>Lun a Vie 09:00 - 19:00 · Sáb 10:00 - 14:00</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!--  Barra inferior -->
+        <div class="footer-barra">
+            <div class="container py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <small class="mb-0">&copy; 2026 Ferretería Los Maestros. Todos los derechos reservados.</small>
+                <small class="mb-0">Proyecto académico · Duoc UC</small>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/carrito-datos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 
