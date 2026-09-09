@@ -31,20 +31,25 @@ function renderizarProductos(lista) {
 
     lista.forEach(producto => {
         const tarjeta = `
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm">
-                    <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title h6 fw-bold">${producto.nombre}</h5>
-                        <p class="card-text small text-muted flex-grow-1">${producto.descripcion}</p>
-                        <span class="fw-bold fs-6 mb-2 text-primary">$${producto.precio.toLocaleString('es-CL')}</span>
-                        <button class="btn btn-primary btn-sm mt-auto">Añadir al Carrito</button>
-                    </div>
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
+                <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title h6 fw-bold">${producto.nombre}</h5>
+                    <p class="card-text small text-muted flex-grow-1">${producto.descripcion}</p>
+                    <span class="fw-bold fs-6 mb-2 text-primary">$${producto.precio.toLocaleString('es-CL')}</span>
+                    
+                    <!-- BOTÓN CON CLASE Y DATASET DE ID -->
+                    <button class="btn btn-primary btn-sm mt-auto boton-agregar" data-id="${producto.id}">
+                        Añadir al Carrito
+                    </button>
                 </div>
             </div>
-        `;
+        </div>
+    `;
         contenedorGrid.innerHTML += tarjeta;
     });
+    activarBotonesAgregar();
 }
 
 
