@@ -18,40 +18,6 @@ const productos = [
     { id: 16, nombre: "Foco LED Proyector 50W", descripcion: "Foco exterior IP65 luz fría de bajo consumo energético.", precio: 14990, categoria: "Electricidad", marca: "m1", imagen: "https://picsum.photos/300/200?random=16" }
 ];
 
-function renderizarProductos(lista) {
-    const contenedorGrid = document.getElementById('gridProductos');
-    if (!contenedorGrid) return;
-
-    contenedorGrid.innerHTML = '';
-
-    if (lista.length === 0) {
-        contenedorGrid.innerHTML = '<p class="text-muted small col-12 p-3">No se encontraron productos con los filtros seleccionados.</p>';
-        return;
-    }
-
-    lista.forEach(producto => {
-        const tarjeta = `
-        <div class="col">
-            <div class="card h-100 border-0 shadow-sm">
-                <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title h6 fw-bold">${producto.nombre}</h5>
-                    <p class="card-text small text-muted flex-grow-1">${producto.descripcion}</p>
-                    <span class="fw-bold fs-6 mb-2 text-primary">$${producto.precio.toLocaleString('es-CL')}</span>
-                    
-                    <!-- BOTÓN CON CLASE Y DATASET DE ID -->
-                    <button class="btn btn-primary btn-sm mt-auto boton-agregar" data-id="${producto.id}">
-                        Añadir al Carrito
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-        contenedorGrid.innerHTML += tarjeta;
-    });
-    activarBotonesAgregar();
-}
-
 
 function filtrarProductos() {
 
@@ -114,3 +80,65 @@ document.addEventListener('DOMContentLoaded', () => {
         rangoPrecio.addEventListener('input', filtrarProductos);
     }
 });
+
+
+
+function activarBotonesAgregar() {
+    document.querySelectorAll('.boton-agregar').forEach(boton => {
+        boton.addEventListener('click', () => {
+
+            const idProducto = Number(boton.dataset.id);
+
+
+            const producto = productos.find(p => p.id === idProducto);
+            if (!producto) return;
+
+
+            agregarProducto(
+                'producto-' + producto.id,
+                producto.nombre,
+                producto.precio,
+                producto.imagen,
+                'disponible'
+            );
+
+            boton.textContent = '¡Agregado!';
+            boton.classList.remove('btn-primary');
+            boton.classList.add('btn-success');
+        });
+    });
+}
+
+function renderizarProductos(lista) {
+    const contenedorGrid = document.getElementById('gridProductos');
+    if (!contenedorGrid) return;
+
+    contenedorGrid.innerHTML = '';
+
+    if (lista.length === 0) {
+        contenedorGrid.innerHTML = '<p class="text-muted small col-12 p-3">No se encontraron productos con los filtros seleccionados.</p>';
+        return;
+    }
+
+    lista.forEach(producto => {
+        const tarjeta = `
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
+                <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title h6 fw-bold">${producto.nombre}</h5>
+                    <p class="card-text small text-muted flex-grow-1">${producto.descripcion}</p>
+                    <span class="fw-bold fs-6 mb-2 text-primary">$${producto.precio.toLocaleString('es-CL')}</span>
+                    
+                    <!-- BOTÓN CON CLASE Y DATASET DE ID -->
+                    <button class="btn btn-primary btn-sm mt-auto boton-agregar" data-id="${producto.id}">
+                        Añadir al Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+        contenedorGrid.innerHTML += tarjeta;
+    });
+    activarBotonesAgregar();
+}
