@@ -123,70 +123,14 @@
                         </tr>
                     </thead>
 
-                    <tbody>
-
-                        
-                        <tr class="fila-producto" data-precio="39990">
-                            <td class="celda-imagen">
-                                
-                                <img src="imagenes/logo_maestros.png" alt="Taladro percutor 650W" class="img-producto">
-                            </td>
-                            <td>
-                                <p class="mb-1 fw-semibold">Taladro percutor 650W</p>
-                                <span class="badge text-bg-success">En Stock</span>
-                            </td>
-                            <td class="text-center">
-                                <input type="number" class="form-control form-control-sm input-cantidad" value="1" min="1" max="10" aria-label="Cantidad de Taladro percutor 650W">
-                            </td>
-                            <td class="text-end">$39.990</td>
-                            <td class="text-end fw-semibold subtotal">$39.990</td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Taladro percutor 650W">&times;</button>
-                            </td>
-                        </tr>
-
-                        
-                        <tr class="fila-producto" data-precio="6490">
-                            <td class="celda-imagen">
-                                
-                                <img src="imagenes/logo_maestros.png" alt="Cemento Polpaico 25 kg" class="img-producto">
-                            </td>
-                            <td>
-                                <p class="mb-1 fw-semibold">Cemento Polpaico 25 kg</p>
-                                <span class="badge text-bg-danger">Últimas Unidades</span>
-                            </td>
-                            <td class="text-center">
-                                <input type="number" class="form-control form-control-sm input-cantidad" value="3" min="1" max="10" aria-label="Cantidad de Cemento Polpaico 25 kg">
-                            </td>
-                            <td class="text-end">$6.490</td>
-                            <td class="text-end fw-semibold subtotal">$19.470</td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Cemento Polpaico 25 kg">&times;</button>
-                            </td>
-                        </tr>
-
-                        
-                        <tr class="fila-producto" data-precio="12990">
-                            <td class="celda-imagen">
-                                
-                                <img src="imagenes/logo_maestros.png" alt="Set de destornilladores 12 piezas" class="img-producto">
-                            </td>
-                            <td>
-                                <p class="mb-1 fw-semibold">Set de destornilladores 12 piezas</p>
-                                <span class="badge text-bg-success">En Stock</span>
-                            </td>
-                            <td class="text-center">
-                                <input type="number" class="form-control form-control-sm input-cantidad" value="2" min="1" max="10" aria-label="Cantidad de Set de destornilladores 12 piezas">
-                            </td>
-                            <td class="text-end">$12.990</td>
-                            <td class="text-end fw-semibold subtotal">$25.980</td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger boton-eliminar" aria-label="Eliminar Set de destornilladores 12 piezas">&times;</button>
-                            </td>
-                        </tr>
+                    <tbody id="cuerpo-carrito">
 
                     </tbody>
                 </table>
+            </div>
+
+            <div id="aviso-vacio" class="d-none">
+                Tu carrito está vacío. Ve al <a href="catalogo.html">catálogo</a> para agregar productos.
             </div>
 
 
@@ -244,6 +188,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="js/carrito-datos.js"></script>
     <script src="js/carrito.js"></script>
 </body>
 
