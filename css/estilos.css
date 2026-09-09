@@ -58,3 +58,58 @@ body {
     color: #fd7e14;
     font-weight: 700;
 }
+
+/* ===== Pie de pagina ===== */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.footer-sitio {
+    flex-shrink: 0;
+    background-color: #212529;
+    color: #adb5bd;
+    font-size: 0.9rem;
+}
+
+.footer-titulo {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.9rem;
+}
+
+.footer-texto {
+    color: #adb5bd;
+    line-height: 1.6;
+}
+
+.footer-lista li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-lista a {
+    color: #adb5bd;
+    text-decoration: none;
+}
+
+.footer-lista a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.footer-sitio .fw-bold {
+    color: #ffffff;
+}
+
+.footer-barra {
+    background-color: #1a1d20;
+    color: #6c757d;
+}
