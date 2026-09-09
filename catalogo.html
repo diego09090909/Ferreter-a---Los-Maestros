@@ -143,8 +143,8 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input filter-category" type="checkbox" value="Pinturas" id="pinturas">
-                                    <label class="form-check-label small" for="pinturas">
+                                    <input class="form-check-input filter-category" type="checkbox" value="Pinturas" id="catpinturas">
+                                    <label class="form-check-label small" for="catpinturas">
                                         Pinturas
                                     </label>
                                 </div>
@@ -163,6 +163,7 @@
 
                             </div>
                         </div>
+
                         <div id="marcas" class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -174,19 +175,19 @@
                             <div id="flush-collapseTwo" class="accordion-collapse collapse"
                                 data-bs-parent="#accordionFlushExample">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="m1" checked>
+                                    <input class="form-check-input filter-marca" type="checkbox" value="m1" id="m1">
                                     <label class="form-check-label" for="m1">
                                         m1
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="m2" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="m2">
                                     <label class="form-check-label" for="m2">
                                         m2
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="m3" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="m3">
                                     <label class="form-check-label" for="m3">
                                         m3
                                     </label>
@@ -233,7 +234,7 @@
 
                 <div class="overflow-y-auto overflow-x-hidden pe-2" style="max-height: 70vh;">
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mx-0">
-                        <div class="col">
+                        <div class="col producto-item" data-categoria="Herramientas" data-marca="m1">
                             <div class="card h-100 border-0">
                                 <img src="https://picsum.photos/300/200" class="card-img-top" alt="Producto">
                                 <div class="card-body d-flex flex-column">
