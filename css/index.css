@@ -1,40 +1,45 @@
-
-/* Tipografía y suavizado de scroll */
+/* ===== Tipografia y scroll ===== */
 html {
     scroll-behavior: smooth;
 }
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-/* Efecto de elevación*/
-.feature-card, .card {
+
+/* ===== Banner principal ===== */
+.hero {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+        linear-gradient(135deg, #495057 0%, #212529 60%, #343a40 100%);
+    background-size: cover;
+    background-position: center;
+    border-bottom: 4px solid #ffc107;
+}
+
+/* ===== Tarjetas de beneficios ===== */
+.card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.feature-card:hover, .card:hover {
+
+.card:hover {
     transform: translateY(-5px);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
-/* Ajustes para el Banner Hero */
-.hero {
-    border-bottom: 4px solid #ffc107; /* Borde inferior color amarillo/warning */
-}
-/* Botones personalizados*/
-.btn-warning {
+
+/* ===== Botones destacados del banner ===== */
+.hero .btn-warning {
     background-color: #f39c12;
     border-color: #f39c12;
     color: #ffffff;
 }
-.btn-warning:hover {
+
+.hero .btn-warning:hover {
     background-color: #d35400;
     border-color: #d35400;
     color: #ffffff;
 }
-/* Ajuste del contador dentro del botón de carrito */
-#cart-count {
-    font-size: 0.8rem;
-    vertical-align: middle;
-}
-/* Footer personalizado */
-footer {
+
+/* ===== Detalle del pie de pagina ===== */
+.footer-sitio {
     border-top: 3px solid #ffc107;
 }
