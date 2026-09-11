@@ -2,8 +2,9 @@ function obtenerProductos() {
     const productosGuardados = localStorage.getItem('productos');
     if (productosGuardados) {
         const productos = JSON.parse(productosGuardados);
-        const tieneRutaAntigua = productos.some(p => p.imagen.includes('picsum.photos'));
-        if (!tieneRutaAntigua) {
+        
+        const tieneFotosViejas = productos.some(p => p.imagen && p.imagen.includes('picsum.photos'));
+        if (!tieneFotosViejas) {
             return productos;
         }
     }
@@ -31,6 +32,7 @@ function obtenerProductos() {
     return productosIniciales;
 }
 
+
 function cargarFiltroMarcas() {
     const selectMarca = document.getElementById('filtro-marca');
     if (!selectMarca) return;
@@ -39,7 +41,7 @@ function cargarFiltroMarcas() {
     const marcasUnicas = [...new Set(productos.map(p => p.marca))].sort();
 
     let htmlOpciones = '<option value="todas" selected>Todas las marcas</option>';
-
+    
     marcasUnicas.forEach(marca => {
         if (marca) {
             htmlOpciones += `<option value="${marca}">${marca}</option>`;
@@ -52,7 +54,7 @@ function cargarFiltroMarcas() {
 function renderizarProductos(lista) {
     const contenedorGrid = document.getElementById('gridProductos');
     const contador = document.getElementById('contadorProductos');
-
+    
     if (contador) {
         contador.textContent = `Mostrando ${lista.length} producto${lista.length === 1 ? '' : 's'}`;
     }
@@ -176,7 +178,7 @@ function activarBotonesAgregar() {
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarFiltroMarcas();
-
+    
     filtrarProductos();
 
     const selectOrdenar = document.getElementById('ordenar');
