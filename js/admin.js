@@ -1,6 +1,4 @@
-
 document.addEventListener('DOMContentLoaded', () => {
-  
     const btnPedidos = document.getElementById('btn-pedidos');
     const btnUsuarios = document.getElementById('btn-usuarios');
     const btnStock = document.getElementById('btn-stock');
@@ -49,16 +47,15 @@ function mostrarSeccion(nombreSeccion) {
     });
 }
 
-
 function cargarTablaStock() {
     const tbody = document.getElementById('tabla-stock-body');
     if (!tbody) return;
 
-    const productos = JSON.parse(localStorage.getItem('productos')) || [];
+    let productos = JSON.parse(localStorage.getItem('productos')) || [];
     tbody.innerHTML = '';
 
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay productos en inventario.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay productos en inventario. Visita el catálogo para cargar los productos iniciales.</td></tr>';
         return;
     }
 
@@ -91,7 +88,10 @@ function cargarTablaUsuarios() {
     const tbody = document.getElementById('tabla-usuarios-body');
     if (!tbody) return;
 
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
+        { rut: '11.111.111-1', nombre: 'Administrador General', email: 'admin@losmaestros.cl', rol: 'Administrador' },
+        { rut: '22.222.222-2', nombre: 'Juan Pérez', email: 'juan.perez@email.com', rol: 'Cliente' }
+    ];
 
     tbody.innerHTML = usuarios.map(u => `
         <tr>
@@ -108,12 +108,10 @@ function cargarTablaPedidos() {
     const tbody = document.getElementById('tabla-pedidos-body');
     if (!tbody) return;
 
-    const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
-
-    if (pedidos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay pedidos registrados.</td></tr>';
-        return;
-    }
+    let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [
+        { id: 101, cliente: 'Juan Pérez', tipoPago: 'WebPay (Debito)', tipoEntrega: 'Despacho a Domicilio', total: 49990, estado: 'Pendiente' },
+        { id: 102, cliente: 'María González', tipoPago: 'Transferencia', tipoEntrega: 'Retiro en Tienda', total: 15600, estado: 'Entregado' }
+    ];
 
     tbody.innerHTML = pedidos.map(p => `
         <tr>
@@ -131,12 +129,10 @@ function cargarTablaVentas() {
     const tbody = document.getElementById('tabla-ventas-body');
     if (!tbody) return;
 
-    const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
-
-    if (ventas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay ventas registradas.</td></tr>';
-        return;
-    }
+    let ventas = JSON.parse(localStorage.getItem('ventas')) || [
+        { id: 501, fecha: '11/09/2026', categoria: 'Herramientas', monto: 49990, medioPago: 'Débito' },
+        { id: 502, fecha: '10/09/2026', categoria: 'Construccion', monto: 15600, medioPago: 'Crédito' }
+    ];
 
     tbody.innerHTML = ventas.map(v => `
         <tr>
