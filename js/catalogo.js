@@ -110,6 +110,10 @@ function filtrarProductos() {
         if (check.checked) marcasSeleccionadas.push(check.value);
     });
 
+    const campoBusqueda = document.querySelector('.offcanvas input[type="search"]');
+    // si js/buscador.js no esta cargado, la busqueda por texto simplemente no se aplica
+    const textoBusqueda = (campoBusqueda && typeof sinTildes === 'function') ? campoBusqueda.value.trim() : '';
+
     const rangoPrecio = document.getElementById('rango');
     const precioMaximo = rangoPrecio ? Number(rangoPrecio.value) : Infinity;
 
@@ -131,7 +135,18 @@ function filtrarProductos() {
 
         const cumplePrecio = producto.precio <= precioMaximo;
 
-        return cumpleCategoria && cumpleSelectMarca && cumpleCheckMarca && cumplePrecio;
+        // busqueda por texto de la barra lateral (nombre, descripcion o marca)
+        let cumpleBusqueda = true;
+
+        if (textoBusqueda !== '') {
+            const buscado = sinTildes(textoBusqueda);
+            const enNombre = sinTildes(producto.nombre).includes(buscado);
+            const enDescripcion = sinTildes(producto.descripcion || '').includes(buscado);
+            const enMarca = sinTildes(producto.marca || '').includes(buscado);
+            cumpleBusqueda = enNombre || enDescripcion || enMarca;
+        }
+
+        return cumpleCategoria && cumpleSelectMarca && cumpleCheckMarca && cumplePrecio && cumpleBusqueda;
     });
 
     const selectOrdenar = document.getElementById('ordenar');
