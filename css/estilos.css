@@ -113,3 +113,20 @@ main {
     background-color: #1a1d20;
     color: #6c757d;
 }
+
+/* ===== Zona de sesion en la navbar ===== */
+#zona-sesion .btn {
+    white-space: nowrap;
+}
+
+.saludo-usuario {
+    font-size: 0.9rem;
+    color: #212529;
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .saludo-usuario {
+        display: none;
+    }
+}
