@@ -2,7 +2,6 @@ function obtenerProductos() {
     const productosGuardados = localStorage.getItem('productos');
     if (productosGuardados) {
         const productos = JSON.parse(productosGuardados);
-        
         const tieneFotosViejas = productos.some(p => p.imagen && p.imagen.includes('picsum.photos'));
         if (!tieneFotosViejas) {
             return productos;
@@ -31,7 +30,6 @@ function obtenerProductos() {
     localStorage.setItem('productos', JSON.stringify(productosIniciales));
     return productosIniciales;
 }
-
 
 function cargarFiltroMarcas() {
     const selectMarca = document.getElementById('filtro-marca');
@@ -105,11 +103,6 @@ function filtrarProductos() {
     const selectMarca = document.getElementById('filtro-marca');
     const marcaSeleccionada = selectMarca ? selectMarca.value : 'todas';
 
-    const marcasSeleccionadas = [];
-    document.querySelectorAll('.filter-marca').forEach(check => {
-        if (check.checked) marcasSeleccionadas.push(check.value);
-    });
-
     const rangoPrecio = document.getElementById('rango');
     const precioMaximo = rangoPrecio ? Number(rangoPrecio.value) : Infinity;
 
@@ -120,18 +113,12 @@ function filtrarProductos() {
 
     let productosFiltrados = productos.filter(producto => {
         const cumpleSelectMarca = (marcaSeleccionada === 'todas') || (producto.marca === marcaSeleccionada);
-
-        const noHayCheckMarca = marcasSeleccionadas.length === 0;
-        const marcaCheckCorrecta = marcasSeleccionadas.includes(producto.marca);
-        const cumpleCheckMarca = noHayCheckMarca || marcaCheckCorrecta;
-
         const noHayCat = categoriasSeleccionadas.length === 0;
         const catCorrecta = categoriasSeleccionadas.includes(producto.categoria);
         const cumpleCategoria = noHayCat || catCorrecta;
-
         const cumplePrecio = producto.precio <= precioMaximo;
 
-        return cumpleCategoria && cumpleSelectMarca && cumpleCheckMarca && cumplePrecio;
+        return cumpleCategoria && cumpleSelectMarca && cumplePrecio;
     });
 
     const selectOrdenar = document.getElementById('ordenar');
@@ -158,7 +145,7 @@ function activarBotonesAgregar() {
             if (!producto) return;
 
             if (typeof agregarProducto === 'function') {
-                agregarProducto('producto-' + producto.id, producto.nombre, producto.precio, producto.imagen, 'disponible');
+                agregarProducto(producto.id, producto.nombre, producto.precio, producto.imagen, 'disponible');
             }
 
             boton.textContent = '¡Agregado!';
@@ -178,7 +165,6 @@ function activarBotonesAgregar() {
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarFiltroMarcas();
-    
     filtrarProductos();
 
     const selectOrdenar = document.getElementById('ordenar');
@@ -192,10 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.filter-category').forEach(check => {
-        check.addEventListener('change', filtrarProductos);
-    });
-
-    document.querySelectorAll('.filter-marca').forEach(check => {
         check.addEventListener('change', filtrarProductos);
     });
 
