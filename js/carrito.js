@@ -112,6 +112,96 @@ function activarEventos(){
     });
 }
 
+
+// ***** procesar la compra y avisarle al panel de administracion ******
+function finalizarCompra(entrega, pago){
+
+    const carrito = obtenerCarrito();
+    const usuarioActivo = JSON.parse(localStorage.getItem("usuarioActivo"));
+
+    let nombreCliente = "Cliente Anónimo";
+
+    if(usuarioActivo !== null){
+        nombreCliente = usuarioActivo.nombre;
+    }
+
+    let total = 0;
+
+    carrito.forEach(function(item){
+        total = total + (item.precio * item.cantidad);
+    });
+
+    const idCompra = Date.now().toString().slice(-4);
+    const fechaActual = new Date().toLocaleDateString("es-CL");
+
+    //1. descontar el stock del catalogo
+    const productos = JSON.parse(localStorage.getItem("productos")) || [];
+    let categoriaVenta = "";
+
+    carrito.forEach(function(item){
+
+        const idProducto = Number(item.codigo.replace("producto-", ""));
+
+        productos.forEach(function(producto){
+
+            if(producto.id === idProducto){
+
+                if(categoriaVenta === ""){
+                    categoriaVenta = producto.categoria;
+                }
+                else if(categoriaVenta !== producto.categoria){
+                    categoriaVenta = "Varios";
+                }
+
+                if(producto.stockTienda >= item.cantidad){
+                    producto.stockTienda = producto.stockTienda - item.cantidad;
+                }
+                else{
+                    const restante = item.cantidad - producto.stockTienda;
+                    producto.stockTienda = 0;
+                    producto.stockBodega = Math.max(0, producto.stockBodega - restante);
+                }
+            }
+        });
+    });
+
+    if(categoriaVenta === ""){
+        categoriaVenta = "General";
+    }
+
+    localStorage.setItem("productos", JSON.stringify(productos));
+
+    //2. crear el pedido para el panel de administracion
+    const pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+
+    pedidos.unshift({
+        id: idCompra,
+        cliente: nombreCliente,
+        tipoPago: pago,
+        tipoEntrega: entrega,
+        total: total,
+        estado: "Pendiente"
+    });
+
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+
+    //3. crear la venta para el panel de administracion
+    const ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+
+    ventas.unshift({
+        id: idCompra,
+        fecha: fechaActual,
+        categoria: categoriaVenta,
+        monto: total,
+        medioPago: pago
+    });
+
+    localStorage.setItem("ventas", JSON.stringify(ventas));
+
+    //4. vaciar el carrito
+    guardarCarrito([]);
+}
+
 // ***** uso de formularios ******
 formulario.addEventListener("submit", function(evento){
     evento.preventDefault();
@@ -157,13 +247,17 @@ formulario.addEventListener("submit", function(evento){
         return;
     }
 
+    //guardar el total antes de vaciar el carrito
+    const totalCompra = totalCarrito.textContent;
+
+    //registrar el pedido, la venta y descontar el stock
+    finalizarCompra(entrega.value, pago.value);
+
     mensajeResultado.textContent =
-    "Compra confirmada por " + totalCarrito.textContent + ". Entrega: " + entrega.value + ". Pago: " + pago.value;
+    "Compra confirmada por " + totalCompra + ". Entrega: " + entrega.value + ". Pago: " + pago.value;
 
     mensajeResultado.className = "alert alert-success mt-4";
 
-    //vaciar el carrito despues de comprar
-    guardarCarrito([]);
     dibujarCarrito();
 });
 
@@ -183,5 +277,4 @@ function cargarEjemplos(){
 }
 
 //dibujar el carrito al cargar la pagina
-cargarEjemplos();
 dibujarCarrito();
