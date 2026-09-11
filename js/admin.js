@@ -1,5 +1,35 @@
+
+function inicializarUsuarioAdmin() {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const existeAdmin = usuarios.some(u => u.rol === 'Administrador');
+
+    if (!existeAdmin) {
+        const adminPredefinido = {
+            rut: "11.111.111-1",
+            nombre: "Administrador General",
+            email: "admin@losmaestros.cl",
+            password: "admin123",
+            rol: "Administrador"
+        };
+        usuarios.push(adminPredefinido);
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    }
+}
+
+(function verificarAccesoAdmin() {
+    inicializarUsuarioAdmin();
+    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
+
+    if (!usuarioActivo || usuarioActivo.rol !== "Administrador") {
+        alert("Acceso denegado. Debe iniciar sesión con una cuenta de Administrador.");
+        window.location.href = "login.html";
+    }
+})();
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Configurar eventos en los botones del Sidebar
+
     const btnPedidos = document.getElementById('btn-pedidos');
     const btnUsuarios = document.getElementById('btn-usuarios');
     const btnStock = document.getElementById('btn-stock');
@@ -17,21 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarTablaVentas();
 });
 
-
 function mostrarSeccion(nombreSeccion) {
     const secciones = ['pedidos', 'usuarios', 'stock', 'ventas'];
     
-
     secciones.forEach(sec => {
         const el = document.getElementById('seccion-' + sec);
         if (el) el.classList.add('d-none');
     });
 
-
     const activa = document.getElementById('seccion-' + nombreSeccion);
     if (activa) activa.classList.remove('d-none');
 
-  
     const botones = {
         pedidos: document.getElementById('btn-pedidos'),
         usuarios: document.getElementById('btn-usuarios'),
@@ -53,6 +79,9 @@ function mostrarSeccion(nombreSeccion) {
     });
 }
 
+// ==========================================
+// CARGA DINÁMICA DE TABLAS DESDE LOCALSTORAGE
+// ==========================================
 
 function cargarTablaStock() {
     const tbody = document.getElementById('tabla-stock-body');
@@ -91,35 +120,33 @@ function cargarTablaStock() {
     });
 }
 
-
 function cargarTablaUsuarios() {
     const tbody = document.getElementById('tabla-usuarios-body');
     if (!tbody) return;
 
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
-        { rut: "12.345.678-9", nombre: "Admin Principal", email: "admin@losmaestros.cl", rol: "Administrador" },
-        { rut: "14.285.391-2", nombre: "Carlos Mendoza", email: "cmendoza@gmail.com", rol: "Contratista" }
-    ];
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
     tbody.innerHTML = usuarios.map(u => `
         <tr>
             <td>${u.rut}</td>
             <td>${u.nombre}</td>
             <td>${u.email}</td>
-            <td>${u.rol}</td>
+            <td><span class="badge ${u.rol === 'Administrador' ? 'bg-primary' : 'bg-secondary'}">${u.rol}</span></td>
             <td><span class="badge bg-success">Activo</span></td>
         </tr>
     `).join('');
 }
 
-
 function cargarTablaPedidos() {
     const tbody = document.getElementById('tabla-pedidos-body');
     if (!tbody) return;
 
-    const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [
-        { id: "101", cliente: "Carlos Mendoza (Contratista)", tipoPago: "Cuenta Corriente", tipoEntrega: "Despacho", total: 485900, estado: "Pendiente" }
-    ];
+    const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+    if (pedidos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No hay pedidos registrados.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = pedidos.map(p => `
         <tr>
@@ -133,14 +160,16 @@ function cargarTablaPedidos() {
     `).join('');
 }
 
-
 function cargarTablaVentas() {
     const tbody = document.getElementById('tabla-ventas-body');
     if (!tbody) return;
 
-    const ventas = JSON.parse(localStorage.getItem('ventas')) || [
-        { id: "501", fecha: "10/09/2026", categoria: "Construcción", monto: 518400, medioPago: "Transferencia / Cta Cte" }
-    ];
+    const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+
+    if (ventas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay ventas registradas.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = ventas.map(v => `
         <tr>
