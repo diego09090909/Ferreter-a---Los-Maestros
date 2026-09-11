@@ -1,35 +1,6 @@
 
-function inicializarUsuarioAdmin() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const existeAdmin = usuarios.some(u => u.rol === 'Administrador');
-
-    if (!existeAdmin) {
-        const adminPredefinido = {
-            rut: "11.111.111-1",
-            nombre: "Administrador General",
-            email: "admin@losmaestros.cl",
-            password: "admin123",
-            rol: "Administrador"
-        };
-        usuarios.push(adminPredefinido);
-        localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    }
-}
-
-(function verificarAccesoAdmin() {
-    inicializarUsuarioAdmin();
-    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
-
-    if (!usuarioActivo || usuarioActivo.rol !== "Administrador") {
-        alert("Acceso denegado. Debe iniciar sesión con una cuenta de Administrador.");
-        window.location.href = "login.html";
-    }
-})();
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
-
+  
     const btnPedidos = document.getElementById('btn-pedidos');
     const btnUsuarios = document.getElementById('btn-usuarios');
     const btnStock = document.getElementById('btn-stock');
@@ -39,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnUsuarios) btnUsuarios.addEventListener('click', () => mostrarSeccion('usuarios'));
     if (btnStock) btnStock.addEventListener('click', () => mostrarSeccion('stock'));
     if (btnVentas) btnVentas.addEventListener('click', () => mostrarSeccion('ventas'));
-
 
     cargarTablaStock();
     cargarTablaUsuarios();
@@ -79,9 +49,6 @@ function mostrarSeccion(nombreSeccion) {
     });
 }
 
-// ==========================================
-// CARGA DINÁMICA DE TABLAS DESDE LOCALSTORAGE
-// ==========================================
 
 function cargarTablaStock() {
     const tbody = document.getElementById('tabla-stock-body');
