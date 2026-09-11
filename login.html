@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión / Registro</title>
+    <meta name="description" content="Ingresa a tu cuenta de Ferretería Los Maestros o crea una nueva para comprar en línea.">
+    <link rel="icon" href="imagenes/logo_maestros.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar bg-body-tertiary fixed-top shadow-sm">
+            <div class="container-fluid">
+
+                <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                    <img src="imagenes/logo_maestros.png" alt="Logo Ferretería Los Maestros" width="46" height="46" class="logo-nav">
+                    <span>Ferretería Los Maestros</span>
+                </a>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a class="btn btn-outline-secondary border-0 position-relative p-2" href="carrito.html" aria-label="Ver carrito">
+                        <img src="imagenes/carrito_fondo.jpg" alt="Carrito de compras" class="icono-carrito">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador-carrito">0</span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Abrir menú">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasNavbarLabel">
+                            <img src="imagenes/logo_maestros.png" alt="" width="32" height="32" class="logo-nav">
+                            Menú
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="offcanvas-body d-flex flex-column">
+
+                        <!--  Buscador -->
+                        <form class="d-flex gap-2 mb-3" role="search">
+                            <input class="form-control" type="search" placeholder="Buscar producto" aria-label="Buscar producto">
+                            <button class="btn btn-outline-success" type="submit">Buscar</button>
+                        </form>
+
+                        <p class="text-uppercase text-secondary small fw-bold mb-1">Navegación</p>
+                        <ul class="navbar-nav mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="catalogo.html">Catálogo de Productos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="cobertura.html">Cobertura y Ubicación</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="carrito.html">Mi Carrito</a>
+                            </li>
+                        </ul>
+
+                        <p class="text-uppercase text-secondary small fw-bold mb-1">Cuenta</p>
+                        <ul class="navbar-nav mb-3">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Mi Cuenta
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="login.html">Iniciar sesión</a></li>
+                                    <li><a class="dropdown-item" href="login.html">Crear cuenta</a></li>
+                                    <li id="nav-link-admin">
+                                        <hr class="dropdown-divider">
+                                        <a class="dropdown-item" href="admin.html">Panel de control</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="mt-auto pt-3 border-top">
+                            <p class="mb-1 small text-secondary">Atención: 09:00 - 19:00 hrs</p>
+                            <p class="mb-0 small text-secondary">Teléfono: +56 9 3284 8760</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-4">
+
+        <h1 class="h3 fw-bold mb-4">INICIAR SESIÓN / REGISTRO</h1>
+
+        <div class="row g-4 justify-content-center">
+
+            <!--  Ingresa -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card h-100 shadow-sm tarjeta-cuenta">
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 fw-bold text-center mb-1">Ingresa</h2>
+                        <p class="text-secondary small text-center mb-4">Usa tu RUT o tu correo registrado.</p>
+
+                        <form id="formulario-ingreso" novalidate>
+
+                            <div class="mb-3">
+                                <label for="ingreso-usuario" class="form-label">RUT o correo</label>
+                                <input type="text" class="form-control" id="ingreso-usuario" placeholder="11.111.111-1 o correo@ejemplo.cl" autocomplete="username">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="ingreso-password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="ingreso-password" placeholder="Tu contraseña" autocomplete="current-password">
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Entrar</button>
+                            </div>
+
+                            <div id="mensaje-ingreso"></div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <!--  Registrate -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card h-100 shadow-sm tarjeta-cuenta">
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 fw-bold text-center mb-1">Regístrate</h2>
+                        <p class="text-secondary small text-center mb-4">Crea tu cuenta para comprar en línea.</p>
+
+                        <form id="formulario-registro" novalidate>
+
+                            <div class="mb-3">
+                                <label for="registro-nombre" class="form-label">Nombre completo</label>
+                                <input type="text" class="form-control" id="registro-nombre" placeholder="Nombre y apellido">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="registro-rut" class="form-label">RUT</label>
+                                <input type="text" class="form-control" id="registro-rut" placeholder="12.345.678-5">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="registro-email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control" id="registro-email" placeholder="correo@ejemplo.cl">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="registro-password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="registro-password" placeholder="Entre 6 y 18 caracteres">
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">Crear Cuenta</button>
+                            </div>
+
+                            <div id="mensaje-registro"></div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="text-secondary small text-center mt-4 mb-0">
+            Tus datos se guardan solo en este navegador. Proyecto académico, no ingreses información real.
+        </p>
+
+    </main>
+
+    <footer class="footer-sitio mt-5">
+        <div class="container py-5">
+            <div class="row g-4">
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="imagenes/logo_maestros.png" alt="Logo Ferretería Los Maestros" width="40" height="40" class="logo-nav">
+                        <span class="fw-bold">Ferretería Los Maestros</span>
+                    </div>
+                    <p class="footer-texto mb-0">
+                        Materiales de construcción, herramientas y ferretería general con despacho en La Serena y Coquimbo.
+                        Atendemos a maestros, contratistas y particulares desde 2004.
+                    </p>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h2 class="footer-titulo">Navegación</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="catalogo.html">Catálogo</a></li>
+                        <li><a href="cobertura.html">Cobertura</a></li>
+                        <li><a href="carrito.html">Mi Carrito</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h2 class="footer-titulo">Mi Cuenta</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li><a href="login.html">Iniciar sesión</a></li>
+                        <li><a href="login.html">Crear cuenta</a></li>
+                        <li><a href="admin.html">Panel de control</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h2 class="footer-titulo">Contacto</h2>
+                    <ul class="list-unstyled footer-lista mb-0">
+                        <li>Av. Francisco de Aguirre 1450, Local 5<br>La Serena, Región de Coquimbo</li>
+                        <li><a href="tel:+56932848760">+56 9 3284 8760</a></li>
+                        <li><a href="mailto:contacto@losmaestros.cl">contacto@losmaestros.cl</a></li>
+                        <li>Lun a Vie 09:00 - 19:00 · Sáb 10:00 - 14:00</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="footer-barra">
+            <div class="container py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <small class="mb-0">&copy; 2026 Ferretería Los Maestros. Todos los derechos reservados.</small>
+                <small class="mb-0">Proyecto académico · Duoc UC</small>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/carrito-datos.js"></script>
+    <script src="js/sesion.js"></script>
+    <script src="js/login.js"></script>
+</body>
+
+</html>
