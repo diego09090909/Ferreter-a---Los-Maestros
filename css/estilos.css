@@ -1,6 +1,25 @@
+/* ===== Paleta del sitio =====
+   Referencia: ferreterias chilenas (Construmart usa azul noche #041E42 + ambar #FFB81C
+   sobre blanco). Naranja reservado solo para los botones de accion. */
+:root {
+    --azul-noche: #0b2545;
+    --azul-noche-oscuro: #081b33;
+    --ambar: #ffb81c;
+    --naranja: #e8590c;
+    --naranja-hover: #c94b06;
+    --gris-fondo: #f5f5f3;
+    --gris-borde: #e3e3e0;
+}
+
 /* ===== Pagina del Carrito ===== */
 body {
     padding-top: 80px;
+    background-color: var(--gris-fondo);
+}
+
+.navbar.bg-body-tertiary {
+    background-color: #ffffff !important;
+    border-bottom: 3px solid var(--ambar);
 }
 
 .logo-nav {
@@ -29,7 +48,7 @@ body {
 }
 
 .offcanvas .nav-link.active {
-    background-color: #198754;
+    background-color: var(--azul-noche);
     color: #ffffff;
     font-weight: 600;
 }
@@ -72,8 +91,9 @@ main {
 
 .footer-sitio {
     flex-shrink: 0;
-    background-color: #212529;
-    color: #adb5bd;
+    border-top: 3px solid var(--ambar);
+    background-color: var(--azul-noche);
+    color: #c2ccd9;
     font-size: 0.9rem;
 }
 
@@ -87,7 +107,7 @@ main {
 }
 
 .footer-texto {
-    color: #adb5bd;
+    color: #c2ccd9;
     line-height: 1.6;
 }
 
@@ -96,7 +116,7 @@ main {
 }
 
 .footer-lista a {
-    color: #adb5bd;
+    color: #c2ccd9;
     text-decoration: none;
 }
 
@@ -110,6 +130,52 @@ main {
 }
 
 .footer-barra {
-    background-color: #1a1d20;
-    color: #6c757d;
+    background-color: var(--azul-noche-oscuro);
+    color: #8a99ab;
+}
+
+/* ===== Botones de accion y precios ===== */
+/* se sobrescribe btn-primary de Bootstrap para no tocar el JS del catalogo */
+.btn-primary {
+    background-color: var(--naranja);
+    border-color: var(--naranja);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--naranja-hover) !important;
+    border-color: var(--naranja-hover) !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--azul-noche);
+    border-color: var(--azul-noche);
+}
+
+/* los precios en azul noche: el naranja queda solo para lo que se hace clic */
+.text-primary {
+    color: var(--azul-noche) !important;
+}
+
+.card {
+    border: 1px solid var(--gris-borde);
+}
+
+/* ===== Iconos de redes sociales del pie ===== */
+.icono-red {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.icono-red:hover {
+    background-color: var(--ambar);
+    color: var(--azul-noche-oscuro);
 }
