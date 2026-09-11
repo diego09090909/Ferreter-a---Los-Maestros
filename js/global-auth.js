@@ -47,6 +47,16 @@ function gestionarSesionYAccesos() {
     }
 
   
+    const linkIniciarSesion = document.getElementById('link-iniciar-sesion');
+    if (linkIniciarSesion) {
+        if (usuarioActivo) {
+            linkIniciarSesion.classList.add('d-none');
+        } else {
+            linkIniciarSesion.classList.remove('d-none');
+        }
+    }
+
+
     if (btnCerrarSesion) {
         btnCerrarSesion.addEventListener('click', () => {
             localStorage.removeItem('usuarioActivo');
