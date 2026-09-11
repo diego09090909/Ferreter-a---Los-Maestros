@@ -1,6 +1,3 @@
-
-
-
 function inicializarAdminPorDefecto() {
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
@@ -11,7 +8,7 @@ function inicializarAdminPorDefecto() {
             rut: "11.111.111-1",
             nombre: "Administrador General",
             email: "admin@losmaestros.cl",
-            password: "admin123", 
+            password: "admin123",
             rol: "Administrador"
         };
         usuarios.push(adminPredefinido);
@@ -19,12 +16,9 @@ function inicializarAdminPorDefecto() {
     }
 }
 
-
 function gestionarSesionYAccesos() {
-  
     inicializarAdminPorDefecto();
 
-  
     const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
     const esAdmin = usuarioActivo && usuarioActivo.rol === 'Administrador';
 
@@ -39,6 +33,28 @@ function gestionarSesionYAccesos() {
     }
 
 
+    const infoSesion = document.getElementById('info-sesion');
+    const nombreUsuarioSesion = document.getElementById('nombre-usuario-sesion');
+    const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+
+    if (usuarioActivo && infoSesion && nombreUsuarioSesion) {
+        nombreUsuarioSesion.textContent = usuarioActivo.nombre || usuarioActivo.email;
+        infoSesion.classList.remove('d-none');
+        infoSesion.classList.add('d-flex');
+    } else if (infoSesion) {
+        infoSesion.classList.add('d-none');
+        infoSesion.classList.remove('d-flex');
+    }
+
+  
+    if (btnCerrarSesion) {
+        btnCerrarSesion.addEventListener('click', () => {
+            localStorage.removeItem('usuarioActivo');
+            window.location.href = "index.html";
+        });
+    }
+
+    // 4. Proteger acceso directo a admin.html
     const esPaginaAdmin = window.location.pathname.includes('admin.html');
     if (esPaginaAdmin && !esAdmin) {
         alert("Acceso denegado. Debe iniciar sesión con una cuenta de Administrador.");
