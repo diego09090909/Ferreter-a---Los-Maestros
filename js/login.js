@@ -10,6 +10,12 @@ const mensajeRegistro = document.getElementById("mensaje-registro");
 //patron para revisar el correo
 const patronCorreo = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 
+// ***** sesion del usuario ******
+//guardar la sesion de quien acaba de entrar
+function guardarSesion(usuario){
+    localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
+}
+
 // ***** usuarios guardados ******
 //leer la lista de usuarios
 function obtenerUsuarios(){
@@ -200,7 +206,6 @@ formularioIngreso.addEventListener("submit", function(evento){
 
     //guardar la sesion y saludar
     guardarSesion(encontrado);
-    pintarSaludo();
 
     mensajeIngreso.textContent = "Bienvenido " + encontrado.nombre + ", entrando al sitio...";
 
@@ -315,7 +320,6 @@ formularioRegistro.addEventListener("submit", function(evento){
 
     //dejarlo con la sesion iniciada al tiro
     guardarSesion(nuevoUsuario);
-    pintarSaludo();
 
     mensajeRegistro.textContent = "Cuenta creada correctamente. Bienvenido " + nombre;
 
