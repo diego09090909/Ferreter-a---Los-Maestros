@@ -9,11 +9,23 @@ body {
 
 /* ===== Banner principal ===== */
 .hero {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-        linear-gradient(135deg, #495057 0%, #212529 60%, #343a40 100%);
+    /* la capa oscura va primero para que el texto se lea sobre la foto */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.65)),
+        url("../imagenes/banner-soldador.jpg");
     background-size: cover;
     background-position: center;
+    background-color: #212529;
     border-bottom: 4px solid #ffc107;
+}
+
+/* en celular el recorte cae sobre la zona clara de la foto,
+   asi que se corre hacia el lado oscuro y se oscurece un poco mas */
+@media (max-width: 767.98px) {
+    .hero {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.78)),
+            url("../imagenes/banner-soldador.jpg");
+        background-position: 32% center;
+    }
 }
 
 /* ===== Tarjetas de beneficios ===== */
