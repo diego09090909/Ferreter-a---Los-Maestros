@@ -1,0 +1,57 @@
+/* ===== Tipografia y scroll ===== */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== Banner principal ===== */
+.hero {
+    /* la capa oscura va primero para que el texto se lea sobre la foto */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.65)),
+        url("../imagenes/banner-soldador.jpg");
+    background-size: cover;
+    background-position: center;
+    background-color: #212529;
+    border-bottom: 4px solid #ffc107;
+}
+
+/* en celular el recorte cae sobre la zona clara de la foto,
+   asi que se corre hacia el lado oscuro y se oscurece un poco mas */
+@media (max-width: 767.98px) {
+    .hero {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.78)),
+            url("../imagenes/banner-soldador.jpg");
+        background-position: 32% center;
+    }
+}
+
+/* ===== Tarjetas de beneficios ===== */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ===== Botones destacados del banner ===== */
+.hero .btn-warning {
+    background-color: #f39c12;
+    border-color: #f39c12;
+    color: #ffffff;
+}
+
+.hero .btn-warning:hover {
+    background-color: #d35400;
+    border-color: #d35400;
+    color: #ffffff;
+}
+
+/* ===== Detalle del pie de pagina ===== */
+.footer-sitio {
+    border-top: 3px solid #ffc107;
+}
