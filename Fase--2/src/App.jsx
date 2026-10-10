@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       <Navbar />
-      <main className="container" style={{ paddingTop: '90px' }}>
+      <main className="container">
         <Routes>
           <Route path="/" element={<Inicio />} />
         </Routes>
