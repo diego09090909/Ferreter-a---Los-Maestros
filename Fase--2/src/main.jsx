@@ -6,11 +6,17 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import './index.css'
 import './estilos.css'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthContext'
+import { CarritoProvider } from './context/CarritoContext'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <CarritoProvider>
+          <App />
+        </CarritoProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )
