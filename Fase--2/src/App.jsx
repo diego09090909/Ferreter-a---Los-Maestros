@@ -3,11 +3,7 @@ import Navbar from './components/Navbar'
 import Inicio from './pages/Inicio'
 import Cobertura from './pages/Cobertura'
 import Login from './pages/Login'
-
-
-function Inicio() {
-  return <h1>Inicio</h1>
-}
+import Carrito from './pages/carrito'
 
 function App() {
   return (
@@ -17,6 +13,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/cobertura" element={<Cobertura />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/carrito" element={<Carrito />} />
         </Routes>
       </main>
     </>
