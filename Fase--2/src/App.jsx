@@ -1,6 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import Inicio from './pages/Inicio'
 import Cobertura from './pages/Cobertura'
+import Login from './pages/Login'
+
 
 function Inicio() {
   return <h1>Inicio</h1>
