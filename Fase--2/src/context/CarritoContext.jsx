@@ -20,7 +20,7 @@ export function CarritoProvider({ children }) {
     const valor = {
         carrito,
         total: calcularTotal(carrito),
-        unidades: contarUnidades(carrito),
+        cantidadTotal: contarUnidades(carrito),
         agregar: (producto) => setCarrito((actual) => agregarItem(actual, producto)),
         cambiarCantidad: (codigo, cantidad) =>
             setCarrito((actual) => cambiarCantidadItem(actual, codigo, cantidad)),
