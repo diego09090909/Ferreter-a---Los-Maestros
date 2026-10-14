@@ -49,7 +49,7 @@ function Login() {
       return
     }
 
-    // buscar la cuenta por correo o por rut
+
     const encontrado = obtenerUsuarios().find(
       (u) =>
         (u.email ?? '').toLowerCase() === usuarioEscrito.toLowerCase() ||

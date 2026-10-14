@@ -48,6 +48,9 @@ describe('catálogo y carrito', () => {
   })
 })
 
+
+
+
 describe('login de administrador y rutas protegidas', () => {
   it('/admin sin sesión manda al login con aviso', () => {
     montar('/admin')
@@ -77,6 +80,9 @@ describe('login de administrador y rutas protegidas', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('La contraseña no es correcta')
   })
 })
+
+
+
 
 describe('Mi cuenta', () => {
   it('sin sesión redirige al login', () => {
