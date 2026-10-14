@@ -94,6 +94,7 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, ah
         pedido: {
             id,
             cliente: usuario ? usuario.nombre : 'Cliente Anónimo',
+            rut: usuario ? usuario.rut : null,
             tipoPago: pago,
             tipoEntrega: entrega,
             total,

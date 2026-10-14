@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { Dropdown, Offcanvas } from 'react-bootstrap'
+import { Offcanvas } from 'react-bootstrap'
 import { useAuth } from '../context/AuthContext'
 import { useCarrito } from '../context/CarritoContext'
 
@@ -33,7 +33,7 @@ function Buscador({ inicial, onBuscar }) {
 
 function Navbar() {
   const { usuario, esAdmin, cerrarSesion } = useAuth()
-  const { cantidadTotal } = useCarrito()
+  const { unidades: cantidadTotal } = useCarrito()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [params] = useSearchParams()
@@ -83,15 +83,15 @@ function Navbar() {
 
           <div className="d-flex align-items-center gap-2">
             {usuario ? (
-              <div className="small text-muted d-flex align-items-center gap-1 me-2">
-                <span>Bienvenido</span>
-                <strong>{usuario.nombre || usuario.email}</strong>
+              <div className="small text-muted d-flex align-items-center gap-1 me-1 me-sm-2">
+                <span className="d-none d-sm-inline">Bienvenido</span>
+                <strong className="nombre-sesion">{usuario.nombre || usuario.email}</strong>
                 <button type="button" className="btn btn-sm btn-outline-danger ms-1 py-0 px-2" onClick={salir}>
                   Salir
                 </button>
               </div>
             ) : (
-              <Link className="btn btn-sm btn-outline-success me-2" to="/login">
+              <Link className="btn btn-sm btn-outline-success me-1 me-sm-2" to="/login">
                 Iniciar sesión
               </Link>
             )}

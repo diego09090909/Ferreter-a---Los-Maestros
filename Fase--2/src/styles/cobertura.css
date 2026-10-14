@@ -1,0 +1,18 @@
+/* ===== Cobertura y Ubicacion ===== */
+.datos-tienda i {
+    font-size: 1.25rem;
+    line-height: 1.5;
+    color: #198754;
+}
+
+.datos-tienda a {
+    color: #198754;
+}
+
+.mapa-tienda iframe {
+    border: 0;
+}
+
+.tabla-cobertura th {
+    white-space: nowrap;
+}

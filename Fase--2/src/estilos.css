@@ -179,3 +179,69 @@ main {
     background-color: var(--ambar);
     color: var(--azul-noche-oscuro);
 }
+
+/* ===== Responsivo (celular) ===== */
+/* el nombre de la sesión se corta con "…" para que la barra no se desborde */
+.nombre-sesion {
+    display: inline-block;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+@media (min-width: 576px) {
+    .nombre-sesion {
+        max-width: 200px;
+    }
+}
+
+.celda-imagen {
+    width: 72px;
+}
+
+/* en celular la página completa hace scroll; el scroll interno queda solo para escritorio */
+@media (min-width: 992px) {
+    .lista-productos {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+@media (min-width: 768px) {
+    .contenido-admin {
+        max-height: 82vh;
+        overflow-y: auto;
+    }
+
+    .celda-imagen {
+        width: 90px;
+    }
+}
+
+/* en celular la barra superior ocupa dos filas: se reserva más espacio arriba */
+@media (max-width: 575.98px) {
+    body {
+        padding-top: 125px;
+    }
+
+    .celda-imagen {
+        width: 56px;
+    }
+
+    .img-producto {
+        width: 48px;
+        height: 48px;
+    }
+
+    .input-cantidad {
+        width: 60px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
+    }
+}

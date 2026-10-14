@@ -10,7 +10,7 @@ function Cobertura() {
     }, [])
 
     return (
-        <>
+        <main className="container py-4">
             <h1 className="h3 fw-bold mb-4">COBERTURA Y UBICACIÓN</h1>
 
             <Row className="g-4">
@@ -150,7 +150,7 @@ function Cobertura() {
                 Despacho gratis en La Serena y Coquimbo por compras sobre $50.000.
                 Contratistas con cuenta corriente coordinan despacho directo a obra.
             </p>
-        </>
+        </main>
     )
 }
 

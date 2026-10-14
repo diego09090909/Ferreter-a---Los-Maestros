@@ -61,7 +61,7 @@ export default function Carrito() {
     }
 
     return (
-        <Container className="my-4">
+        <Container as="main" className="my-4">
             <h1 className="h3 mb-4">Carrito de compras</h1>
 
             <div className="table-responsive">
