@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Container, Table, Form, Button, Alert, Row, Col } from 'react-bootstrap'
 import { useCarrito } from '../context/CarritoContext'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { leer, guardar } from '../utils/storage'
 import { obtenerProductos } from '../data/almacen'
 import {
@@ -18,11 +20,26 @@ function dinero(valor) {
 
 export default function Carrito() {
     const { carrito, total, cambiarCantidad, eliminar, vaciar } = useCarrito()
+    const { usuario } = useAuth()
+    const navigate = useNavigate()
+    
     const [entrega, setEntrega] = useState('')
     const [pago, setPago] = useState('')
     const [mensaje, setMensaje] = useState(null)
 
     function confirmar() {
+        if (!usuario) {
+            setMensaje({
+                tipo: 'danger',
+                texto: 'Debes iniciar sesión para poder finalizar tu compra. Redirigiendo al login...'
+            })
+            
+        setTimeout(() => {
+            navigate('/login')
+        }, 2500)
+        return
+        }
+        
         if (carrito.length === 0) {
             return setMensaje({ tipo: 'danger', texto: 'El carrito está vacío.' })
         }
@@ -45,7 +62,7 @@ export default function Carrito() {
         const resultado = registrarCompra({
             carrito,
             productos: obtenerProductos(),
-            usuario: leer('usuarioActivo', null),
+            usuario,
             entrega,
             pago,
         })
