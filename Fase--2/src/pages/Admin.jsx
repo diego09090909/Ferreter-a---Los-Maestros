@@ -11,8 +11,6 @@ const SECCIONES = [
   { id: 'stock', etiqueta: 'Stock', icono: 'bi-bricks' },
   { id: 'ventas', etiqueta: 'Ventas', icono: 'bi-graph-up-arrow' },
 ]
-
-// datos de ejemplo que se muestran mientras no haya nada guardado (igual que la Fase 1)
 const PEDIDOS_EJEMPLO = [
   { id: 101, cliente: 'Juan Pérez', tipoPago: 'WebPay (Debito)', tipoEntrega: 'Despacho a Domicilio', total: 49990, estado: 'Pendiente' },
   { id: 102, cliente: 'María González', tipoPago: 'Transferencia', tipoEntrega: 'Retiro en Tienda', total: 15600, estado: 'Entregado' },
@@ -21,14 +19,11 @@ const VENTAS_EJEMPLO = [
   { id: 501, fecha: '11/09/2026', categoria: 'Herramientas', monto: 49990, medioPago: 'Débito' },
   { id: 502, fecha: '10/09/2026', categoria: 'Construccion', monto: 15600, medioPago: 'Crédito' },
 ]
-
-// la fecha viene como "11/09/2026" o "8-10-2026" según el navegador: dia, mes, año
 function partesFecha(fecha) {
   const [, mes = '', anio = ''] = String(fecha).split(/[/-]/)
   return { mes: mes.padStart(2, '0'), anio }
 }
 
-// tabla genérica del panel: `children` son las filas del <tbody>
 function Tabla({ titulo, columnas, acciones, filtros, children }) {
   return (
     <section className="bg-white p-3 rounded border shadow-sm mb-4">

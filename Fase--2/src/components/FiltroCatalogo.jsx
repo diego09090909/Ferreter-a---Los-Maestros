@@ -2,7 +2,6 @@ import { Accordion } from 'react-bootstrap'
 import { CATEGORIAS } from '../data/productos'
 import { PRECIO_MAXIMO } from '../utils/filtrarProductos'
 
-// Barra lateral de filtros. Es "controlada": recibe `filtros` y avisa con `onChange`.
 function FiltroCatalogo({ filtros, marcas, onChange }) {
   const cambiar = (parcial) => onChange({ ...filtros, ...parcial })
 

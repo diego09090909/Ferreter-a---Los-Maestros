@@ -1,6 +1,4 @@
-/* ===== Paleta del sitio =====
-Referencia: ferreterias chilenas (Construmart usa azul noche #041E42 + ambar #FFB81C
-   sobre blanco). Naranja reservado solo para los botones de accion. */
+
 :root {
     --azul-noche: #0b2545;
     --azul-noche-oscuro: #081b33;
@@ -11,7 +9,6 @@ Referencia: ferreterias chilenas (Construmart usa azul noche #041E42 + ambar #FF
     --gris-borde: #e3e3e0;
 }
 
-/* ===== Pagina del Carrito ===== */
 body {
     padding-top: 80px;
     background-color: var(--gris-fondo);
@@ -53,7 +50,6 @@ body {
     font-weight: 600;
 }
 
-/* ===== Tabla del Carrito ===== */
 .celda-imagen {
     width: 90px;
 }
@@ -78,7 +74,6 @@ body {
     font-weight: 700;
 }
 
-/* ===== Pie de pagina ===== */
 body {
     display: flex;
     flex-direction: column;
@@ -134,8 +129,7 @@ main {
     color: #8a99ab;
 }
 
-/* ===== Botones de accion y precios ===== */
-/* se sobrescribe btn-primary de Bootstrap para no tocar el JS del catalogo */
+
 .btn-primary {
     background-color: var(--naranja);
     border-color: var(--naranja);
@@ -153,7 +147,6 @@ main {
     border-color: var(--azul-noche);
 }
 
-/* los precios en azul noche: el naranja queda solo para lo que se hace clic */
 .text-primary {
     color: var(--azul-noche) !important;
 }
@@ -162,7 +155,6 @@ main {
     border: 1px solid var(--gris-borde);
 }
 
-/* ===== Iconos de redes sociales del pie ===== */
 .icono-red {
     display: inline-flex;
     align-items: center;
@@ -180,8 +172,6 @@ main {
     color: var(--azul-noche-oscuro);
 }
 
-/* ===== Responsivo (celular) ===== */
-/* el nombre de la sesión se corta con "…" para que la barra no se desborde */
 .nombre-sesion {
     display: inline-block;
     max-width: 90px;
@@ -201,7 +191,6 @@ main {
     width: 72px;
 }
 
-/* en celular la página completa hace scroll; el scroll interno queda solo para escritorio */
 @media (min-width: 992px) {
     .lista-productos {
         max-height: 70vh;
@@ -221,7 +210,7 @@ main {
     }
 }
 
-/* en celular la barra superior ocupa dos filas: se reserva más espacio arriba */
+
 @media (max-width: 575.98px) {
     body {
         padding-top: 125px;

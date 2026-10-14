@@ -27,7 +27,6 @@ function MiCuenta() {
   const [msgDatos, setMsgDatos] = useState(null)
   const [msgClave, setMsgClave] = useState(null)
 
-  // pedidos de este usuario, el más reciente primero (los antiguos solo traen el nombre)
   const [pedidos] = useState(() =>
     leer('pedidos', [])
       .filter((p) => (p.rut ? p.rut === usuario.rut : p.cliente === usuario.nombre))
@@ -78,7 +77,7 @@ function MiCuenta() {
   }
 
   const salir = () => {
-    // primero se navega y después se cierra la sesión: así la ruta protegida no manda al login
+  
     navigate('/')
     cerrarSesion()
   }
