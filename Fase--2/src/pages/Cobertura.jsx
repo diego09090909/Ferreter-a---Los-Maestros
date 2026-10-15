@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Row, Col, Card, Table, Badge, Ratio } from 'react-bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.min.css'
 import { ZONAS_DESPACHO } from '../data/productos'
-import './cobertura.css'
+import '../styles/cobertura.css'
 
 function Cobertura() {
     useEffect(() => {
