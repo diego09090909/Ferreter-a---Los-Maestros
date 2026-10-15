@@ -2,6 +2,7 @@ export const CANTIDAD_MINIMA = 1
 export const CANTIDAD_MAXIMA = 10
 
 export const OPCIONES_ENTREGA = ['Retiro en tienda', 'Despacho a domicilio']
+export const ENTREGA_DOMICILIO = 'Despacho a domicilio'
 export const OPCIONES_PAGO = ['Crédito', 'Cuenta Corriente']
 
 // El carrito guarda cada item con codigo "producto-" + id
@@ -13,7 +14,7 @@ export function idProductoDe(codigo) {
     return Number(codigo.replace('producto-', ''))
 }
 
-// Agrega un producto, o le suma una unidad si ya estaba en el carrito
+
 export function agregarItem(carrito, producto) {
     const codigo = codigoDe(producto)
     const yaEsta = carrito.some((item) => item.codigo === codigo)
@@ -61,9 +62,7 @@ export function hayCantidadInvalida(carrito) {
     return carrito.some((item) => !cantidadValida(item.cantidad))
 }
 
-// Arma lo que deja una compra: stock descontado, pedido y venta para el panel de administracion.
-// No toca localStorage: quien la llama decide que guardar.
-export function registrarCompra({ carrito, productos, usuario, entrega, pago, ahora = new Date() }) {
+export function registrarCompra({ carrito, productos, usuario, entrega, pago, cliente, direccion, ahora = new Date() }) {
     let categoria = ''
 
     const productosActualizados = productos.map((producto) => {
@@ -75,7 +74,6 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, ah
 
         categoria = categoria === '' || categoria === producto.categoria ? producto.categoria : 'Varios'
 
-        // primero se descuenta de la tienda y lo que falte sale de la bodega
         const desdeTienda = Math.min(producto.stockTienda, item.cantidad)
         const restante = item.cantidad - desdeTienda
 
@@ -93,10 +91,12 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, ah
         productos: productosActualizados,
         pedido: {
             id,
-            cliente: usuario ? usuario.nombre : 'Cliente Anónimo',
+            cliente: cliente ? cliente.nombre : usuario ? usuario.nombre : 'Cliente Anónimo',
+            email: cliente ? cliente.email : (usuario?.email ?? null),
             rut: usuario ? usuario.rut : null,
             tipoPago: pago,
             tipoEntrega: entrega,
+            direccionEntrega: direccion ?? null,
             total,
             estado: 'Pendiente',
         },
