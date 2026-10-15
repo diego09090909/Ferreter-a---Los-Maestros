@@ -4,8 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { guardarUsuarios, obtenerUsuarios } from '../services/usuarios'
 import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut, rutEsValido } from '../utils/rut'
-
-const PATRON_CORREO = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i
+import { PATRON_CORREO } from '../utils/validaciones'
 
 function Aviso({ mensaje }) {
   if (!mensaje) return null
