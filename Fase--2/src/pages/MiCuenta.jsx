@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { obtenerUsuarios } from '../services/usuarios'
+import { DIRECCION_VACIA, errorDireccion, limpiarDireccion } from '../utils/direccion'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 import { correoValido, nombreValido, passwordValida, PASSWORD_MAXIMA, PASSWORD_MINIMA } from '../utils/validaciones'
@@ -26,6 +28,8 @@ function MiCuenta() {
   const [claves, setClaves] = useState({ actual: '', nueva: '', repetir: '' })
   const [msgDatos, setMsgDatos] = useState(null)
   const [msgClave, setMsgClave] = useState(null)
+  const [direccion, setDireccion] = useState(() => ({ ...DIRECCION_VACIA, ...usuario.direccion }))
+  const [msgDireccion, setMsgDireccion] = useState(null)
 
   const [pedidos] = useState(() =>
     leer('pedidos', [])
@@ -57,6 +61,20 @@ function MiCuenta() {
 
     actualizarUsuario({ nombre, email })
     setMsgDatos({ tipo: 'success', texto: 'Tus datos se actualizaron correctamente' })
+  }
+
+  const guardarDireccion = (evento) => {
+    evento.preventDefault()
+    const error = errorDireccion(direccion)
+    if (error) {
+      setMsgDireccion({ tipo: 'danger', texto: error })
+      return
+    }
+
+    const limpia = limpiarDireccion(direccion)
+    actualizarUsuario({ direccion: limpia })
+    setDireccion(limpia)
+    setMsgDireccion({ tipo: 'success', texto: 'Tu dirección de entrega se actualizó correctamente' })
   }
 
   const cambiarClave = (evento) => {
@@ -99,7 +117,7 @@ function MiCuenta() {
       </div>
 
       <div className="row g-4">
-        {/* Resumen */}
+       
         <div className="col-lg-4">
           <div className="card h-100 shadow-sm">
             <div className="card-body text-center p-4">
@@ -114,7 +132,7 @@ function MiCuenta() {
           </div>
         </div>
 
-        {/* Editar datos */}
+      
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
@@ -153,7 +171,7 @@ function MiCuenta() {
           </div>
         </div>
 
-        {/* Cambiar contraseña */}
+      
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
@@ -202,6 +220,25 @@ function MiCuenta() {
           </div>
         </div>
       </div>
+
+   
+      {!esAdmin && (
+        <section className="card shadow-sm mt-4">
+          <div className="card-body p-4">
+            <h2 className="h5 fw-bold mb-1">Mi dirección de entrega</h2>
+            <p className="text-secondary small mb-3">
+              Se usa para completar tus compras con despacho a domicilio. Puedes cambiarla cuando quieras.
+            </p>
+            <form onSubmit={guardarDireccion} noValidate>
+              <FormularioDireccion prefijo="cuenta-dir" valor={direccion} onChange={setDireccion} />
+              <div className="d-grid d-md-flex justify-content-md-end">
+                <button type="submit" className="btn btn-primary">Guardar dirección</button>
+              </div>
+              <Aviso mensaje={msgDireccion} />
+            </form>
+          </div>
+        </section>
+      )}
 
       {/* Pedidos */}
       <section className="card shadow-sm mt-4">

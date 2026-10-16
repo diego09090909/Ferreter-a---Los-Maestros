@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { guardarUsuarios, obtenerUsuarios } from '../services/usuarios'
+import { DIRECCION_VACIA, errorDireccion, limpiarDireccion } from '../utils/direccion'
 import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut, rutEsValido } from '../utils/rut'
 import { PATRON_CORREO } from '../utils/validaciones'
 
@@ -24,6 +26,7 @@ function Login() {
 
   const [ingreso, setIngreso] = useState({ usuario: '', password: '' })
   const [registro, setRegistro] = useState({ nombre: '', rut: '', email: '', password: '' })
+  const [direccionRegistro, setDireccionRegistro] = useState(DIRECCION_VACIA)
   const [mensajeIngreso, setMensajeIngreso] = useState(null)
   const [mensajeRegistro, setMensajeRegistro] = useState(null)
 
@@ -85,6 +88,9 @@ function Login() {
     if (!PATRON_CORREO.test(correo)) return error('El correo no tiene un formato válido')
     if (password.length < 6 || password.length > 18) return error('La contraseña debe tener entre 6 y 18 caracteres')
 
+    const errorDeDireccion = errorDireccion(direccionRegistro)
+    if (errorDeDireccion) return error(errorDeDireccion)
+
     const usuarios = obtenerUsuarios()
     const repetido = usuarios.some(
       (u) =>
@@ -93,13 +99,21 @@ function Login() {
     )
     if (repetido) return error('Ya existe una cuenta con ese RUT o ese correo')
 
-    const nuevoUsuario = { rut: formatearRut(rut), nombre, email: correo, password, rol: 'Cliente' }
+    const nuevoUsuario = {
+      rut: formatearRut(rut),
+      nombre,
+      email: correo,
+      password,
+      rol: 'Cliente',
+      direccion: limpiarDireccion(direccionRegistro),
+    }
     guardarUsuarios([...usuarios, nuevoUsuario])
 
-   
+
     iniciarSesion(nuevoUsuario)
     setMensajeRegistro({ texto: `Cuenta creada correctamente. Bienvenido ${nombre}`, tipo: 'success' })
     setRegistro({ nombre: '', rut: '', email: '', password: '' })
+    setDireccionRegistro(DIRECCION_VACIA)
     irA('/')
   }
 
@@ -214,6 +228,15 @@ function Login() {
                     onChange={(e) => setRegistro({ ...registro, password: e.target.value })}
                   />
                 </div>
+
+                <h3 className="h6 fw-bold border-top pt-3 mb-1">Dirección de entrega</h3>
+                <p className="text-secondary small mb-3">La usaremos para los despachos a domicilio.</p>
+
+                <FormularioDireccion
+                  prefijo="registro-dir"
+                  valor={direccionRegistro}
+                  onChange={setDireccionRegistro}
+                />
 
                 <div className="d-grid">
                   <button type="submit" className="btn btn-success">Crear Cuenta</button>
