@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { obtenerProductos } from '../data/almacen'
 import { useTitulo } from '../hooks/useTitulo'
 import { obtenerUsuarios } from '../services/usuarios'
@@ -25,6 +25,16 @@ function partesFecha(fecha) {
 }
 
 function Tabla({ titulo, columnas, acciones, filtros, children }) {
+  const tablaRef = useRef(null)
+
+  useEffect(() => {
+    tablaRef.current.querySelectorAll('tbody tr').forEach((fila) => {
+      fila.querySelectorAll('td').forEach((celda, i) => {
+        if (celda.colSpan === 1) celda.setAttribute('data-label', columnas[i])
+      })
+    })
+  })
+
   return (
     <section className="bg-white p-3 rounded border shadow-sm mb-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -33,7 +43,7 @@ function Tabla({ titulo, columnas, acciones, filtros, children }) {
       </div>
       {filtros}
       <div className="table-responsive">
-        <table className="table table-striped table-hover align-middle small">
+        <table ref={tablaRef} className="table table-striped table-hover align-middle small tabla-apilable">
           <thead className="table-dark">
             <tr>{columnas.map((c) => <th key={c}>{c}</th>)}</tr>
           </thead>

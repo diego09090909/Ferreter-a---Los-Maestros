@@ -22,8 +22,18 @@ function dinero(valor) {
     return '$' + valor.toLocaleString('es-CL')
 }
 
-// Al cambiar de usuario o cerrar sesión la página se reinicia, para no dejar
-// a la vista los datos de otra persona.
+
+function rutaImagen(item, catalogo) {
+    const producto = catalogo.find((p) => `producto-${p.id}` === item.codigo)
+    const origen = item.imagen ?? producto?.imagen
+
+    if (!origen) return null
+    if (/^(https?:|data:|\/)/.test(origen)) return origen
+
+    return '/imagenes/' + origen.replace(/^(\.\/)?(public\/)?(imagenes\/)?/, '')
+}
+
+
 export default function Carrito() {
     const { usuario } = useAuth()
     return <PaginaCarrito key={usuario ? usuario.rut : 'sin-sesion'} />
@@ -38,6 +48,7 @@ function PaginaCarrito() {
     const [pago, setPago] = useState('')
     const [mensaje, setMensaje] = useState(null)
 
+    const catalogo = obtenerProductos()
 
     const [datosCliente, setDatosCliente] = useState(() => ({
         nombre: usuario?.nombre ?? '',
@@ -53,13 +64,13 @@ function PaginaCarrito() {
                 tipo: 'danger',
                 texto: 'Debes iniciar sesión para poder finalizar tu compra. Redirigiendo al login...'
             })
-            
-        setTimeout(() => {
-            navigate('/login')
-        }, 2500)
-        return
+
+            setTimeout(() => {
+                navigate('/login')
+            }, 2500)
+            return
         }
-        
+
         if (carrito.length === 0) {
             return setMensaje({ tipo: 'danger', texto: 'El carrito está vacío.' })
         }
@@ -134,9 +145,10 @@ function PaginaCarrito() {
             <h1 className="h3 mb-4">Carrito de compras</h1>
 
             <div className="table-responsive">
-                <Table striped align="middle">
+                <Table striped align="middle" className="tabla-apilable">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Producto</th>
                             <th>Precio</th>
                             <th style={{ width: '120px' }}>Cantidad</th>
@@ -147,39 +159,49 @@ function PaginaCarrito() {
                     <tbody>
                         {carrito.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="text-center text-muted">
+                                <td colSpan={6} className="text-center text-muted">
                                     No hay productos en el carrito.
                                 </td>
                             </tr>
                         )}
 
-                        {carrito.map((item) => (
-                            <tr key={item.codigo}>
-                                <td>{item.nombre}</td>
-                                <td>{dinero(item.precio)}</td>
-                                <td>
-                                    <Form.Control
-                                        type="number"
-                                        min={CANTIDAD_MINIMA}
-                                        max={CANTIDAD_MAXIMA}
-                                        value={item.cantidad}
-                                        onChange={(e) =>
-                                            cambiarCantidad(item.codigo, Number(e.target.value))
-                                        }
-                                    />
-                                </td>
-                                <td>{dinero(item.precio * item.cantidad)}</td>
-                                <td>
-                                    <Button
-                                        variant="outline-danger"
-                                        size="sm"
-                                        onClick={() => eliminar(item.codigo)}
-                                    >
-                                        Quitar
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
+                        {carrito.map((item) => {
+                            const imagen = rutaImagen(item, catalogo)
+
+                            return (
+                                <tr key={item.codigo}>
+                                    <td className="celda-imagen">
+                                        {imagen && (
+                                            <img src={imagen} alt={item.nombre} className="img-producto" />
+                                        )}
+                                    </td>
+                                    <td data-label="Producto">{item.nombre}</td>
+                                    <td data-label="Precio">{dinero(item.precio)}</td>
+                                    <td data-label="Cantidad">
+                                        <Form.Control
+                                            className="input-cantidad"
+                                            type="number"
+                                            min={CANTIDAD_MINIMA}
+                                            max={CANTIDAD_MAXIMA}
+                                            value={item.cantidad}
+                                            onChange={(e) =>
+                                                cambiarCantidad(item.codigo, Number(e.target.value))
+                                            }
+                                        />
+                                    </td>
+                                    <td data-label="Subtotal">{dinero(item.precio * item.cantidad)}</td>
+                                    <td>
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            onClick={() => eliminar(item.codigo)}
+                                        >
+                                            Quitar
+                                        </Button>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </Table>
             </div>
