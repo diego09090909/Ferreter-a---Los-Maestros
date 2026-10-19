@@ -81,7 +81,7 @@ function Navbar() {
             <span>Ferretería Los Maestros</span>
           </Link>
 
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2 ms-auto">
             {usuario ? (
               <div className="small text-muted d-flex align-items-center gap-1 me-1 me-sm-2">
                 <span className="d-none d-sm-inline">Bienvenido</span>

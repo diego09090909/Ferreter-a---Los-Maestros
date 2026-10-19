@@ -234,3 +234,60 @@ main {
         padding-right: 0.35rem;
     }
 }
+
+
+@media (max-width: 767.98px) {
+    .tabla-apilable thead {
+        display: none;
+    }
+
+    .tabla-apilable,
+    .tabla-apilable tbody,
+    .tabla-apilable tr,
+    .tabla-apilable td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabla-apilable tr {
+        margin-bottom: 0.75rem;
+        padding: 0.4rem 0.25rem;
+        border: 1px solid var(--gris-borde);
+        border-radius: 0.5rem;
+        background-color: #ffffff;
+    }
+
+    .tabla-apilable.table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.35rem 0.6rem;
+        border: none;
+        text-align: right;
+        background-color: transparent;
+        box-shadow: none;
+    }
+
+    .tabla-apilable.table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--azul-noche);
+    }
+
+    .tabla-apilable.table td:not([data-label]) {
+        justify-content: center;
+    }
+
+    .tabla-apilable.table td:not([data-label])::before {
+        display: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .tabla-apilable .input-cantidad {
+        margin: 0;
+        width: 90px;
+    }
+}
