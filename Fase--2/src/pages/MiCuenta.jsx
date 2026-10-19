@@ -250,7 +250,7 @@ function MiCuenta() {
             </p>
           ) : (
             <div className="table-responsive">
-              <table className="table table-striped align-middle small mb-0">
+              <table className="table table-striped align-middle small mb-0 tabla-apilable">
                 <thead className="table-dark">
                   <tr>
                     <th>N° Pedido</th>
@@ -263,11 +263,11 @@ function MiCuenta() {
                 <tbody>
                   {pedidos.map((p, i) => (
                     <tr key={`${p.id}-${i}`}>
-                      <td>#PED-{p.id}</td>
-                      <td>{p.tipoEntrega}</td>
-                      <td>{p.tipoPago}</td>
-                      <td className="text-end">{formatearPrecio(p.total)}</td>
-                      <td><span className="badge bg-info text-dark">{p.estado}</span></td>
+                      <td data-label="N° Pedido">#PED-{p.id}</td>
+                      <td data-label="Entrega">{p.tipoEntrega}</td>
+                      <td data-label="Pago">{p.tipoPago}</td>
+                      <td data-label="Total" className="text-end">{formatearPrecio(p.total)}</td>
+                      <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
                     </tr>
                   ))}
                 </tbody>
