@@ -1,3 +1,5 @@
+package com.ferreteria.ms_usuarios.model;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
