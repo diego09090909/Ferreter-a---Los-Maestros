@@ -37,7 +37,7 @@ public class Usuario {
     private String password;
 
     @Column(nullable = false)
-    private String Rol;
+    private Rol rol;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Direccion> direcciones = new ArrayList<>();
