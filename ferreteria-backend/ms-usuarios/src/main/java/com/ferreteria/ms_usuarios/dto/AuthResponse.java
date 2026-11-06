@@ -1,4 +1,4 @@
-package main.java.com.ferreteria.ms_usuarios.dto;
+package com.ferreteria.ms_usuarios.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

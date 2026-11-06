@@ -1,4 +1,4 @@
-package main.java.com.ferreteria.ms_usuarios.dto;
+package com.ferreteria.ms_usuarios.dto;
 
 import com.ferreteria.ms_usuarios.model.Direccion;
 import com.ferreteria.ms_usuarios.model.Usuario;
