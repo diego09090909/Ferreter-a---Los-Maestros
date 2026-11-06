@@ -1,4 +1,4 @@
-package main.java.com.ferreteria.ms_usuarios.dto;
+package com.ferreteria.ms_usuarios.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package main.java.com.ferreteria.ms_usuarios.repository;
+package com.ferreteria.ms_usuarios.repository;
 
 import com.ferreteria.ms_usuarios.model.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
