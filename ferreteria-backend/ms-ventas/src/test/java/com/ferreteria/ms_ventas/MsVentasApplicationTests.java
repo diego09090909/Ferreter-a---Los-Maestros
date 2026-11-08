@@ -1,10 +1,10 @@
-package com.ferreteria.ms_pedidos_ventas;
+package com.ferreteria.ms_ventas;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MsPedidosVentasApplicationTests {
+class MsVentasApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -1,13 +1,13 @@
-package com.ferreteria.ms_pedidos_ventas;
+package com.ferreteria.ms_ventas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MsPedidosVentasApplication {
+public class MsVentasApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MsPedidosVentasApplication.class, args);
+		SpringApplication.run(MsVentasApplication.class, args);
 	}
 
 }
