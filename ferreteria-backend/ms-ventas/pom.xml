@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ferreteria</groupId>
-	<artifactId>ms-pedidos_ventas</artifactId>
+	<artifactId>ms-ventas</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
