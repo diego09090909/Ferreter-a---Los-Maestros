@@ -58,6 +58,7 @@ public class UsuarioService {
             dir.setComuna(d.getComuna());
             dir.setCiudad(d.getCiudad());
             dir.setRegion(d.getRegion());
+            dir.setIndicaciones(d.getIndicaciones());
             usuario.addDireccion(dir);
 
         }
@@ -89,23 +90,22 @@ public class UsuarioService {
     public void actualizarContrasena(Long usuarioId, CambiarPasswordRequest req) {
         String passwordOld = req.getPasswordActual();
         String passwordNew = req.getPasswordNueva();
-        
-         Usuario usuario = usuarioRepository.findById(usuarioId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        
         if (!passwordEncoder.matches(passwordOld, usuario.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "La contraseña actual es incorrecta");
-           
+
         }
 
         if (passwordOld.equals(passwordNew)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La nueva contraseña no puede ser igual a la actual");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La nueva contraseña no puede ser igual a la actual");
         }
-        
+
         usuario.setPassword(passwordEncoder.encode(passwordNew));
         usuarioRepository.save(usuario);
     }
-        
+
 }

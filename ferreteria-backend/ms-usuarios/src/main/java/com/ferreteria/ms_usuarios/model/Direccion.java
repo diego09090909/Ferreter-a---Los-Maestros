@@ -40,10 +40,13 @@ public class Direccion {
 
     private String region;
 
+    private String indicaciones;
+
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Usuario usuario;
+
 }

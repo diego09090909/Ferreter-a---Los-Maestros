@@ -26,4 +26,6 @@ public class DireccionRequest {
     private String ciudad;
 
     private String region;
+
+    private String indicaciones;
 }
