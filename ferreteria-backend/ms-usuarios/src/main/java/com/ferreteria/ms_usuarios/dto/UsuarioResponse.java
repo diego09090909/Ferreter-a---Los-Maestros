@@ -18,15 +18,5 @@ public class UsuarioResponse {
     private String rut;
     private String email;
     private String rol;
-    private List<Direccion> direcciones;
-
-    public static UsuarioResponse desde(Usuario usuario) {
-        return new UsuarioResponse(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getRut(),
-                usuario.getEmail(),
-                usuario.getRol().getNombre(),
-                new ArrayList<>(usuario.getDirecciones()));
-    }
+    private List<DireccionResponse> direcciones;
 }
