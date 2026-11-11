@@ -9,9 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
 
-    // Spring genera el SQL a partir del nombre del método (query methods).
-    // @EntityGraph trae los detalles en la misma consulta (evita el problema N+1).
-
     @EntityGraph(attributePaths = "detalles")
     List<Venta> findByUsuarioIdOrderByFechaDesc(Long usuarioId);
 
