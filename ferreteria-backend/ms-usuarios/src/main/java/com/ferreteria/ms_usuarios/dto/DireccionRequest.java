@@ -22,10 +22,14 @@ public class DireccionRequest {
     @NotBlank(message = "Debe elegir una comuna")
     private String comuna;
 
-    @NotBlank(message = "La ciudad es obligatoria")
-    private String ciudad;
 
     private String region;
 
     private String indicaciones;
+
+    private String alias;
+    
+    private String departamento;
+
+    private boolean predeterminada;
 }

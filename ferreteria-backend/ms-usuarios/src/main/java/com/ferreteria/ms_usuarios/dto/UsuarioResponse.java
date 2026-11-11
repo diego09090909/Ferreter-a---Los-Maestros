@@ -1,8 +1,6 @@
 package com.ferreteria.ms_usuarios.dto;
 
-import com.ferreteria.ms_usuarios.model.Direccion;
-import com.ferreteria.ms_usuarios.model.Usuario;
-import java.util.ArrayList;
+
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;

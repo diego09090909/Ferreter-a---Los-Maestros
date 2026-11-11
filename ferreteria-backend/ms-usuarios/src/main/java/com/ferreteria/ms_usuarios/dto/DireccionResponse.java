@@ -11,6 +11,10 @@ public class DireccionResponse {
     private String calle;
     private String numero;
     private String comuna;
-    private String ciudad;
     private String region;
+    private String alias;
+    private String departamento;
+    private String indicaciones;
+    private boolean predeterminada;
+    
 }

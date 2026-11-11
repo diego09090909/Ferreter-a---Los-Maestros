@@ -3,6 +3,7 @@ package com.ferreteria.ms_usuarios.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,27 +27,33 @@ public class Direccion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50)
+    private String alias;
+
     @Column(nullable = false)
     private String calle;
 
     @Column(nullable = false)
     private String numero;
 
+    @Column(length = 20)
+    private String departamento;
+
     @Column(nullable = false)
     private String comuna;
 
-    @Column(nullable = false)
-    private String ciudad;
-
     private String region;
 
+    @Column(length = 300)
     private String indicaciones;
 
-    @ManyToOne
+    @Column(nullable = false)
+    private boolean predeterminada;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Usuario usuario;
-
 }

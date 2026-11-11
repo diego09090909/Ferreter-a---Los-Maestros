@@ -1,40 +1,39 @@
 package com.ferreteria.ms_usuarios.service;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.ferreteria.ms_usuarios.dto.CambiarDireccionRequest;
-import com.ferreteria.ms_usuarios.dto.CambiarPasswordRequest;
-import com.ferreteria.ms_usuarios.model.Usuario;
-import com.ferreteria.ms_usuarios.repository.UsuarioRepository;
-import jakarta.validation.constraints.Size;
+import com.ferreteria.ms_usuarios.dto.DireccionRequest;
+import com.ferreteria.ms_usuarios.dto.DireccionResponse;
+import com.ferreteria.ms_usuarios.mapper.DireccionMapper;
+import com.ferreteria.ms_usuarios.model.Direccion;
+import com.ferreteria.ms_usuarios.repository.DireccionRepository;
 
+import lombok.RequiredArgsConstructor;
+@Service
+@RequiredArgsConstructor
 public class DireccionService {
 
+    private final DireccionRepository direccionRepository;
+    private final DireccionMapper direccionMapper;
+
     @Transactional
-    public void actualizarDireccion(Long usuarioId, CambiarDireccionRequest req) {
+    public DireccionResponse actualizarDireccion(Long usuarioId, Long direccionId, DireccionRequest req) {
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        Direccion direccion = direccionRepository.findByIdAndUsuarioId(direccionId, usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dirección no encontrada"));
 
-        String calleActual = req.getCalleActual();
-        String calleNueva = req.getCalleNueva();
+        direccion.setCalle(req.getCalle());
+        direccion.setNumero(req.getNumero());
+        direccion.setComuna(req.getComuna());
+        direccion.setCiudad(req.getCiudad());
+        direccion.setRegion(req.getRegion());
 
-        String numeroActual = req.getNumeroActual();
-        String numeroNuevo = req.getNumeroNuevo();
-
-        String comunaActual = req.getComunaActual();
-        String comunaNueva = req.getComunaNueva();
-
-        String ciudadActual = req.getCiudadActual();
-        String ciudadNueva = req.getCiudadNueva();
-
-        String regionActual = req.getRegionActual();
-        String regionNueva = req.getRegionNueva();
-
-        String indicacionesActuales = req.getIndicacionesActuales();
-        String indicacionesNuevas = req.getIndicacionesNuevas();
-
+        return direccionMapper.aResponse(direccionRepository.save(direccion));
     }
 
+
+    
 }

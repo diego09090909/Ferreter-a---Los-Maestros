@@ -9,7 +9,7 @@ public class DireccionMapper {
 
     public DireccionResponse aResponse(Direccion d) {
         return new DireccionResponse(d.getId(), d.getCalle(), d.getNumero(),
-                d.getComuna(), d.getCiudad(), d.getRegion());
+                d.getComuna(), d.getRegion(), d.getAlias(), d.getDepartamento(), d.getIndicaciones(), d.isPredeterminada());
     }
 
     public Direccion aEntidad(DireccionRequest r) {
@@ -17,8 +17,11 @@ public class DireccionMapper {
         d.setCalle(r.getCalle());
         d.setNumero(r.getNumero());
         d.setComuna(r.getComuna());
-        d.setCiudad(r.getCiudad());
         d.setRegion(r.getRegion());
+        d.setAlias(r.getAlias());
+        d.setDepartamento(r.getDepartamento());
+        d.setIndicaciones(r.getIndicaciones());
+        d.setPredeterminada(r.isPredeterminada());
         return d;
     }
 }
