@@ -21,7 +21,16 @@ public class DireccionMapper {
         d.setAlias(r.getAlias());
         d.setDepartamento(r.getDepartamento());
         d.setIndicaciones(r.getIndicaciones());
-        d.setPredeterminada(r.isPredeterminada());
         return d;
+    }
+
+     public void actualizar(Direccion d, DireccionRequest r) {
+        d.setAlias(r.getAlias() == null || r.getAlias().isBlank() ? "Principal" : r.getAlias().trim());
+        d.setCalle(r.getCalle().trim());
+        d.setNumero(r.getNumero().trim());
+        d.setDepartamento(r.getDepartamento());
+        d.setComuna(r.getComuna());
+        d.setRegion(r.getRegion() == null || r.getRegion().isBlank() ? "Región de Coquimbo" : r.getRegion());
+        d.setIndicaciones(r.getIndicaciones());
     }
 }

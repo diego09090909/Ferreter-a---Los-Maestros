@@ -12,4 +12,6 @@ public interface DireccionRepository extends JpaRepository<Direccion, Long> {
     List<Direccion> findByUsuarioId(Long usuarioId);
 
     Optional<Direccion> findByIdAndUsuarioId(Long id, Long usuarioId);
+
+       long countByUsuarioId(Long usuarioId);
 }
