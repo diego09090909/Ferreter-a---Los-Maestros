@@ -3,6 +3,9 @@ import { tieneCobertura } from './despacho'
 
 export const CALLE_MINIMA = 3
 
+const CALLE_TERMINA_EN_NUMERO = /\d+\s*$/
+const PATRON_NUMERO = /^(\d{1,6}\s?[a-zA-Z]?|s\/n)$/i
+
 export const DIRECCION_VACIA = {
     calle: '',
     numero: '',
@@ -22,8 +25,11 @@ export function erroresDireccion(direccion) {
 
     if (calle === '') errores.calle = 'Ingresa la calle'
     else if (calle.length < CALLE_MINIMA) errores.calle = `La calle debe tener al menos ${CALLE_MINIMA} caracteres`
+    else if (CALLE_TERMINA_EN_NUMERO.test(calle)) errores.calle = 'Escribe solo el nombre de la calle; el número va en su propio campo'
 
-    if (direccion.numero.trim() === '') errores.numero = 'Ingresa el número'
+    const numero = direccion.numero.trim()
+    if (numero === '') errores.numero = 'Ingresa el número'
+    else if (!PATRON_NUMERO.test(numero)) errores.numero = 'Ingresa solo el número (ej: 867, 1450B o S/N)'
 
     if (!direccion.comuna) errores.comuna = 'Elige una comuna'
     else if (!tieneCobertura(direccion.comuna)) errores.comuna = 'No tenemos despacho a esa comuna'
