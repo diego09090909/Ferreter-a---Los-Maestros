@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import Cobertura from './Cobertura'
-import { ZONAS_DESPACHO } from '../data/productos'
+import { ZONAS_DESPACHO } from '../data/despacho'
 
 describe('Cobertura', () => {
     it('muestra una fila por cada zona de despacho', () => {

@@ -26,12 +26,3 @@ export const PRODUCTOS_INICIALES = [
   { id: 15, nombre: 'Pintura Anticorrosiva 1Gal', descripcion: 'Protección anticorrosiva de secado rápido para estructuras metálicas.', precio: 21990, categoria: 'Pinturas', marca: 'Kolor', stockTienda: 9, stockBodega: 18, imagen: '/imagenes/pintura-anticorrosiva-kolor.png' },
   { id: 16, nombre: 'Foco LED Proyector 50W', descripcion: 'Foco exterior IP65 luz fría de bajo consumo energético.', precio: 14990, categoria: 'Electricidad', marca: 'Sipetrol', stockTienda: 22, stockBodega: 40, imagen: '/imagenes/focoled-50w.png' },
 ]
-
-export const ZONAS_DESPACHO = [
-  { comuna: 'La Serena', plazo: '24 horas', costo: '$3.990', estado: 'Con cobertura', color: 'success' },
-  { comuna: 'Coquimbo', plazo: '24 horas', costo: '$4.490', estado: 'Con cobertura', color: 'success' },
-  { comuna: 'Andacollo', plazo: '48 horas', costo: '$7.990', estado: 'Con cobertura', color: 'success' },
-  { comuna: 'Vicuña', plazo: '48 horas', costo: '$8.990', estado: 'Con cobertura', color: 'success' },
-  { comuna: 'Ovalle', plazo: '72 horas', costo: '$11.990', estado: 'Días acordados', color: 'warning' },
-  { comuna: 'La Higuera', plazo: '-', costo: '-', estado: 'Sin cobertura', color: 'secondary' },
-]

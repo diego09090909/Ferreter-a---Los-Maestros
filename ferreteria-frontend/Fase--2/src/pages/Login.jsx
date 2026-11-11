@@ -1,21 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import Aviso from '../components/Aviso'
+import ErrorCampo from '../components/ErrorCampo'
 import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { guardarUsuarios, obtenerUsuarios } from '../services/usuarios'
-import { DIRECCION_VACIA, errorDireccion, limpiarDireccion } from '../utils/direccion'
-import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut, rutEsValido } from '../utils/rut'
-import { PATRON_CORREO } from '../utils/validaciones'
+import { DIRECCION_VACIA, erroresDireccion, limpiarDireccion } from '../utils/direccion'
+import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut } from '../utils/rut'
+import { claseCampo, enfocarPrimerError, erroresIngreso, erroresRegistro, hayErrores } from '../utils/validaciones'
 
-function Aviso({ mensaje }) {
-  if (!mensaje) return null
-  return (
-    <div className={`alert alert-${mensaje.tipo} mt-3`} role="alert">
-      {mensaje.texto}
-    </div>
-  )
-}
+const REVISAR_CAMPOS = { texto: 'Revisa los campos marcados en rojo', tipo: 'danger' }
 
 function Login() {
   useTitulo('Iniciar Sesión / Registro')
@@ -29,6 +24,11 @@ function Login() {
   const [direccionRegistro, setDireccionRegistro] = useState(DIRECCION_VACIA)
   const [mensajeIngreso, setMensajeIngreso] = useState(null)
   const [mensajeRegistro, setMensajeRegistro] = useState(null)
+  const [intentoIngreso, setIntentoIngreso] = useState(false)
+  const [intentoRegistro, setIntentoRegistro] = useState(false)
+  const errIngreso = intentoIngreso ? erroresIngreso(ingreso) : {}
+  const errRegistro = intentoRegistro ? erroresRegistro(registro) : {}
+  const errDireccion = intentoRegistro ? erroresDireccion(direccionRegistro) : {}
 
 
   const temporizador = useRef(null)
@@ -46,8 +46,10 @@ function Login() {
     evento.preventDefault()
     const usuarioEscrito = ingreso.usuario.trim()
 
-    if (usuarioEscrito === '' || ingreso.password === '') {
-      setMensajeIngreso({ texto: 'Debe completar su RUT o correo y su contraseña', tipo: 'danger' })
+    setIntentoIngreso(true)
+    if (hayErrores(erroresIngreso(ingreso))) {
+      setMensajeIngreso(REVISAR_CAMPOS)
+      enfocarPrimerError(evento.currentTarget)
       return
     }
 
@@ -58,13 +60,8 @@ function Login() {
         limpiarRut(u.rut ?? '') === limpiarRut(usuarioEscrito),
     )
 
-    if (!encontrado) {
-      setMensajeIngreso({ texto: 'No existe una cuenta con ese RUT o correo', tipo: 'danger' })
-      return
-    }
-
-    if (encontrado.password !== ingreso.password) {
-      setMensajeIngreso({ texto: 'La contraseña no es correcta', tipo: 'danger' })
+    if (!encontrado || encontrado.password !== ingreso.password) {
+      setMensajeIngreso({ texto: 'Usuario o contraseña incorrectos', tipo: 'danger' })
       return
     }
 
@@ -82,22 +79,20 @@ function Login() {
 
     const error = (texto) => setMensajeRegistro({ texto, tipo: 'danger' })
 
-    if (!nombre || !rut || !correo || !password) return error('Debe completar todos los campos')
-    if (nombre.length < 3) return error('El nombre debe tener al menos 3 caracteres')
-    if (!rutEsValido(rut)) return error('El RUT no es válido, revise el dígito verificador')
-    if (!PATRON_CORREO.test(correo)) return error('El correo no tiene un formato válido')
-    if (password.length < 6 || password.length > 18) return error('La contraseña debe tener entre 6 y 18 caracteres')
-
-    const errorDeDireccion = errorDireccion(direccionRegistro)
-    if (errorDeDireccion) return error(errorDeDireccion)
+    setIntentoRegistro(true)
+    if (hayErrores({ ...erroresRegistro(registro), ...erroresDireccion(direccionRegistro) })) {
+      setMensajeRegistro(REVISAR_CAMPOS)
+      enfocarPrimerError(evento.currentTarget)
+      return
+    }
 
     const usuarios = obtenerUsuarios()
-    const repetido = usuarios.some(
-      (u) =>
-        limpiarRut(u.rut ?? '') === limpiarRut(rut) ||
-        (u.email ?? '').toLowerCase() === correo.toLowerCase(),
-    )
-    if (repetido) return error('Ya existe una cuenta con ese RUT o ese correo')
+    if (usuarios.some((u) => limpiarRut(u.rut ?? '') === limpiarRut(rut))) {
+      return error('Ya existe una cuenta con ese RUT')
+    }
+    if (usuarios.some((u) => (u.email ?? '').toLowerCase() === correo.toLowerCase())) {
+      return error('Ya existe una cuenta con ese correo')
+    }
 
     const nuevoUsuario = {
       rut: formatearRut(rut),
@@ -114,6 +109,7 @@ function Login() {
     setMensajeRegistro({ texto: `Cuenta creada correctamente. Bienvenido ${nombre}`, tipo: 'success' })
     setRegistro({ nombre: '', rut: '', email: '', password: '' })
     setDireccionRegistro(DIRECCION_VACIA)
+    setIntentoRegistro(false)
     irA('/')
   }
 
@@ -128,38 +124,47 @@ function Login() {
       )}
 
       <div className="row g-4 justify-content-center">
-     
+    
         <div className="col-lg-5 col-md-6">
           <div className="card h-100 shadow-sm tarjeta-cuenta">
             <div className="card-body p-4">
               <h2 className="h5 fw-bold text-center mb-1">Ingresa</h2>
-              <p className="text-secondary small text-center mb-4">Usa tu RUT o tu correo registrado.</p>
+              <p className="text-secondary small text-center mb-1">Usa tu RUT o tu correo registrado.</p>
+              <p className="text-secondary small text-center mb-4 nota-obligatorios">Campos obligatorios</p>
 
               <form onSubmit={entrar} noValidate>
                 <div className="mb-3">
-                  <label htmlFor="ingreso-usuario" className="form-label">RUT o correo</label>
+                  <label htmlFor="ingreso-usuario" className="form-label obligatorio">RUT o correo</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={claseCampo('form-control', errIngreso.usuario)}
                     id="ingreso-usuario"
                     placeholder="11.111.111-1 o correo@ejemplo.cl"
                     autoComplete="username"
+                    required
+                    aria-invalid={Boolean(errIngreso.usuario)}
+                    aria-describedby="ingreso-usuario-error"
                     value={ingreso.usuario}
                     onChange={(e) => cambiarUsuarioIngreso(e.target.value)}
                   />
+                  <ErrorCampo id="ingreso-usuario-error" mensaje={errIngreso.usuario} />
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="ingreso-password" className="form-label">Contraseña</label>
+                  <label htmlFor="ingreso-password" className="form-label obligatorio">Contraseña</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={claseCampo('form-control', errIngreso.password)}
                     id="ingreso-password"
                     placeholder="Tu contraseña"
                     autoComplete="current-password"
+                    required
+                    aria-invalid={Boolean(errIngreso.password)}
+                    aria-describedby="ingreso-password-error"
                     value={ingreso.password}
                     onChange={(e) => setIngreso({ ...ingreso, password: e.target.value })}
                   />
+                  <ErrorCampo id="ingreso-password-error" mensaje={errIngreso.password} />
                 </div>
 
                 <div className="d-grid">
@@ -177,56 +182,73 @@ function Login() {
           <div className="card h-100 shadow-sm tarjeta-cuenta">
             <div className="card-body p-4">
               <h2 className="h5 fw-bold text-center mb-1">Regístrate</h2>
-              <p className="text-secondary small text-center mb-4">Crea tu cuenta para comprar en línea.</p>
+              <p className="text-secondary small text-center mb-1">Crea tu cuenta para comprar en línea.</p>
+              <p className="text-secondary small text-center mb-4 nota-obligatorios">Campos obligatorios</p>
 
               <form onSubmit={registrarse} noValidate>
                 <div className="mb-3">
-                  <label htmlFor="registro-nombre" className="form-label">Nombre completo</label>
+                  <label htmlFor="registro-nombre" className="form-label obligatorio">Nombre completo</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={claseCampo('form-control', errRegistro.nombre)}
                     id="registro-nombre"
+                    required
+                    aria-invalid={Boolean(errRegistro.nombre)}
+                    aria-describedby="registro-nombre-error"
                     placeholder="Nombre y apellido"
                     value={registro.nombre}
                     onChange={(e) => setRegistro({ ...registro, nombre: e.target.value })}
                   />
+                  <ErrorCampo id="registro-nombre-error" mensaje={errRegistro.nombre} />
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="registro-rut" className="form-label">RUT</label>
+                  <label htmlFor="registro-rut" className="form-label obligatorio">RUT</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={claseCampo('form-control', errRegistro.rut)}
                     id="registro-rut"
+                    required
+                    aria-invalid={Boolean(errRegistro.rut)}
+                    aria-describedby="registro-rut-error"
                     placeholder="12.345.678-5"
                     value={registro.rut}
                     onChange={(e) => setRegistro({ ...registro, rut: formatearMientrasEscribe(e.target.value) })}
                   />
+                  <ErrorCampo id="registro-rut-error" mensaje={errRegistro.rut} />
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="registro-email" className="form-label">Correo electrónico</label>
+                  <label htmlFor="registro-email" className="form-label obligatorio">Correo electrónico</label>
                   <input
                     type="email"
-                    className="form-control"
+                    className={claseCampo('form-control', errRegistro.email)}
                     id="registro-email"
+                    required
+                    aria-invalid={Boolean(errRegistro.email)}
+                    aria-describedby="registro-email-error"
                     placeholder="correo@ejemplo.cl"
                     value={registro.email}
                     onChange={(e) => setRegistro({ ...registro, email: e.target.value })}
                   />
+                  <ErrorCampo id="registro-email-error" mensaje={errRegistro.email} />
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="registro-password" className="form-label">Contraseña</label>
+                  <label htmlFor="registro-password" className="form-label obligatorio">Contraseña</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={claseCampo('form-control', errRegistro.password)}
                     id="registro-password"
+                    required
+                    aria-invalid={Boolean(errRegistro.password)}
+                    aria-describedby="registro-password-error"
                     placeholder="Entre 6 y 18 caracteres"
                     autoComplete="new-password"
                     value={registro.password}
                     onChange={(e) => setRegistro({ ...registro, password: e.target.value })}
                   />
+                  <ErrorCampo id="registro-password-error" mensaje={errRegistro.password} />
                 </div>
 
                 <h3 className="h6 fw-bold border-top pt-3 mb-1">Dirección de entrega</h3>
@@ -236,6 +258,7 @@ function Login() {
                   prefijo="registro-dir"
                   valor={direccionRegistro}
                   onChange={setDireccionRegistro}
+                  errores={errDireccion}
                 />
 
                 <div className="d-grid">

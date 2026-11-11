@@ -1,4 +1,3 @@
-/* ===== Pagina de Login / Registro ===== */
 .tarjeta-cuenta {
     border: 0;
     border-radius: 0.75rem;
@@ -22,4 +21,9 @@
 .tarjeta-cuenta .btn {
     padding: 0.6rem 1rem;
     font-weight: 600;
+}
+
+.tarjeta-cuenta .form-control.is-invalid:focus {
+    border-color: var(--bs-form-invalid-border-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }

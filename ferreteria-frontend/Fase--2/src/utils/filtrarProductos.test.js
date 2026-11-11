@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { filtrarProductos, FILTROS_INICIALES, PRECIO_MAXIMO } from './filtrarProductos'
+import { filtrarProductos, FILTROS_INICIALES } from './filtrarProductos'
 
 const productosMock = [
     { id: 1, nombre: 'Taladro Percutor 710W', descripcion: 'Taladro de alta potencia', precio: 49990, categoria: 'Herramientas', marca: 'Bauker' },

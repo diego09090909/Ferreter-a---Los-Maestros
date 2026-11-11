@@ -5,7 +5,6 @@ export const OPCIONES_ENTREGA = ['Retiro en tienda', 'Despacho a domicilio']
 export const ENTREGA_DOMICILIO = 'Despacho a domicilio'
 export const OPCIONES_PAGO = ['Crédito', 'Cuenta Corriente']
 
-// El carrito guarda cada item con codigo "producto-" + id
 export function codigoDe(producto) {
     return 'producto-' + producto.id
 }
@@ -32,7 +31,6 @@ export function agregarItem(carrito, producto) {
             nombre: producto.nombre,
             precio: producto.precio,
             imagen: producto.imagen,
-            stock: 'disponible',
             cantidad: 1,
         },
     ]
@@ -62,7 +60,7 @@ export function hayCantidadInvalida(carrito) {
     return carrito.some((item) => !cantidadValida(item.cantidad))
 }
 
-export function registrarCompra({ carrito, productos, usuario, entrega, pago, cliente, direccion, ahora = new Date() }) {
+export function registrarCompra({ carrito, productos, usuario, entrega, pago, cliente, direccion, costoDespacho = 0, ahora = new Date() }) {
     let categoria = ''
 
     const productosActualizados = productos.map((producto) => {
@@ -84,7 +82,8 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, cl
         }
     })
 
-    const total = calcularTotal(carrito)
+    const subtotal = calcularTotal(carrito)
+    const total = subtotal + costoDespacho
     const id = String(ahora.getTime()).slice(-4)
 
     return {
@@ -97,6 +96,8 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, cl
             tipoPago: pago,
             tipoEntrega: entrega,
             direccionEntrega: direccion ?? null,
+            subtotal,
+            costoDespacho,
             total,
             estado: 'Pendiente',
         },

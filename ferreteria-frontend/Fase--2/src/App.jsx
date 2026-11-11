@@ -10,6 +10,7 @@ import Footer from './components/Footer'
 import RutaAdmin from './components/RutaAdmin'
 import RutaUsuario from './components/RutaUsuario'
 import MiCuenta from './pages/MiCuenta'
+import NoEncontrada from './pages/NoEncontrada'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/mi-cuenta" element={<RutaUsuario><MiCuenta /></RutaUsuario>} />
           <Route path="/admin" element={<RutaAdmin><Admin /></RutaAdmin>} />
+          <Route path="*" element={<NoEncontrada />} />
       </Routes>
       <Footer />
     </>

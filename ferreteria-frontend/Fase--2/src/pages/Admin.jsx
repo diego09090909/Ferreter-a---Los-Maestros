@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { obtenerProductos } from '../data/almacen'
 import { useTitulo } from '../hooks/useTitulo'
 import { obtenerUsuarios } from '../services/usuarios'
@@ -25,16 +25,6 @@ function partesFecha(fecha) {
 }
 
 function Tabla({ titulo, columnas, acciones, filtros, children }) {
-  const tablaRef = useRef(null)
-
-  useEffect(() => {
-    tablaRef.current.querySelectorAll('tbody tr').forEach((fila) => {
-      fila.querySelectorAll('td').forEach((celda, i) => {
-        if (celda.colSpan === 1) celda.setAttribute('data-label', columnas[i])
-      })
-    })
-  })
-
   return (
     <section className="bg-white p-3 rounded border shadow-sm mb-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -43,7 +33,7 @@ function Tabla({ titulo, columnas, acciones, filtros, children }) {
       </div>
       {filtros}
       <div className="table-responsive">
-        <table ref={tablaRef} className="table table-striped table-hover align-middle small tabla-apilable">
+        <table className="table table-striped table-hover align-middle small tabla-apilable">
           <thead className="table-dark">
             <tr>{columnas.map((c) => <th key={c}>{c}</th>)}</tr>
           </thead>
@@ -60,12 +50,12 @@ function SeccionPedidos() {
     <Tabla titulo="Pedidos del Mes" columnas={['ID', 'Cliente', 'Tipo Pago', 'Entrega', 'Total', 'Estado']}>
       {pedidos.map((p) => (
         <tr key={p.id}>
-          <td>#PED-{p.id}</td>
-          <td>{p.cliente}</td>
-          <td><span className="badge bg-warning text-dark">{p.tipoPago}</span></td>
-          <td>{p.tipoEntrega}</td>
-          <td>{formatearPrecio(p.total)}</td>
-          <td><span className="badge bg-info text-dark">{p.estado}</span></td>
+          <td data-label="ID">#PED-{p.id}</td>
+          <td data-label="Cliente">{p.cliente}</td>
+          <td data-label="Tipo Pago"><span className="badge bg-warning text-dark">{p.tipoPago}</span></td>
+          <td data-label="Entrega">{p.tipoEntrega}</td>
+          <td data-label="Total">{formatearPrecio(p.total)}</td>
+          <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
         </tr>
       ))}
     </Tabla>
@@ -82,13 +72,13 @@ function SeccionUsuarios() {
     >
       {usuarios.map((u) => (
         <tr key={u.rut}>
-          <td>{u.rut}</td>
-          <td>{u.nombre}</td>
-          <td>{u.email}</td>
-          <td>
+          <td data-label="RUT">{u.rut}</td>
+          <td data-label="Nombre">{u.nombre}</td>
+          <td data-label="Correo">{u.email}</td>
+          <td data-label="Rol">
             <span className={`badge ${u.rol === 'Administrador' ? 'bg-primary' : 'bg-secondary'}`}>{u.rol}</span>
           </td>
-          <td><span className="badge bg-success">Activo</span></td>
+          <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
         </tr>
       ))}
     </Tabla>
@@ -117,12 +107,12 @@ function SeccionStock() {
 
         return (
           <tr key={p.id}>
-            <td>{p.id}</td>
-            <td>{p.nombre}</td>
-            <td>{p.categoria || 'General'}</td>
-            <td>{tienda}</td>
-            <td>{bodega}</td>
-            <td>{estado}</td>
+            <td data-label="ID">{p.id}</td>
+            <td data-label="Producto">{p.nombre}</td>
+            <td data-label="Categoría">{p.categoria || 'General'}</td>
+            <td data-label="Stock Tienda">{tienda}</td>
+            <td data-label="Bodega">{bodega}</td>
+            <td data-label="Estado Stock">{estado}</td>
           </tr>
         )
       })}
@@ -176,11 +166,11 @@ function SeccionVentas() {
     >
       {visibles.map((v) => (
         <tr key={v.id}>
-          <td>#VNT-{v.id}</td>
-          <td>{v.fecha}</td>
-          <td>{v.categoria}</td>
-          <td>{formatearPrecio(v.monto)}</td>
-          <td>{v.medioPago}</td>
+          <td data-label="N° Venta">#VNT-{v.id}</td>
+          <td data-label="Fecha">{v.fecha}</td>
+          <td data-label="Categoría">{v.categoria}</td>
+          <td data-label="Monto">{formatearPrecio(v.monto)}</td>
+          <td data-label="Medio Pago">{v.medioPago}</td>
         </tr>
       ))}
     </Tabla>
