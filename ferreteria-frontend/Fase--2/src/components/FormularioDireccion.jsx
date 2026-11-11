@@ -4,7 +4,6 @@ import { comunasConCobertura } from '../utils/despacho'
 import { claseCampo } from '../utils/validaciones'
 
 
-// errores: { calle, numero, comuna } con el mensaje de cada campo que falle
 function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
     const cambiar = (parcial) => onChange({ ...valor, ...parcial })
     const comunas = comunasConCobertura()
@@ -36,6 +35,7 @@ function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
                         className={claseCampo('form-control', errores.numero)}
                         id={`${prefijo}-numero`}
                         placeholder="1450"
+                        maxLength={8}
                         required
                         aria-invalid={Boolean(errores.numero)}
                         aria-describedby={`${prefijo}-numero-error`}

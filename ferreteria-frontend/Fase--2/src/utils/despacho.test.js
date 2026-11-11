@@ -38,6 +38,17 @@ describe('direccion', () => {
         expect(errorDireccion({ ...valida, numero: '' })).toMatch(/número/)
     })
 
+    it('no deja escribir el numero dentro de la calle', () => {
+        expect(errorDireccion({ ...valida, calle: 'jackson 867' })).toMatch(/número va en su propio campo/)
+        expect(errorDireccion({ ...valida, calle: 'Avenida 4 Esquinas' })).toBeNull()
+    })
+
+    it('el numero acepta digitos, una letra o S/N', () => {
+        expect(errorDireccion({ ...valida, numero: '1450B' })).toBeNull()
+        expect(errorDireccion({ ...valida, numero: 'S/N' })).toBeNull()
+        expect(errorDireccion({ ...valida, numero: 'jackson 867' })).toMatch(/solo el número/)
+    })
+
     it('rechaza comunas sin cobertura', () => {
         expect(errorDireccion({ ...valida, comuna: 'Maipú' })).toMatch(/despacho/)
     })
