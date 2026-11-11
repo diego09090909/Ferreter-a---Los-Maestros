@@ -24,23 +24,36 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 10)
+    private String codigo;
+
     @Column(nullable = false, length = 100)
     private String nombre;
 
     @Column(length = 500)
     private String descripcion;
 
-    @Column(nullable = false)
-    private Integer precio;
+    @Column(nullable = false, length = 50)
+    private String subcategoria;
 
     @Column(length = 50)
     private String marca;
 
-    @Column(nullable = false)
-    private Integer stockTienda;
+    @Column(nullable = false, length = 30)
+    private String unidad;
 
     @Column(nullable = false)
-    private Integer stockBodega;
+    private Integer precioCompra;
+
+    // precio de venta al cliente
+    @Column(nullable = false)
+    private Integer precio;
+
+    @Column(nullable = false)
+    private Integer stock;
+
+    @Column(nullable = false)
+    private Integer stockMinimo;
 
     @Column(length = 255)
     private String imagen;
