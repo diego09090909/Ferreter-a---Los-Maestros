@@ -24,10 +24,8 @@ body {
 }
 
 .icono-carrito {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    mix-blend-mode: multiply;
+    font-size: 1.6rem;
+    line-height: 1;
 }
 
 .offcanvas {
@@ -290,4 +288,14 @@ main {
         margin: 0;
         width: 90px;
     }
+}
+
+.form-label.obligatorio::after {
+    content: " *";
+    color: var(--bs-danger);
+}
+
+.nota-obligatorios::before {
+    content: "* ";
+    color: var(--bs-danger);
 }

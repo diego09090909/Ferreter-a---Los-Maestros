@@ -1,13 +1,12 @@
-import { useEffect } from 'react'
 import { Row, Col, Card, Table, Badge, Ratio } from 'react-bootstrap'
-import 'bootstrap-icons/font/bootstrap-icons.min.css'
-import { ZONAS_DESPACHO } from '../data/productos'
+import { COMUNAS_DESPACHO_GRATIS, MONTO_DESPACHO_GRATIS, ZONAS_DESPACHO } from '../data/despacho'
+import { useTitulo } from '../hooks/useTitulo'
+import { colorEstado } from '../utils/despacho'
+import { formatearPrecio } from '../utils/formato'
 import '../styles/cobertura.css'
 
 function Cobertura() {
-    useEffect(() => {
-        document.title = 'Cobertura y Ubicación'
-    }, [])
+    useTitulo('Cobertura y Ubicación - Ferretería Los Maestros')
 
     return (
         <main className="container py-4">
@@ -127,27 +126,31 @@ function Cobertura() {
                     </thead>
 
                     <tbody>
-                        {ZONAS_DESPACHO.map((zona) => (
-                            <tr key={zona.comuna}>
-                                <td className="fw-semibold">{zona.comuna}</td>
-                                <td>{zona.plazo}</td>
-                                <td className="text-end">{zona.costo}</td>
-                                <td className="text-center">
-                                    <Badge
-                                        bg={zona.color}
-                                        text={zona.color === 'warning' ? 'dark' : undefined}
-                                    >
-                                        {zona.estado}
-                                    </Badge>
-                                </td>
-                            </tr>
-                        ))}
+                        {ZONAS_DESPACHO.map((zona) => {
+                            const color = colorEstado(zona)
+
+                            return (
+                                <tr key={zona.comuna}>
+                                    <td className="fw-semibold">{zona.comuna}</td>
+                                    <td>{zona.plazo}</td>
+                                    <td className="text-end">
+                                        {zona.costo === null ? '-' : formatearPrecio(zona.costo)}
+                                    </td>
+                                    <td className="text-center">
+                                        <Badge bg={color} text={color === 'warning' ? 'dark' : undefined}>
+                                            {zona.estado}
+                                        </Badge>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </Table>
             </div>
 
             <p className="text-secondary small">
-                Despacho gratis en La Serena y Coquimbo por compras sobre $50.000.
+                Despacho gratis en {COMUNAS_DESPACHO_GRATIS.join(' y ')} por compras sobre{' '}
+                {formatearPrecio(MONTO_DESPACHO_GRATIS)}.
                 Contratistas con cuenta corriente coordinan despacho directo a obra.
             </p>
         </main>

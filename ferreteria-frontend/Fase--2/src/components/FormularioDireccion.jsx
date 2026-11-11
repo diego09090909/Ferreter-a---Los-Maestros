@@ -1,24 +1,49 @@
-import { REGIONES } from '../data/regiones'
-import { comunasDe } from '../utils/direccion'
+import ErrorCampo from './ErrorCampo'
+import { REGION_DESPACHO } from '../data/despacho'
+import { comunasConCobertura } from '../utils/despacho'
+import { claseCampo } from '../utils/validaciones'
 
 
-function FormularioDireccion({ valor, onChange, prefijo }) {
+// errores: { calle, numero, comuna } con el mensaje de cada campo que falle
+function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
     const cambiar = (parcial) => onChange({ ...valor, ...parcial })
-    const comunas = comunasDe(valor.region)
+    const comunas = comunasConCobertura()
 
     return (
         <>
-            <div className="mb-3">
-                <label htmlFor={`${prefijo}-calle`} className="form-label">Calle y número</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    id={`${prefijo}-calle`}
-                    placeholder="Av. Francisco de Aguirre 1450"
-                    autoComplete="street-address"
-                    value={valor.calle}
-                    onChange={(e) => cambiar({ calle: e.target.value })}
-                />
+            <div className="row g-3 mb-3">
+                <div className="col-12 col-sm-8">
+                    <label htmlFor={`${prefijo}-calle`} className="form-label obligatorio">Calle</label>
+                    <input
+                        type="text"
+                        className={claseCampo('form-control', errores.calle)}
+                        id={`${prefijo}-calle`}
+                        placeholder="Av. Francisco de Aguirre"
+                        autoComplete="address-line1"
+                        required
+                        aria-invalid={Boolean(errores.calle)}
+                        aria-describedby={`${prefijo}-calle-error`}
+                        value={valor.calle}
+                        onChange={(e) => cambiar({ calle: e.target.value })}
+                    />
+                    <ErrorCampo id={`${prefijo}-calle-error`} mensaje={errores.calle} />
+                </div>
+
+                <div className="col-12 col-sm-4">
+                    <label htmlFor={`${prefijo}-numero`} className="form-label obligatorio">Número</label>
+                    <input
+                        type="text"
+                        className={claseCampo('form-control', errores.numero)}
+                        id={`${prefijo}-numero`}
+                        placeholder="1450"
+                        required
+                        aria-invalid={Boolean(errores.numero)}
+                        aria-describedby={`${prefijo}-numero-error`}
+                        value={valor.numero}
+                        onChange={(e) => cambiar({ numero: e.target.value })}
+                    />
+                    <ErrorCampo id={`${prefijo}-numero-error`} mensaje={errores.numero} />
+                </div>
             </div>
 
             <div className="mb-3">
@@ -36,26 +61,25 @@ function FormularioDireccion({ valor, onChange, prefijo }) {
             <div className="row g-3 mb-3">
                 <div className="col-12 col-sm-6">
                     <label htmlFor={`${prefijo}-region`} className="form-label">Región</label>
-                    <select
-                        className="form-select"
+                    <input
+                        type="text"
+                        className="form-control"
                         id={`${prefijo}-region`}
-                        value={valor.region}
-                        onChange={(e) => cambiar({ region: e.target.value, comuna: '' })}
-                    >
-                        <option value="">Selecciona...</option>
-                        {REGIONES.map((region) => (
-                            <option key={region.nombre} value={region.nombre}>{region.nombre}</option>
-                        ))}
-                    </select>
+                        value={REGION_DESPACHO}
+                        readOnly
+                        disabled
+                    />
                 </div>
 
                 <div className="col-12 col-sm-6">
-                    <label htmlFor={`${prefijo}-comuna`} className="form-label">Comuna</label>
+                    <label htmlFor={`${prefijo}-comuna`} className="form-label obligatorio">Comuna</label>
                     <select
-                        className="form-select"
+                        className={claseCampo('form-select', errores.comuna)}
                         id={`${prefijo}-comuna`}
+                        required
+                        aria-invalid={Boolean(errores.comuna)}
+                        aria-describedby={`${prefijo}-comuna-error`}
                         value={valor.comuna}
-                        disabled={!valor.region}
                         onChange={(e) => cambiar({ comuna: e.target.value })}
                     >
                         <option value="">Selecciona...</option>
@@ -63,8 +87,13 @@ function FormularioDireccion({ valor, onChange, prefijo }) {
                             <option key={comuna} value={comuna}>{comuna}</option>
                         ))}
                     </select>
+                    <ErrorCampo id={`${prefijo}-comuna-error`} mensaje={errores.comuna} />
                 </div>
             </div>
+
+            <p className="text-secondary small mt-n2 mb-3">
+                Solo despachamos a comunas de la Región de Coquimbo con cobertura.
+            </p>
 
             <div className="mb-3">
                 <label htmlFor={`${prefijo}-indicaciones`} className="form-label">Indicaciones para la entrega (opcional)</label>

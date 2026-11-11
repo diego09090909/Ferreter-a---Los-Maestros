@@ -77,7 +77,28 @@ describe('login de administrador y rutas protegidas', () => {
     await user.type(screen.getByLabelText('RUT o correo'), 'admin@losmaestros.cl')
     await user.type(screen.getByLabelText('Contraseña', { selector: '#ingreso-password' }), 'mala')
     await user.click(screen.getByRole('button', { name: 'Entrar' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('La contraseña no es correcta')
+    expect(screen.getByRole('alert')).toHaveTextContent('Usuario o contraseña incorrectos')
+  })
+})
+
+
+
+
+describe('registro', () => {
+  it('marca en rojo los campos obligatorios vacíos y los limpia al completarlos', async () => {
+    const user = userEvent.setup()
+    montar('/login')
+    await user.click(screen.getByRole('button', { name: 'Crear Cuenta' }))
+
+    expect(screen.getAllByRole('alert').at(-1)).toHaveTextContent('Revisa los campos marcados en rojo')
+    const numero = screen.getByLabelText('Número')
+    expect(numero).toHaveClass('is-invalid')
+    expect(screen.getByText('Ingresa el número')).toBeInTheDocument()
+    expect(screen.getByText('Ingresa tu RUT')).toBeInTheDocument()
+
+    await user.type(numero, '867')
+    expect(numero).not.toHaveClass('is-invalid')
+    expect(screen.queryByText('Ingresa el número')).not.toBeInTheDocument()
   })
 })
 
@@ -110,7 +131,9 @@ describe('Mi cuenta', () => {
     await user.clear(nombre)
     await user.type(nombre, 'An')
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('al menos 3 caracteres')
+    expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos marcados en rojo')
+    expect(nombre).toHaveClass('is-invalid')
+    expect(screen.getByText('El nombre debe tener al menos 3 caracteres')).toBeInTheDocument()
 
     await user.clear(nombre)
     await user.type(nombre, 'Ana María Soto')
@@ -147,7 +170,8 @@ describe('Mi cuenta', () => {
     await user.clear(tarjeta.getByLabelText('Repetir nueva contraseña'))
     await user.type(tarjeta.getByLabelText('Repetir nueva contraseña'), 'distinta')
     await enviar()
-    expect(tarjeta.getByRole('alert')).toHaveTextContent('no coinciden')
+    expect(tarjeta.getByText('Las contraseñas nuevas no coinciden')).toBeInTheDocument()
+    expect(tarjeta.getByLabelText('Repetir nueva contraseña')).toHaveClass('is-invalid')
 
     await user.clear(tarjeta.getByLabelText('Repetir nueva contraseña'))
     await user.type(tarjeta.getByLabelText('Repetir nueva contraseña'), 'nueva123')

@@ -15,12 +15,10 @@ import {
     hayCantidadInvalida,
     registrarCompra,
 } from '../utils/carrito'
-import { DIRECCION_VACIA, errorDireccion, limpiarDireccion, textoDireccion } from '../utils/direccion'
-import { correoValido, nombreValido } from '../utils/validaciones'
-
-function dinero(valor) {
-    return '$' + valor.toLocaleString('es-CL')
-}
+import { completarDireccion, erroresDireccion, limpiarDireccion, textoDireccion } from '../utils/direccion'
+import { costoDespacho, faltaParaDespachoGratis } from '../utils/despacho'
+import { formatearPrecio } from '../utils/formato'
+import { enfocarPrimerError, erroresDatos, hayErrores } from '../utils/validaciones'
 
 
 function rutaImagen(item, catalogo) {
@@ -31,6 +29,15 @@ function rutaImagen(item, catalogo) {
     if (/^(https?:|data:|\/)/.test(origen)) return origen
 
     return '/imagenes/' + origen.replace(/^(\.\/)?(public\/)?(imagenes\/)?/, '')
+}
+
+function textoEnvio(entrega, conDespacho, comuna, envio) {
+    if (!entrega) return 'Elige el tipo de entrega'
+    if (!conDespacho) return 'Gratis (retiro en tienda)'
+    if (!comuna) return 'Elige la comuna'
+    if (envio === null) return 'Sin cobertura en esa comuna'
+    if (envio === 0) return 'Gratis'
+    return formatearPrecio(envio)
 }
 
 
@@ -54,9 +61,22 @@ function PaginaCarrito() {
         nombre: usuario?.nombre ?? '',
         email: usuario?.email ?? '',
     }))
-    const [direccion, setDireccion] = useState(() => ({ ...DIRECCION_VACIA, ...usuario?.direccion }))
+    const [direccion, setDireccion] = useState(() => completarDireccion(usuario?.direccion))
     const [guardarEnCuenta, setGuardarEnCuenta] = useState(false)
     const tieneDireccionGuardada = Boolean(usuario?.direccion?.calle)
+    const conDespacho = entrega === ENTREGA_DOMICILIO
+    const envio = conDespacho ? costoDespacho(direccion.comuna, total) : 0
+    const totalAPagar = total + (envio ?? 0)
+    const faltaGratis = conDespacho ? faltaParaDespachoGratis(direccion.comuna, total) : 0
+    const [intento, setIntento] = useState(false)
+    const erroresCompra = {
+        ...erroresDatos(datosCliente),
+        ...(entrega ? {} : { entrega: 'Elige un tipo de entrega' }),
+        ...(pago ? {} : { pago: 'Elige un medio de pago' }),
+    }
+    const erroresEntrega = conDespacho ? erroresDireccion(direccion) : {}
+    const err = intento ? erroresCompra : {}
+    const errDireccion = intento ? erroresEntrega : {}
 
     function confirmar() {
         if (!usuario) {
@@ -82,28 +102,12 @@ function PaginaCarrito() {
             })
         }
 
-        if (!entrega) {
-            return setMensaje({ tipo: 'danger', texto: 'Elige un tipo de entrega.' })
-        }
 
-        if (!pago) {
-            return setMensaje({ tipo: 'danger', texto: 'Elige un medio de pago.' })
-        }
-
-        if (!nombreValido(datosCliente.nombre)) {
-            return setMensaje({ tipo: 'danger', texto: 'El nombre debe tener al menos 3 caracteres.' })
-        }
-
-        if (!correoValido(datosCliente.email)) {
-            return setMensaje({ tipo: 'danger', texto: 'El correo no tiene un formato válido.' })
-        }
-
-        // la dirección solo se pide (y se guarda en el pedido) si hay despacho a domicilio
-        const conDespacho = entrega === ENTREGA_DOMICILIO
-        const errorDeDireccion = conDespacho ? errorDireccion(direccion) : null
-
-        if (errorDeDireccion) {
-            return setMensaje({ tipo: 'danger', texto: errorDeDireccion + '.' })
+        setIntento(true)
+        if (hayErrores({ ...erroresCompra, ...erroresEntrega })) {
+            setMensaje({ tipo: 'danger', texto: 'Revisa los campos marcados en rojo.' })
+            enfocarPrimerError(document)
+            return
         }
 
         const direccionFinal = conDespacho ? limpiarDireccion(direccion) : undefined
@@ -116,6 +120,7 @@ function PaginaCarrito() {
             pago,
             cliente: { nombre: datosCliente.nombre.trim(), email: datosCliente.email.trim() },
             direccion: direccionFinal,
+            costoDespacho: envio ?? 0,
         })
 
         guardar('productos', resultado.productos)
@@ -131,12 +136,13 @@ function PaginaCarrito() {
             : ' Puedes retirar tu pedido en la tienda.'
 
         vaciar()
+        setIntento(false)
         setEntrega('')
         setPago('')
         setGuardarEnCuenta(false)
         setMensaje({
             tipo: 'success',
-            texto: `Compra realizada con éxito. Pedido #${resultado.pedido.id}.${destino}`,
+            texto: `Compra realizada con éxito. Pedido #${resultado.pedido.id} por ${formatearPrecio(resultado.pedido.total)}.${destino}`,
         })
     }
 
@@ -176,7 +182,7 @@ function PaginaCarrito() {
                                         )}
                                     </td>
                                     <td data-label="Producto">{item.nombre}</td>
-                                    <td data-label="Precio">{dinero(item.precio)}</td>
+                                    <td data-label="Precio">{formatearPrecio(item.precio)}</td>
                                     <td data-label="Cantidad">
                                         <Form.Control
                                             className="input-cantidad"
@@ -189,7 +195,7 @@ function PaginaCarrito() {
                                             }
                                         />
                                     </td>
-                                    <td data-label="Subtotal">{dinero(item.precio * item.cantidad)}</td>
+                                    <td data-label="Subtotal">{formatearPrecio(item.precio * item.cantidad)}</td>
                                     <td>
                                         <Button
                                             variant="outline-danger"
@@ -207,10 +213,11 @@ function PaginaCarrito() {
             </div>
 
             <p className="fs-5 text-end">
-                Total: <strong>{dinero(total)}</strong>
+                Subtotal productos: <strong>{formatearPrecio(total)}</strong>
             </p>
 
             <h2 className="h5 mt-4">Datos del cliente</h2>
+            <p className="text-secondary small mb-1 nota-obligatorios">Campos obligatorios</p>
             <p className="text-muted small">
                 {usuario
                     ? 'Completamos tus datos con los de tu cuenta. Puedes cambiarlos para este pedido.'
@@ -218,42 +225,62 @@ function PaginaCarrito() {
             </p>
             <Row className="g-3 mb-4">
                 <Col md={6}>
-                    <Form.Label htmlFor="cliente-nombre">Nombre completo</Form.Label>
+                    <Form.Label htmlFor="cliente-nombre" className="obligatorio">Nombre completo</Form.Label>
                     <Form.Control
                         id="cliente-nombre"
+                        required
+                        isInvalid={Boolean(err.nombre)}
                         value={datosCliente.nombre}
                         onChange={(e) => setDatosCliente({ ...datosCliente, nombre: e.target.value })}
                     />
+                    <Form.Control.Feedback type="invalid">{err.nombre}</Form.Control.Feedback>
                 </Col>
                 <Col md={6}>
-                    <Form.Label htmlFor="cliente-email">Correo electrónico</Form.Label>
+                    <Form.Label htmlFor="cliente-email" className="obligatorio">Correo electrónico</Form.Label>
                     <Form.Control
                         id="cliente-email"
                         type="email"
+                        required
+                        isInvalid={Boolean(err.email)}
                         value={datosCliente.email}
                         onChange={(e) => setDatosCliente({ ...datosCliente, email: e.target.value })}
                     />
+                    <Form.Control.Feedback type="invalid">{err.email}</Form.Control.Feedback>
                 </Col>
             </Row>
 
             <Row className="g-3">
                 <Col md={6}>
-                    <Form.Label htmlFor="entrega">Tipo de entrega</Form.Label>
-                    <Form.Select id="entrega" value={entrega} onChange={(e) => setEntrega(e.target.value)}>
+                    <Form.Label htmlFor="entrega" className="obligatorio">Tipo de entrega</Form.Label>
+                    <Form.Select
+                        id="entrega"
+                        required
+                        isInvalid={Boolean(err.entrega)}
+                        value={entrega}
+                        onChange={(e) => setEntrega(e.target.value)}
+                    >
                         <option value="">Selecciona...</option>
                         {OPCIONES_ENTREGA.map((opcion) => (
                             <option key={opcion} value={opcion}>{opcion}</option>
                         ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">{err.entrega}</Form.Control.Feedback>
                 </Col>
                 <Col md={6}>
-                    <Form.Label htmlFor="pago">Medio de pago</Form.Label>
-                    <Form.Select id="pago" value={pago} onChange={(e) => setPago(e.target.value)}>
+                    <Form.Label htmlFor="pago" className="obligatorio">Medio de pago</Form.Label>
+                    <Form.Select
+                        id="pago"
+                        required
+                        isInvalid={Boolean(err.pago)}
+                        value={pago}
+                        onChange={(e) => setPago(e.target.value)}
+                    >
                         <option value="">Selecciona...</option>
                         {OPCIONES_PAGO.map((opcion) => (
                             <option key={opcion} value={opcion}>{opcion}</option>
                         ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">{err.pago}</Form.Control.Feedback>
                 </Col>
             </Row>
 
@@ -266,7 +293,7 @@ function PaginaCarrito() {
                             : 'Completa la dirección donde quieres recibir tu pedido.'}
                     </p>
 
-                    <FormularioDireccion prefijo="entrega-dir" valor={direccion} onChange={setDireccion} />
+                    <FormularioDireccion prefijo="entrega-dir" valor={direccion} onChange={setDireccion} errores={errDireccion} />
 
                     <Form.Check
                         id="guardar-direccion"
@@ -277,6 +304,28 @@ function PaginaCarrito() {
                     />
                 </section>
             )}
+
+            <section className="border rounded p-3 mt-4 bg-light" aria-label="Resumen de la compra">
+                <h2 className="h6 fw-bold mb-3">Resumen</h2>
+                <div className="d-flex justify-content-between">
+                    <span>Subtotal productos</span>
+                    <span>{formatearPrecio(total)}</span>
+                </div>
+                <div className="d-flex justify-content-between">
+                    <span>Despacho</span>
+                    <span>{textoEnvio(entrega, conDespacho, direccion.comuna, envio)}</span>
+                </div>
+                <hr className="my-2" />
+                <div className="d-flex justify-content-between fs-5">
+                    <strong>Total a pagar</strong>
+                    <strong>{formatearPrecio(totalAPagar)}</strong>
+                </div>
+                {faltaGratis > 0 && carrito.length > 0 && (
+                    <p className="text-success small mb-0 mt-2">
+                        Te faltan {formatearPrecio(faltaGratis)} para tener despacho gratis en {direccion.comuna}.
+                    </p>
+                )}
+            </section>
 
             <Button variant="success" className="mt-4" onClick={confirmar}>
                 Confirmar compra

@@ -1,22 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Aviso from '../components/Aviso'
+import ErrorCampo from '../components/ErrorCampo'
 import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { obtenerUsuarios } from '../services/usuarios'
-import { DIRECCION_VACIA, errorDireccion, limpiarDireccion } from '../utils/direccion'
+import { completarDireccion, erroresDireccion, limpiarDireccion } from '../utils/direccion'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
-import { correoValido, nombreValido, passwordValida, PASSWORD_MAXIMA, PASSWORD_MINIMA } from '../utils/validaciones'
+import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
 
-function Aviso({ mensaje }) {
-  if (!mensaje) return null
-  return (
-    <div className={`alert alert-${mensaje.tipo} mt-3 mb-0`} role="alert">
-      {mensaje.texto}
-    </div>
-  )
-}
+const REVISAR_CAMPOS = { tipo: 'danger', texto: 'Revisa los campos marcados en rojo' }
 
 function MiCuenta() {
   useTitulo('Mi Cuenta - Ferretería Los Maestros')
@@ -28,8 +23,16 @@ function MiCuenta() {
   const [claves, setClaves] = useState({ actual: '', nueva: '', repetir: '' })
   const [msgDatos, setMsgDatos] = useState(null)
   const [msgClave, setMsgClave] = useState(null)
-  const [direccion, setDireccion] = useState(() => ({ ...DIRECCION_VACIA, ...usuario.direccion }))
+  const [direccion, setDireccion] = useState(() => completarDireccion(usuario.direccion))
   const [msgDireccion, setMsgDireccion] = useState(null)
+
+  // errores por campo: aparecen despues del primer intento y se actualizan al escribir
+  const [intentoDatos, setIntentoDatos] = useState(false)
+  const [intentoClave, setIntentoClave] = useState(false)
+  const [intentoDireccion, setIntentoDireccion] = useState(false)
+  const errDatos = intentoDatos ? erroresDatos(datos) : {}
+  const errClave = intentoClave ? erroresClaves(claves) : {}
+  const errDireccion = intentoDireccion ? erroresDireccion(direccion) : {}
 
   const [pedidos] = useState(() =>
     leer('pedidos', [])
@@ -42,12 +45,10 @@ function MiCuenta() {
     const nombre = datos.nombre.trim()
     const email = datos.email.trim()
 
-    if (!nombreValido(nombre)) {
-      setMsgDatos({ tipo: 'danger', texto: 'El nombre debe tener al menos 3 caracteres' })
-      return
-    }
-    if (!correoValido(email)) {
-      setMsgDatos({ tipo: 'danger', texto: 'El correo no tiene un formato válido' })
+    setIntentoDatos(true)
+    if (hayErrores(erroresDatos(datos))) {
+      setMsgDatos(REVISAR_CAMPOS)
+      enfocarPrimerError(evento.currentTarget)
       return
     }
 
@@ -65,9 +66,10 @@ function MiCuenta() {
 
   const guardarDireccion = (evento) => {
     evento.preventDefault()
-    const error = errorDireccion(direccion)
-    if (error) {
-      setMsgDireccion({ tipo: 'danger', texto: error })
+    setIntentoDireccion(true)
+    if (hayErrores(erroresDireccion(direccion))) {
+      setMsgDireccion(REVISAR_CAMPOS)
+      enfocarPrimerError(evento.currentTarget)
       return
     }
 
@@ -81,16 +83,17 @@ function MiCuenta() {
     evento.preventDefault()
     const error = (texto) => setMsgClave({ tipo: 'danger', texto })
 
-    if (!claves.actual || !claves.nueva || !claves.repetir) return error('Debe completar los tres campos')
-    if (claves.actual !== usuario.password) return error('La contraseña actual no es correcta')
-    if (!passwordValida(claves.nueva)) {
-      return error(`La nueva contraseña debe tener entre ${PASSWORD_MINIMA} y ${PASSWORD_MAXIMA} caracteres`)
+    setIntentoClave(true)
+    if (hayErrores(erroresClaves(claves))) {
+      setMsgClave(REVISAR_CAMPOS)
+      enfocarPrimerError(evento.currentTarget)
+      return
     }
-    if (claves.nueva !== claves.repetir) return error('Las contraseñas nuevas no coinciden')
-    if (claves.nueva === claves.actual) return error('La nueva contraseña debe ser distinta a la actual')
+    if (claves.actual !== usuario.password) return error('La contraseña actual no es correcta')
 
     actualizarUsuario({ password: claves.nueva })
     setClaves({ actual: '', nueva: '', repetir: '' })
+    setIntentoClave(false)
     setMsgClave({ tipo: 'success', texto: 'Contraseña actualizada correctamente' })
   }
 
@@ -117,7 +120,7 @@ function MiCuenta() {
       </div>
 
       <div className="row g-4">
-       
+      
         <div className="col-lg-4">
           <div className="card h-100 shadow-sm">
             <div className="card-body text-center p-4">
@@ -136,31 +139,40 @@ function MiCuenta() {
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
-              <h2 className="h5 fw-bold mb-3">Mis datos</h2>
+              <h2 className="h5 fw-bold mb-1">Mis datos</h2>
+              <p className="text-secondary small mb-3 nota-obligatorios">Campos obligatorios</p>
               <form onSubmit={guardarDatos} noValidate>
                 <div className="mb-3">
-                  <label htmlFor="cuenta-nombre" className="form-label">Nombre completo</label>
+                  <label htmlFor="cuenta-nombre" className="form-label obligatorio">Nombre completo</label>
                   <input
                     id="cuenta-nombre"
                     type="text"
-                    className="form-control"
+                    className={claseCampo('form-control', errDatos.nombre)}
+                    required
+                    aria-invalid={Boolean(errDatos.nombre)}
+                    aria-describedby="cuenta-nombre-error"
                     value={datos.nombre}
                     onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
                   />
+                  <ErrorCampo id="cuenta-nombre-error" mensaje={errDatos.nombre} />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="cuenta-rut" className="form-label">RUT</label>
                   <input id="cuenta-rut" type="text" className="form-control" value={usuario.rut} readOnly disabled />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="cuenta-email" className="form-label">Correo electrónico</label>
+                  <label htmlFor="cuenta-email" className="form-label obligatorio">Correo electrónico</label>
                   <input
                     id="cuenta-email"
                     type="email"
-                    className="form-control"
+                    className={claseCampo('form-control', errDatos.email)}
+                    required
+                    aria-invalid={Boolean(errDatos.email)}
+                    aria-describedby="cuenta-email-error"
                     value={datos.email}
                     onChange={(e) => setDatos({ ...datos, email: e.target.value })}
                   />
+                  <ErrorCampo id="cuenta-email-error" mensaje={errDatos.email} />
                 </div>
                 <div className="d-grid">
                   <button type="submit" className="btn btn-primary">Guardar cambios</button>
@@ -175,41 +187,54 @@ function MiCuenta() {
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
-              <h2 className="h5 fw-bold mb-3">Cambiar contraseña</h2>
+              <h2 className="h5 fw-bold mb-1">Cambiar contraseña</h2>
+              <p className="text-secondary small mb-3 nota-obligatorios">Campos obligatorios</p>
               <form onSubmit={cambiarClave} noValidate>
                 <div className="mb-3">
-                  <label htmlFor="clave-actual" className="form-label">Contraseña actual</label>
+                  <label htmlFor="clave-actual" className="form-label obligatorio">Contraseña actual</label>
                   <input
                     id="clave-actual"
                     type="password"
-                    className="form-control"
+                    className={claseCampo('form-control', errClave.actual)}
+                    required
+                    aria-invalid={Boolean(errClave.actual)}
+                    aria-describedby="clave-actual-error"
                     autoComplete="current-password"
                     value={claves.actual}
                     onChange={(e) => setClaves({ ...claves, actual: e.target.value })}
                   />
+                  <ErrorCampo id="clave-actual-error" mensaje={errClave.actual} />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="clave-nueva" className="form-label">Nueva contraseña</label>
+                  <label htmlFor="clave-nueva" className="form-label obligatorio">Nueva contraseña</label>
                   <input
                     id="clave-nueva"
                     type="password"
-                    className="form-control"
+                    className={claseCampo('form-control', errClave.nueva)}
+                    required
+                    aria-invalid={Boolean(errClave.nueva)}
+                    aria-describedby="clave-nueva-error"
                     placeholder="Entre 6 y 18 caracteres"
                     autoComplete="new-password"
                     value={claves.nueva}
                     onChange={(e) => setClaves({ ...claves, nueva: e.target.value })}
                   />
+                  <ErrorCampo id="clave-nueva-error" mensaje={errClave.nueva} />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="clave-repetir" className="form-label">Repetir nueva contraseña</label>
+                  <label htmlFor="clave-repetir" className="form-label obligatorio">Repetir nueva contraseña</label>
                   <input
                     id="clave-repetir"
                     type="password"
-                    className="form-control"
+                    className={claseCampo('form-control', errClave.repetir)}
+                    required
+                    aria-invalid={Boolean(errClave.repetir)}
+                    aria-describedby="clave-repetir-error"
                     autoComplete="new-password"
                     value={claves.repetir}
                     onChange={(e) => setClaves({ ...claves, repetir: e.target.value })}
                   />
+                  <ErrorCampo id="clave-repetir-error" mensaje={errClave.repetir} />
                 </div>
                 <div className="d-grid">
                   <button type="submit" className="btn btn-success">Actualizar contraseña</button>
@@ -221,7 +246,7 @@ function MiCuenta() {
         </div>
       </div>
 
-   
+  
       {!esAdmin && (
         <section className="card shadow-sm mt-4">
           <div className="card-body p-4">
@@ -230,7 +255,7 @@ function MiCuenta() {
               Se usa para completar tus compras con despacho a domicilio. Puedes cambiarla cuando quieras.
             </p>
             <form onSubmit={guardarDireccion} noValidate>
-              <FormularioDireccion prefijo="cuenta-dir" valor={direccion} onChange={setDireccion} />
+              <FormularioDireccion prefijo="cuenta-dir" valor={direccion} onChange={setDireccion} errores={errDireccion} />
               <div className="d-grid d-md-flex justify-content-md-end">
                 <button type="submit" className="btn btn-primary">Guardar dirección</button>
               </div>
