@@ -12,5 +12,6 @@ public class ProductoCatalogo {
     private Long id;
     private String nombre;
     private Integer precio;
-    private Integer stockTotal;
+    private Integer stock;
+    private Boolean disponible;
 }
