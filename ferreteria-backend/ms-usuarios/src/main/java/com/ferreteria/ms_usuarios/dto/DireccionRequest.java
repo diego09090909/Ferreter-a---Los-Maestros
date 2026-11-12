@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Pattern;
+
 
 @Data
 @NoArgsConstructor
@@ -26,6 +28,8 @@ public class DireccionRequest {
     private String departamento;
 
     @NotBlank(message = "Debe elegir una comuna")
+    @Pattern(regexp = "^(La Serena|Coquimbo|Andacollo|Vicuña|Ovalle)$",
+             message = "Solo despachamos a La Serena, Coquimbo, Andacollo, Vicuña u Ovalle")
     private String comuna;
 
     private String region;
