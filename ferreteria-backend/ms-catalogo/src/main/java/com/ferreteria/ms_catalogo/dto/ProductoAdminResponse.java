@@ -1,6 +1,5 @@
 package com.ferreteria.ms_catalogo.dto;
 
-import com.ferreteria.ms_catalogo.model.Producto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,24 +25,4 @@ public class ProductoAdminResponse {
     private String imagen;
     private Long categoriaId;
     private String categoria;
-
-    public static ProductoAdminResponse desde(Producto producto) {
-        return new ProductoAdminResponse(
-                producto.getId(),
-                producto.getCodigo(),
-                producto.getNombre(),
-                producto.getDescripcion(),
-                producto.getSubcategoria(),
-                producto.getMarca(),
-                producto.getUnidad(),
-                producto.getPrecioCompra(),
-                producto.getPrecio(),
-                producto.getPrecio() - producto.getPrecioCompra(),
-                producto.getStock(),
-                producto.getStockMinimo(),
-                producto.getStock() <= producto.getStockMinimo(),
-                producto.getImagen(),
-                producto.getCategoria().getId(),
-                producto.getCategoria().getNombre());
-    }
 }
