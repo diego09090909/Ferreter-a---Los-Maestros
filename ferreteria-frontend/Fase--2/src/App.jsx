@@ -5,6 +5,7 @@ import Cobertura from './pages/Cobertura'
 import Login from './pages/Login'
 import Carrito from './pages/Carrito'
 import Catalogo from './pages/Catalogo'
+import DetalleProducto from './pages/DetalleProducto'
 import Admin from './pages/Admin'
 import Footer from './components/Footer'
 import RutaAdmin from './components/RutaAdmin'
@@ -22,6 +23,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/carrito" element={<Carrito />} />
           <Route path="/catalogo" element={<Catalogo />} />
+          <Route path="/catalogo/:id" element={<DetalleProducto />} />
           <Route path="/mi-cuenta" element={<RutaUsuario><MiCuenta /></RutaUsuario>} />
           <Route path="/admin" element={<RutaAdmin><Admin /></RutaAdmin>} />
           <Route path="*" element={<NoEncontrada />} />
