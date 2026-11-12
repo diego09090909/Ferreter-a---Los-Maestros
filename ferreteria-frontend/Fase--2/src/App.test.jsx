@@ -178,6 +178,61 @@ describe('registro', () => {
 
 
 
+describe('panel admin: nuevo usuario', () => {
+  const abrirFormulario = async (user) => {
+    montar('/admin', { sesion: ADMIN })
+    await user.click(screen.getByRole('button', { name: /Usuarios/ }))
+    await user.click(screen.getByRole('button', { name: '+ Nuevo Usuario' }))
+    return within(await screen.findByRole('dialog'))
+  }
+
+  it('marca los campos obligatorios y solo ofrece roles de personal', async () => {
+    const user = userEvent.setup()
+    const modal = await abrirFormulario(user)
+
+    const opciones = modal.getAllByRole('option').map((o) => o.textContent)
+    expect(opciones).toEqual(['Selecciona...', 'Administrador', 'Vendedor'])
+
+    await user.click(modal.getByRole('button', { name: 'Crear usuario' }))
+    expect(modal.getByText('Elige un rol')).toBeInTheDocument()
+    expect(modal.getByLabelText('RUT')).toHaveClass('is-invalid')
+  })
+
+  it('crea un vendedor y aparece en la tabla', async () => {
+    const user = userEvent.setup()
+    const modal = await abrirFormulario(user)
+
+    await user.type(modal.getByLabelText('Nombre completo'), 'Pedro Vendedor')
+    await user.type(modal.getByLabelText('RUT'), '222222222')
+    await user.type(modal.getByLabelText('Correo electrónico'), 'pedro@losmaestros.cl')
+    await user.type(modal.getByLabelText('Contraseña'), 'vende123')
+    await user.selectOptions(modal.getByLabelText('Rol'), 'VENDEDOR')
+    await user.click(modal.getByRole('button', { name: 'Crear usuario' }))
+
+    expect(await screen.findByText(/Se creó la cuenta de Pedro Vendedor/)).toBeInTheDocument()
+    const fila = screen.getByText('pedro@losmaestros.cl').closest('tr')
+    expect(fila).toHaveTextContent('22.222.222-2')
+    expect(fila).toHaveTextContent('Vendedor')
+  })
+
+  it('no permite repetir un correo', async () => {
+    const user = userEvent.setup()
+    const modal = await abrirFormulario(user)
+
+    await user.type(modal.getByLabelText('Nombre completo'), 'Otro Admin')
+    await user.type(modal.getByLabelText('RUT'), '222222222')
+    await user.type(modal.getByLabelText('Correo electrónico'), 'admin@losmaestros.cl')
+    await user.type(modal.getByLabelText('Contraseña'), 'clave123')
+    await user.selectOptions(modal.getByLabelText('Rol'), 'ADMIN')
+    await user.click(modal.getByRole('button', { name: 'Crear usuario' }))
+
+    expect(await modal.findByRole('alert')).toHaveTextContent('El email ya esta registrado')
+  })
+})
+
+
+
+
 describe('Mi cuenta', () => {
   it('sin sesión redirige al login', () => {
     montar('/mi-cuenta')

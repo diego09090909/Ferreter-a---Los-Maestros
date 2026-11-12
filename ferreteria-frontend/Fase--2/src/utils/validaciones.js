@@ -95,3 +95,13 @@ export function claseCampo(base, error) {
 export function enfocarPrimerError(formulario) {
   setTimeout(() => formulario?.querySelector('.is-invalid')?.focus(), 0)
 }
+
+// formulario "Nuevo usuario" del panel admin: los mismos datos del registro + el rol.
+// Como el admin crea la cuenta de otra persona, "Ingresa tu RUT" pasa a "Ingresa el RUT".
+export function erroresNuevoUsuario(datos) {
+  const errores = Object.fromEntries(
+    Object.entries(erroresRegistro(datos)).map(([campo, mensaje]) => [campo, mensaje.replace('Ingresa tu ', 'Ingresa el ')]),
+  )
+  if (!datos.rol) errores.rol = 'Elige un rol'
+  return errores
+}

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { obtenerProductos } from '../data/almacen'
 import { useTitulo } from '../hooks/useTitulo'
+import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
 import { obtenerUsuarios } from '../services/usuarios'
+import { colorRol } from '../utils/roles'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 
@@ -63,25 +65,47 @@ function SeccionPedidos() {
 }
 
 function SeccionUsuarios() {
-  const [usuarios] = useState(obtenerUsuarios)
+  const [usuarios, setUsuarios] = useState(obtenerUsuarios)
+  const [mostrarModal, setMostrarModal] = useState(false)
+  const [aviso, setAviso] = useState(null)
+
+  // al crear un usuario se recarga la lista y se muestra un aviso de exito
+  const alCrear = (nuevo) => {
+    setUsuarios(obtenerUsuarios())
+    setAviso(`Se creó la cuenta de ${nuevo.nombre} (${nuevo.rol}).`)
+  }
+
   return (
-    <Tabla
-      titulo="Usuarios Registrados"
-      columnas={['RUT', 'Nombre', 'Correo', 'Rol', 'Estado']}
-      acciones={<button type="button" className="btn btn-sm btn-success">+ Nuevo Usuario</button>}
-    >
-      {usuarios.map((u) => (
-        <tr key={u.rut}>
-          <td data-label="RUT">{u.rut}</td>
-          <td data-label="Nombre">{u.nombre}</td>
-          <td data-label="Correo">{u.email}</td>
-          <td data-label="Rol">
-            <span className={`badge ${u.rol === 'Administrador' ? 'bg-primary' : 'bg-secondary'}`}>{u.rol}</span>
-          </td>
-          <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
-        </tr>
-      ))}
-    </Tabla>
+    <>
+      {aviso && (
+        <div className="alert alert-success alert-dismissible" role="status">
+          {aviso}
+          <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setAviso(null)}></button>
+        </div>
+      )}
+      <Tabla
+        titulo="Usuarios Registrados"
+        columnas={['RUT', 'Nombre', 'Correo', 'Rol', 'Estado']}
+        acciones={
+          <button type="button" className="btn btn-sm btn-success" onClick={() => setMostrarModal(true)}>
+            + Nuevo Usuario
+          </button>
+        }
+      >
+        {usuarios.map((u) => (
+          <tr key={u.rut}>
+            <td data-label="RUT">{u.rut}</td>
+            <td data-label="Nombre">{u.nombre}</td>
+            <td data-label="Correo">{u.email}</td>
+            <td data-label="Rol">
+              <span className={`badge ${colorRol(u.rol)}`}>{u.rol}</span>
+            </td>
+            <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
+          </tr>
+        ))}
+      </Tabla>
+      <ModalNuevoUsuario mostrar={mostrarModal} onCerrar={() => setMostrarModal(false)} onCreado={alCrear} />
+    </>
   )
 }
 
