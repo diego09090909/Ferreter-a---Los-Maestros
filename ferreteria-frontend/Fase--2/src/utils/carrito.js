@@ -1,3 +1,5 @@
+import { imagenDe } from './imagen'
+
 export const CANTIDAD_MINIMA = 1
 export const CANTIDAD_MAXIMA = 10
 
@@ -30,7 +32,7 @@ export function agregarItem(carrito, producto) {
             codigo,
             nombre: producto.nombre,
             precio: producto.precio,
-            imagen: producto.imagen,
+            imagen: imagenDe(producto),
             cantidad: 1,
         },
     ]

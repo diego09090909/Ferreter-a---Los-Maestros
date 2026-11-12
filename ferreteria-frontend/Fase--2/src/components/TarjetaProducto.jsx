@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { formatearPrecio } from '../utils/formato'
+import { imagenDe, SIN_IMAGEN } from '../utils/imagen'
 
 function TarjetaProducto({ producto, onAgregar }) {
   const [agregado, setAgregado] = useState(false)
-  const agotado = producto.stockTienda + producto.stockBodega === 0
+  // "disponible" lo calcula ms-catalogo (stock > 0)
+  const agotado = !producto.disponible
 
   useEffect(() => {
     if (!agregado) return
@@ -29,11 +31,24 @@ function TarjetaProducto({ producto, onAgregar }) {
   return (
     <div className="col">
       <div className="card h-100 border-0 shadow-sm">
-        <img src={producto.imagen} className="card-img-top" alt={producto.nombre} />
+        <img
+          src={imagenDe(producto)}
+          className="card-img-top"
+          alt={producto.nombre}
+          // si la ruta guardada no existe, se cambia por la imagen generica (una sola vez)
+          onError={(e) => {
+            if (!e.currentTarget.src.endsWith(SIN_IMAGEN)) e.currentTarget.src = SIN_IMAGEN
+          }}
+        />
         <div className="card-body d-flex flex-column">
           <h5 className="card-title h6 fw-bold">{producto.nombre}</h5>
-          <p className="card-text small text-muted flex-grow-1">{producto.descripcion}</p>
-          <span className="fw-bold fs-6 mb-2 text-primary">{formatearPrecio(producto.precio)}</span>
+          <p className="card-text small text-muted flex-grow-1">
+            {producto.descripcion ?? [producto.marca, producto.subcategoria].filter(Boolean).join(' · ')}
+          </p>
+          <span className="fw-bold fs-6 mb-2 text-primary">
+            {formatearPrecio(producto.precio)}
+            {producto.unidad && <small className="text-muted fw-normal"> / {producto.unidad}</small>}
+          </span>
           <button
             type="button"
             className={`btn ${clase} btn-sm mt-auto`}

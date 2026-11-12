@@ -1,10 +1,34 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { CarritoProvider } from './context/CarritoContext'
+import { obtenerCategorias, obtenerProductos } from './services/catalogo'
+
+vi.mock('./services/catalogo', () => ({
+  obtenerProductos: vi.fn(),
+  obtenerCategorias: vi.fn(),
+  obtenerProducto: vi.fn(),
+}))
+
+const PRODUCTOS_API = [
+  { id: 1, codigo: 'HE001', nombre: 'Taladro Percutor 710W', precio: 49990, unidad: 'Unidad', stock: 10, disponible: true, marca: 'Bauker', subcategoria: 'Taladros', categoria: 'Herramientas', imagen: null },
+  { id: 2, codigo: 'PT001', nombre: 'Pintura látex interior 1 galón', precio: 9990, unidad: 'Galón', stock: 40, disponible: true, marca: 'Sipa', subcategoria: 'Látex', categoria: 'Pinturas', imagen: null },
+  { id: 3, codigo: 'PT004', nombre: 'Esmalte sintético 1/4 litro', precio: 4290, unidad: '1/4 L', stock: 0, disponible: false, marca: 'Sipa', subcategoria: 'Esmalte', categoria: 'Pinturas', imagen: null },
+  { id: 4, codigo: 'MC001', nombre: 'Cemento Polpaico gris 25 kg', precio: 5990, unidad: 'Saco', stock: 80, disponible: true, marca: 'Polpaico', subcategoria: 'Cementos', categoria: 'Mat. Construcción', imagen: null },
+]
+const CATEGORIAS_API = [
+  { id: 1, nombre: 'Herramientas', etiqueta: 'Herramientas Manuales y Eléctricas' },
+  { id: 2, nombre: 'Pinturas', etiqueta: 'Pinturas y Recubrimientos' },
+  { id: 3, nombre: 'Mat. Construcción', etiqueta: 'Materiales de Construcción' },
+]
+
+beforeEach(() => {
+  obtenerProductos.mockResolvedValue(PRODUCTOS_API)
+  obtenerCategorias.mockResolvedValue(CATEGORIAS_API)
+})
 
 const ADMIN = {
   rut: '11.111.111-1', nombre: 'Administrador General', email: 'admin@losmaestros.cl',
@@ -29,19 +53,35 @@ function montar(ruta = '/', { sesion } = {}) {
 }
 
 describe('catálogo y carrito', () => {
-  it('muestra 16 productos y filtra por categoría', async () => {
+  it('carga los productos desde la API y filtra por categoría', async () => {
     const user = userEvent.setup()
     montar('/catalogo')
-    expect(screen.getByText(/Mostrando 16 productos/)).toBeInTheDocument()
+    expect(await screen.findByText(/Mostrando 4 productos/)).toBeInTheDocument()
     await user.click(screen.getByText('Categoría de Productos'))
-    await user.click(screen.getByLabelText('Pinturas'))
-    expect(screen.getByText(/Mostrando 3 productos/)).toBeInTheDocument()
+    await user.click(screen.getByLabelText('Pinturas y Recubrimientos'))
+    expect(screen.getByText(/Mostrando 2 productos/)).toBeInTheDocument()
+  })
+
+  it('muestra la unidad y deshabilita los productos sin stock', async () => {
+    montar('/catalogo')
+    expect(await screen.findByText('/ Saco')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sin Stock' })).toBeDisabled()
+  })
+
+  it('si el backend no responde muestra un error y permite reintentar', async () => {
+    const user = userEvent.setup()
+    obtenerProductos.mockRejectedValueOnce({ request: {} })
+    montar('/catalogo')
+    expect(await screen.findByText(/No se pudo conectar con el servidor/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText(/Mostrando 4 productos/)).toBeInTheDocument()
   })
 
   it('agregar desde el catálogo actualiza el globito y llega al carrito', async () => {
     const user = userEvent.setup()
     montar('/catalogo')
-    await user.click(screen.getAllByRole('button', { name: 'Añadir al Carrito' })[0])
+    await user.click((await screen.findAllByRole('button', { name: 'Añadir al Carrito' }))[0])
     expect(screen.getByText('1')).toBeInTheDocument()
     await user.click(screen.getByLabelText('Ver carrito'))
     expect(screen.getByText('Taladro Percutor 710W')).toBeInTheDocument()

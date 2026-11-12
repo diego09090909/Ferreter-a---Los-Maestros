@@ -1,12 +1,15 @@
 import { sinTildes } from './formato'
 
-export const PRECIO_MAXIMO = 100000
-
 export const FILTROS_INICIALES = {
-  categorias: [], 
+  categorias: [],
   marca: 'todas',
-  precioMaximo: PRECIO_MAXIMO,
-  orden: 'destacados', 
+  precioMaximo: null,
+  orden: 'destacados',
+}
+
+export function precioTope(productos) {
+  const mayor = Math.max(0, ...productos.map((p) => p.precio))
+  return Math.ceil(mayor / 10000) * 10000
 }
 
 
@@ -17,14 +20,15 @@ export function filtrarProductos(productos, filtros, texto = '') {
     const cumpleCategoria =
       filtros.categorias.length === 0 || filtros.categorias.includes(p.categoria)
     const cumpleMarca = filtros.marca === 'todas' || p.marca === filtros.marca
-    const cumplePrecio = p.precio <= filtros.precioMaximo
+    const cumplePrecio = filtros.precioMaximo === null || p.precio <= filtros.precioMaximo
 
 
     const cumpleBusqueda =
       buscado === '' ||
       sinTildes(p.nombre).includes(buscado) ||
       sinTildes(p.descripcion || '').includes(buscado) ||
-      sinTildes(p.marca || '').includes(buscado)
+      sinTildes(p.marca || '').includes(buscado) ||
+      sinTildes(p.subcategoria || '').includes(buscado)
 
     return cumpleCategoria && cumpleMarca && cumplePrecio && cumpleBusqueda
   })
