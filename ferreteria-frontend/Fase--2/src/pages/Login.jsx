@@ -5,6 +5,7 @@ import ErrorCampo from '../components/ErrorCampo'
 import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
+import { agregarDireccion } from '../services/direcciones'
 import { guardarUsuarios, obtenerUsuarios } from '../services/usuarios'
 import { DIRECCION_VACIA, erroresDireccion, limpiarDireccion } from '../utils/direccion'
 import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut } from '../utils/rut'
@@ -70,7 +71,7 @@ function Login() {
     irA(encontrado.rol === 'Administrador' ? '/admin' : '/')
   }
 
-  const registrarse = (evento) => {
+  const registrarse = async (evento) => {
     evento.preventDefault()
     const nombre = registro.nombre.trim()
     const rut = registro.rut.trim()
@@ -100,9 +101,10 @@ function Login() {
       email: correo,
       password,
       rol: 'Cliente',
-      direccion: limpiarDireccion(direccionRegistro),
     }
     guardarUsuarios([...usuarios, nuevoUsuario])
+    // la direccion del registro queda como la primera de "Mis direcciones" (predeterminada), igual que en ms-usuarios
+    await agregarDireccion(nuevoUsuario, limpiarDireccion(direccionRegistro))
 
 
     iniciarSesion(nuevoUsuario)

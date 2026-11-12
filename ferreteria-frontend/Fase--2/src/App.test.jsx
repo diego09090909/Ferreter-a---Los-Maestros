@@ -233,6 +233,94 @@ describe('panel admin: nuevo usuario', () => {
 
 
 
+describe('direcciones guardadas', () => {
+  const DIRECCIONES_ANA = {
+    [CLIENTE.rut]: [
+      { id: 1, alias: 'Casa', calle: 'Av. Francisco de Aguirre', numero: '1450', departamento: '', comuna: 'La Serena', region: 'Región de Coquimbo', indicaciones: '', predeterminada: true },
+      { id: 2, alias: 'Obra', calle: 'Los Carrera', numero: '380', departamento: '', comuna: 'Ovalle', region: 'Región de Coquimbo', indicaciones: '', predeterminada: false },
+    ],
+  }
+
+  const llenarDireccion = async (user, contenedor, { calle, numero, comuna }) => {
+    await user.type(contenedor.getByLabelText('Calle'), calle)
+    await user.type(contenedor.getByLabelText('Número'), numero)
+    await user.selectOptions(contenedor.getByLabelText('Comuna'), comuna)
+  }
+
+  it('agrega direcciones en Mi Cuenta y la primera queda predeterminada', async () => {
+    const user = userEvent.setup()
+    montar('/mi-cuenta', { sesion: CLIENTE })
+    const seccion = within(screen.getByRole('region', { name: 'Mis direcciones' }))
+    expect(seccion.getByText('Aún no tienes direcciones guardadas.')).toBeInTheDocument()
+
+    await user.click(seccion.getByRole('button', { name: '+ Agregar dirección' }))
+    await user.type(seccion.getByLabelText('Nombre de la dirección (opcional)'), 'Casa')
+    await llenarDireccion(user, seccion, { calle: 'Balmaceda', numero: '120', comuna: 'Coquimbo' })
+    await user.click(seccion.getByRole('button', { name: 'Guardar dirección' }))
+
+    expect(await seccion.findByText('Casa')).toBeInTheDocument()
+    expect(seccion.getByText('Predeterminada')).toBeInTheDocument()
+    expect(seccion.getByText('Balmaceda 120, Coquimbo, Región de Coquimbo')).toBeInTheDocument()
+  })
+
+  it('cambia la predeterminada y elimina con confirmación', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('direcciones', JSON.stringify(DIRECCIONES_ANA))
+    montar('/mi-cuenta', { sesion: CLIENTE })
+    const seccion = within(screen.getByRole('region', { name: 'Mis direcciones' }))
+
+    await user.click(await seccion.findByRole('button', { name: 'Usar como predeterminada' }))
+    const items = await seccion.findAllByRole('listitem')
+    expect(items[0]).toHaveTextContent('Obra')
+    expect(items[0]).toHaveTextContent('Predeterminada')
+
+    await user.click(within(items[0]).getByRole('button', { name: 'Eliminar' }))
+    await user.click(within(items[0]).getByRole('button', { name: 'Sí, eliminar' }))
+    const restantes = await seccion.findAllByRole('listitem')
+    expect(restantes).toHaveLength(1)
+    expect(restantes[0]).toHaveTextContent('Casa')
+    expect(restantes[0]).toHaveTextContent('Predeterminada')
+  })
+
+  it('en el carrito viene marcada la predeterminada y el despacho usa su comuna', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('direcciones', JSON.stringify(DIRECCIONES_ANA))
+    localStorage.setItem('carrito', JSON.stringify([{ codigo: 'producto-4', nombre: 'Cemento', precio: 5990, imagen: null, cantidad: 2 }]))
+    montar('/carrito', { sesion: CLIENTE })
+
+    await user.selectOptions(screen.getByLabelText('Tipo de entrega'), 'Despacho a domicilio')
+    expect(await screen.findByLabelText(/Casa/)).toBeChecked()
+    expect(screen.getByText('$3.990')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText(/Obra/))
+    expect(screen.getByText('$11.990')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Usar una dirección nueva'))
+    expect(screen.getByLabelText('Calle')).toBeInTheDocument()
+    expect(screen.getByLabelText('Guardar esta dirección en mi cuenta')).toBeInTheDocument()
+  })
+
+  it('la dirección del registro queda guardada como predeterminada', async () => {
+    const user = userEvent.setup()
+    montar('/login')
+    await user.type(screen.getByLabelText('Nombre completo'), 'Luis Pérez')
+    await user.type(screen.getByLabelText('RUT', { selector: '#registro-rut' }), '222222222')
+    await user.type(screen.getByLabelText('Correo electrónico'), 'luis@correo.cl')
+    await user.type(screen.getByLabelText('Contraseña', { selector: '#registro-password' }), 'clave123')
+    const formulario = within(screen.getByRole('button', { name: 'Crear Cuenta' }).closest('form'))
+    await llenarDireccion(user, formulario, { calle: 'Cordovez', numero: '55', comuna: 'La Serena' })
+    await user.click(screen.getByRole('button', { name: 'Crear Cuenta' }))
+
+    expect(await screen.findByText(/Cuenta creada correctamente/)).toBeInTheDocument()
+    const guardadas = JSON.parse(localStorage.getItem('direcciones'))['22.222.222-2']
+    expect(guardadas).toHaveLength(1)
+    expect(guardadas[0]).toMatchObject({ alias: 'Principal', calle: 'Cordovez', numero: '55', predeterminada: true })
+  })
+})
+
+
+
+
 describe('Mi cuenta', () => {
   it('sin sesión redirige al login', () => {
     montar('/mi-cuenta')
