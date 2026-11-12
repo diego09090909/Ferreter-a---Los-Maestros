@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ferreteria.ms_usuarios.dto.CambiarPasswordRequest;
 import com.ferreteria.ms_usuarios.dto.LoginRequest;
+import com.ferreteria.ms_usuarios.dto.PerfilRequest;
 import com.ferreteria.ms_usuarios.dto.RegistroRequest;
 import com.ferreteria.ms_usuarios.dto.UsuarioResponse;
 import com.ferreteria.ms_usuarios.mapper.DireccionMapper;
@@ -90,5 +91,30 @@ public class UsuarioService {
 
         usuario.setPassword(passwordEncoder.encode(passwordNew));
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtenerPerfil(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        return usuarioMapper.aResponse(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponse actualizarPerfil(Long usuarioId, PerfilRequest req) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        String email = req.getEmail().trim().toLowerCase();
+
+        if (usuarioRepository.existsByEmailAndIdNot(email, usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya esta registrado");
+        }
+
+        usuario.setNombre(req.getNombre().trim());
+        usuario.setEmail(email);
+
+        return usuarioMapper.aResponse(usuarioRepository.save(usuario));
     }
 }
