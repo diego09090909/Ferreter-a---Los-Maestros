@@ -299,3 +299,16 @@ main {
     content: "* ";
     color: var(--bs-danger);
 }
+
+/* nombre del producto en la tarjeta: lleva al detalle */
+.link-producto:hover {
+    color: var(--bs-primary) !important;
+    text-decoration: underline !important;
+}
+
+/* imagen grande de la pagina de detalle */
+.imagen-detalle {
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background-color: #f1f3f5;
+}
