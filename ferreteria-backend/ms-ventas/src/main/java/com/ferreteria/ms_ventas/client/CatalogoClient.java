@@ -1,3 +1,4 @@
+
 package com.ferreteria.ms_ventas.client;
 
 import com.ferreteria.ms_ventas.exception.RecursoNoEncontradoException;
@@ -22,7 +23,7 @@ public class CatalogoClient {
     public ProductoCatalogo obtenerProducto(Long productoId) {
         try {
             return restClient.get()
-                    .uri("/api/productos/{id}", productoId)
+                    .uri("/api/v1/productos/{id}", productoId)
                     .retrieve()
                     .body(ProductoCatalogo.class);
         } catch (HttpClientErrorException.NotFound e) {
@@ -35,7 +36,7 @@ public class CatalogoClient {
     public void descontarStock(Long productoId, int cantidad) {
         try {
             restClient.put()
-                    .uri("/api/productos/{id}/descontar-stock", productoId)
+                    .uri("/api/v1/productos/{id}/descontar-stock", productoId)
                     .body(Map.of("cantidad", cantidad))
                     .retrieve()
                     .toBodilessEntity();
@@ -51,7 +52,7 @@ public class CatalogoClient {
 
     public void reponerStock(Long productoId, int cantidad) {
         restClient.put()
-                .uri("/api/productos/{id}/reponer-stock", productoId)
+                .uri("/api/v1/productos/{id}/reponer-stock", productoId)
                 .body(Map.of("cantidad", cantidad))
                 .retrieve()
                 .toBodilessEntity();
