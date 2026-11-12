@@ -4,6 +4,7 @@ import com.ferreteria.ms_catalogo.dto.CategoriaRequest;
 import com.ferreteria.ms_catalogo.dto.CategoriaResponse;
 import com.ferreteria.ms_catalogo.exception.RecursoNoEncontradoException;
 import com.ferreteria.ms_catalogo.exception.ReglaNegocioException;
+import com.ferreteria.ms_catalogo.mapper.CategoriaMapper;
 import com.ferreteria.ms_catalogo.model.Categoria;
 import com.ferreteria.ms_catalogo.repository.CategoriaRepository;
 import com.ferreteria.ms_catalogo.repository.ProductoRepository;
@@ -18,15 +19,16 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
     private final ProductoRepository productoRepository;
+    private final CategoriaMapper categoriaMapper;
 
     @Transactional(readOnly = true)
     public List<CategoriaResponse> listar() {
-        return categoriaRepository.findAll().stream().map(CategoriaResponse::desde).toList();
+        return categoriaRepository.findAll().stream().map(categoriaMapper::aResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public CategoriaResponse buscarPorId(Long id) {
-        return CategoriaResponse.desde(obtener(id));
+        return categoriaMapper.aResponse(obtener(id));
     }
 
     @Transactional
@@ -36,9 +38,8 @@ public class CategoriaService {
             throw new ReglaNegocioException("Ya existe una categoria con el nombre " + nombre);
         }
 
-        Categoria categoria = new Categoria();
-        copiarDatos(request, categoria);
-        return CategoriaResponse.desde(categoriaRepository.save(categoria));
+        Categoria categoria = categoriaMapper.aEntidad(request);
+        return categoriaMapper.aResponse(categoriaRepository.save(categoria));
     }
 
     @Transactional
@@ -49,8 +50,8 @@ public class CategoriaService {
             throw new ReglaNegocioException("Ya existe otra categoria con el nombre " + nombre);
         }
 
-        copiarDatos(request, categoria);
-        return CategoriaResponse.desde(categoriaRepository.save(categoria));
+        categoriaMapper.actualizar(categoria, request);
+        return categoriaMapper.aResponse(categoriaRepository.save(categoria));
     }
 
     @Transactional
@@ -62,15 +63,8 @@ public class CategoriaService {
         categoriaRepository.delete(categoria);
     }
 
-    // lo usa ProductoService para asignar la categoria a un producto
     public Categoria obtener(Long id) {
         return categoriaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe la categoria con id " + id));
-    }
-
-    private void copiarDatos(CategoriaRequest request, Categoria categoria) {
-        categoria.setNombre(request.getNombre().trim());
-        categoria.setEtiqueta(request.getEtiqueta().trim());
-        categoria.setDescripcion(request.getDescripcion());
     }
 }

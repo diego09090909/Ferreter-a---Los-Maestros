@@ -5,6 +5,8 @@ import com.ferreteria.ms_catalogo.dto.ProductoRequest;
 import com.ferreteria.ms_catalogo.dto.ProductoResponse;
 import com.ferreteria.ms_catalogo.exception.RecursoNoEncontradoException;
 import com.ferreteria.ms_catalogo.exception.ReglaNegocioException;
+import com.ferreteria.ms_catalogo.mapper.ProductoMapper;
+import com.ferreteria.ms_catalogo.model.Categoria;
 import com.ferreteria.ms_catalogo.model.Producto;
 import com.ferreteria.ms_catalogo.repository.ProductoRepository;
 import java.util.List;
@@ -18,30 +20,32 @@ public class ProductoService {
 
     private final ProductoRepository productoRepository;
     private final CategoriaService categoriaService;
+    private final ProductoMapper productoMapper;
 
     @Transactional(readOnly = true)
     public List<ProductoResponse> listar(String categoria, String buscar) {
-        return filtrar(categoria, buscar).stream().map(ProductoResponse::desde).toList();
+        return filtrar(categoria, buscar).stream().map(productoMapper::aResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public ProductoResponse buscarPorId(Long id) {
-        return ProductoResponse.desde(obtener(id));
+        return productoMapper.aResponse(obtener(id));
     }
 
     @Transactional(readOnly = true)
     public List<ProductoAdminResponse> listarParaAdmin(String categoria, String buscar) {
-        return filtrar(categoria, buscar).stream().map(ProductoAdminResponse::desde).toList();
+        return filtrar(categoria, buscar).stream().map(productoMapper::aAdminResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public ProductoAdminResponse buscarPorIdParaAdmin(Long id) {
-        return ProductoAdminResponse.desde(obtener(id));
+        return productoMapper.aAdminResponse(obtener(id));
     }
 
+    // productos en su stock minimo o menos, para reponer
     @Transactional(readOnly = true)
     public List<ProductoAdminResponse> stockBajo() {
-        return productoRepository.buscarStockBajo().stream().map(ProductoAdminResponse::desde).toList();
+        return productoRepository.buscarStockBajo().stream().map(productoMapper::aAdminResponse).toList();
     }
 
     @Transactional
@@ -52,9 +56,9 @@ public class ProductoService {
         }
         validarPrecios(request);
 
-        Producto producto = new Producto();
-        copiarDatos(request, producto);
-        return ProductoAdminResponse.desde(productoRepository.save(producto));
+        Categoria categoria = categoriaService.obtener(request.getCategoriaId());
+        Producto producto = productoMapper.aEntidad(request, categoria);
+        return productoMapper.aAdminResponse(productoRepository.save(producto));
     }
 
     @Transactional
@@ -66,8 +70,9 @@ public class ProductoService {
         }
         validarPrecios(request);
 
-        copiarDatos(request, producto);
-        return ProductoAdminResponse.desde(productoRepository.save(producto));
+        Categoria categoria = categoriaService.obtener(request.getCategoriaId());
+        productoMapper.actualizar(producto, request, categoria);
+        return productoMapper.aAdminResponse(productoRepository.save(producto));
     }
 
     @Transactional
@@ -85,14 +90,14 @@ public class ProductoService {
         }
 
         producto.setStock(producto.getStock() - cantidad);
-        return ProductoResponse.desde(productoRepository.save(producto));
+        return productoMapper.aResponse(productoRepository.save(producto));
     }
 
     @Transactional
     public ProductoResponse reponerStock(Long id, Integer cantidad) {
         Producto producto = obtener(id);
         producto.setStock(producto.getStock() + cantidad);
-        return ProductoResponse.desde(productoRepository.save(producto));
+        return productoMapper.aResponse(productoRepository.save(producto));
     }
 
     private List<Producto> filtrar(String categoria, String buscar) {
@@ -120,20 +125,5 @@ public class ProductoService {
     private Producto obtener(Long id) {
         return productoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe el producto con id " + id));
-    }
-
-    private void copiarDatos(ProductoRequest request, Producto producto) {
-        producto.setCodigo(request.getCodigo().trim().toUpperCase());
-        producto.setNombre(request.getNombre().trim());
-        producto.setDescripcion(request.getDescripcion());
-        producto.setSubcategoria(request.getSubcategoria().trim());
-        producto.setMarca(request.getMarca());
-        producto.setUnidad(request.getUnidad().trim());
-        producto.setPrecioCompra(request.getPrecioCompra());
-        producto.setPrecio(request.getPrecio());
-        producto.setStock(request.getStock());
-        producto.setStockMinimo(request.getStockMinimo());
-        producto.setImagen(request.getImagen());
-        producto.setCategoria(categoriaService.obtener(request.getCategoriaId()));
     }
 }
