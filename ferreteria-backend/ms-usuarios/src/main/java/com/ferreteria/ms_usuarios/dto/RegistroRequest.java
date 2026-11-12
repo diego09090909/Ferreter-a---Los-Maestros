@@ -1,5 +1,7 @@
 package com.ferreteria.ms_usuarios.dto;
 
+import com.ferreteria.ms_usuarios.validation.RutValido;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +22,7 @@ public class RegistroRequest {
     private String nombre;
 
     @NotBlank(message = "El RUT es obligatorio")
+    @RutValido
     private String rut;
 
     @NotBlank(message = "El email es obligatorio")

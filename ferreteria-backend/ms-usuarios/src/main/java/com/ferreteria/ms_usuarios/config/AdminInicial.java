@@ -26,7 +26,7 @@ public class AdminInicial implements CommandLineRunner {
         String email = "admin@losmaestros.cl";
         String rut = "11111111-1";
 
-        // Si ya existe, no hace nada (así no se duplica en cada arranque)
+
         if (usuarioRepository.existsByEmail(email) || usuarioRepository.existsByRut(rut)) {
             return;
         }

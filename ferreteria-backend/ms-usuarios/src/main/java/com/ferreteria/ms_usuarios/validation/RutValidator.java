@@ -8,12 +8,12 @@ public class RutValidator implements ConstraintValidator<RutValido, String> {
     @Override
     public boolean isValid(String rut, ConstraintValidatorContext context) {
         if (rut == null || rut.isBlank()) {
-            return true; // de eso se encarga @NotBlank
+            return true; 
         }
 
         String limpio = rut.trim().replace(".", "").toUpperCase();
 
-        // Formato: 7 u 8 dígitos, guion y dígito verificador (0-9 o K)
+      
         if (!limpio.matches("^\\d{7,8}-[\\dK]$")) {
             return false;
         }
