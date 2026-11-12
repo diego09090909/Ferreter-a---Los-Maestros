@@ -1,15 +1,14 @@
 import { Accordion } from 'react-bootstrap'
-import { CATEGORIAS } from '../data/productos'
-import { PRECIO_MAXIMO } from '../utils/filtrarProductos'
 
-function FiltroCatalogo({ filtros, marcas, onChange }) {
+function FiltroCatalogo({ filtros, categorias, marcas, tope, onChange }) {
+  const precioElegido = filtros.precioMaximo ?? tope
   const cambiar = (parcial) => onChange({ ...filtros, ...parcial })
 
   const alternarCategoria = (valor) => {
-    const categorias = filtros.categorias.includes(valor)
+    const seleccionadas = filtros.categorias.includes(valor)
       ? filtros.categorias.filter((c) => c !== valor)
       : [...filtros.categorias, valor]
-    cambiar({ categorias })
+    cambiar({ categorias: seleccionadas })
   }
 
   return (
@@ -20,16 +19,16 @@ function FiltroCatalogo({ filtros, marcas, onChange }) {
         <Accordion.Item eventKey="categorias">
           <Accordion.Header>Categoría de Productos</Accordion.Header>
           <Accordion.Body className="px-0">
-            {CATEGORIAS.map(({ valor, etiqueta }) => (
-              <div className="form-check" key={valor}>
+            {categorias.map(({ id, nombre, etiqueta }) => (
+              <div className="form-check" key={id}>
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  id={`cat-${valor}`}
-                  checked={filtros.categorias.includes(valor)}
-                  onChange={() => alternarCategoria(valor)}
+                  id={`cat-${id}`}
+                  checked={filtros.categorias.includes(nombre)}
+                  onChange={() => alternarCategoria(nombre)}
                 />
-                <label className="form-check-label small" htmlFor={`cat-${valor}`}>
+                <label className="form-check-label small" htmlFor={`cat-${id}`}>
                   {etiqueta}
                 </label>
               </div>
@@ -58,16 +57,16 @@ function FiltroCatalogo({ filtros, marcas, onChange }) {
           <Accordion.Header>Rango de precio</Accordion.Header>
           <Accordion.Body className="px-0">
             <label htmlFor="rango" className="form-label small fw-bold">
-              Precio máximo: ${filtros.precioMaximo.toLocaleString('es-CL')}
+              Precio máximo: ${precioElegido.toLocaleString('es-CL')}
             </label>
             <input
               type="range"
               className="form-range"
               id="rango"
               min="0"
-              max={PRECIO_MAXIMO}
+              max={tope}
               step="1000"
-              value={filtros.precioMaximo}
+              value={precioElegido}
               onChange={(e) => cambiar({ precioMaximo: Number(e.target.value) })}
             />
           </Accordion.Body>
