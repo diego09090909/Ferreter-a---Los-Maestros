@@ -7,6 +7,7 @@ const CALLE_TERMINA_EN_NUMERO = /\d+\s*$/
 const PATRON_NUMERO = /^(\d{1,6}\s?[a-zA-Z]?|s\/n)$/i
 
 export const DIRECCION_VACIA = {
+    alias: '',
     calle: '',
     numero: '',
     departamento: '',
@@ -43,6 +44,7 @@ export function errorDireccion(direccion) {
 
 export function limpiarDireccion(direccion) {
     return {
+        alias: (direccion.alias ?? '').trim(),
         calle: direccion.calle.trim(),
         numero: direccion.numero.trim(),
         departamento: direccion.departamento.trim(),

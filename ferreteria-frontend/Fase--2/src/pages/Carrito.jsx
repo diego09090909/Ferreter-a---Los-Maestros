@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Container, Table, Form, Button, Alert, Row, Col } from 'react-bootstrap'
 import FormularioDireccion from '../components/FormularioDireccion'
 import { useCarrito } from '../context/CarritoContext'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { MAX_DIRECCIONES, agregarDireccion, listarDirecciones } from '../services/direcciones'
 import { leer, guardar } from '../utils/storage'
 import { obtenerProductos } from '../data/almacen'
 import {
@@ -15,7 +16,7 @@ import {
     hayCantidadInvalida,
     registrarCompra,
 } from '../utils/carrito'
-import { completarDireccion, erroresDireccion, limpiarDireccion, textoDireccion } from '../utils/direccion'
+import { DIRECCION_VACIA, erroresDireccion, limpiarDireccion, textoDireccion } from '../utils/direccion'
 import { costoDespacho, faltaParaDespachoGratis } from '../utils/despacho'
 import { formatearPrecio } from '../utils/formato'
 import { enfocarPrimerError, erroresDatos, hayErrores } from '../utils/validaciones'
@@ -48,7 +49,7 @@ export default function Carrito() {
 
 function PaginaCarrito() {
     const { carrito, total, cambiarCantidad, eliminar, vaciar } = useCarrito()
-    const { usuario, actualizarUsuario } = useAuth()
+    const { usuario } = useAuth()
     const navigate = useNavigate()
 
     const [entrega, setEntrega] = useState('')
@@ -61,24 +62,42 @@ function PaginaCarrito() {
         nombre: usuario?.nombre ?? '',
         email: usuario?.email ?? '',
     }))
-    const [direccion, setDireccion] = useState(() => completarDireccion(usuario?.direccion))
+    // direcciones guardadas del cliente; "seleccion" es el id de la elegida o 'nueva' para escribir otra
+    const [direcciones, setDirecciones] = useState([])
+    const [seleccion, setSeleccion] = useState('nueva')
+    const [direccion, setDireccion] = useState(DIRECCION_VACIA)
     const [guardarEnCuenta, setGuardarEnCuenta] = useState(false)
-    const tieneDireccionGuardada = Boolean(usuario?.direccion?.calle)
+
+    // al entrar con sesion se cargan sus direcciones y se marca la predeterminada (viene primera)
+    useEffect(() => {
+        if (!usuario) return
+        listarDirecciones(usuario).then((lista) => {
+            setDirecciones(lista)
+            if (lista.length > 0) setSeleccion(lista[0].id)
+        })
+    }, [usuario])
+
+    const usaNueva = seleccion === 'nueva'
+    const direccionElegida = usaNueva ? direccion : direcciones.find((d) => d.id === seleccion)
+    const puedeGuardar = Boolean(usuario) && direcciones.length < MAX_DIRECCIONES
+
     const conDespacho = entrega === ENTREGA_DOMICILIO
-    const envio = conDespacho ? costoDespacho(direccion.comuna, total) : 0
+    const comuna = direccionElegida?.comuna ?? ''
+    const envio = conDespacho ? costoDespacho(comuna, total) : 0
     const totalAPagar = total + (envio ?? 0)
-    const faltaGratis = conDespacho ? faltaParaDespachoGratis(direccion.comuna, total) : 0
+    const faltaGratis = conDespacho ? faltaParaDespachoGratis(comuna, total) : 0
     const [intento, setIntento] = useState(false)
     const erroresCompra = {
         ...erroresDatos(datosCliente),
         ...(entrega ? {} : { entrega: 'Elige un tipo de entrega' }),
         ...(pago ? {} : { pago: 'Elige un medio de pago' }),
     }
-    const erroresEntrega = conDespacho ? erroresDireccion(direccion) : {}
+    // solo se valida el formulario cuando se escribe una direccion nueva; las guardadas ya son validas
+    const erroresEntrega = conDespacho && usaNueva ? erroresDireccion(direccion) : {}
     const err = intento ? erroresCompra : {}
     const errDireccion = intento ? erroresEntrega : {}
 
-    function confirmar() {
+    async function confirmar() {
         if (!usuario) {
             setMensaje({
                 tipo: 'danger',
@@ -110,7 +129,8 @@ function PaginaCarrito() {
             return
         }
 
-        const direccionFinal = conDespacho ? limpiarDireccion(direccion) : undefined
+        let direccionFinal
+        if (conDespacho) direccionFinal = usaNueva ? limpiarDireccion(direccion) : direccionElegida
 
         const resultado = registrarCompra({
             carrito,
@@ -127,8 +147,12 @@ function PaginaCarrito() {
         guardar('pedidos', [...leer('pedidos', []), resultado.pedido])
         guardar('ventas', [...leer('ventas', []), resultado.venta])
 
-        if (conDespacho && guardarEnCuenta) {
-            actualizarUsuario({ direccion: direccionFinal })
+        // la direccion nueva se guarda en "Mis direcciones" si el cliente lo pidio
+        if (conDespacho && usaNueva && guardarEnCuenta && puedeGuardar) {
+            const guardada = await agregarDireccion(usuario, direccionFinal)
+            setDirecciones(await listarDirecciones(usuario))
+            setSeleccion(guardada.id)
+            setDireccion(DIRECCION_VACIA)
         }
 
         const destino = conDespacho
@@ -288,20 +312,76 @@ function PaginaCarrito() {
                 <section className="mt-4" aria-labelledby="titulo-direccion">
                     <h2 id="titulo-direccion" className="h5">Dirección de entrega</h2>
                     <p className="text-muted small">
-                        {tieneDireccionGuardada
-                            ? 'Usamos la dirección de tu cuenta. Puedes modificarla para este pedido.'
+                        {direcciones.length > 0
+                            ? 'Elige una de tus direcciones guardadas o escribe una nueva.'
                             : 'Completa la dirección donde quieres recibir tu pedido.'}
                     </p>
 
-                    <FormularioDireccion prefijo="entrega-dir" valor={direccion} onChange={setDireccion} errores={errDireccion} />
+                    {direcciones.length > 0 && (
+                        <div className="mb-3" role="radiogroup" aria-label="Direcciones guardadas">
+                            {direcciones.map((d) => (
+                                <Form.Check
+                                    key={d.id}
+                                    type="radio"
+                                    id={`dir-${d.id}`}
+                                    name="direccion-entrega"
+                                    className="border rounded p-2 ps-5 mb-2"
+                                    checked={seleccion === d.id}
+                                    onChange={() => setSeleccion(d.id)}
+                                    label={
+                                        <>
+                                            <strong>{d.alias}</strong>
+                                            {d.predeterminada && <span className="badge bg-primary ms-2">Predeterminada</span>}
+                                            <span className="d-block small text-muted">{textoDireccion(d)}</span>
+                                        </>
+                                    }
+                                />
+                            ))}
+                            <Form.Check
+                                type="radio"
+                                id="dir-nueva"
+                                name="direccion-entrega"
+                                className="border rounded p-2 ps-5"
+                                checked={usaNueva}
+                                onChange={() => setSeleccion('nueva')}
+                                label={<strong>Usar una dirección nueva</strong>}
+                            />
+                        </div>
+                    )}
 
-                    <Form.Check
-                        id="guardar-direccion"
-                        type="checkbox"
-                        label="Guardar esta dirección en mi cuenta"
-                        checked={guardarEnCuenta}
-                        onChange={(e) => setGuardarEnCuenta(e.target.checked)}
-                    />
+                    {usaNueva && (
+                        <>
+                            <FormularioDireccion prefijo="entrega-dir" valor={direccion} onChange={setDireccion} errores={errDireccion} />
+
+                            {puedeGuardar && (
+                                <Form.Check
+                                    id="guardar-direccion"
+                                    type="checkbox"
+                                    label="Guardar esta dirección en mi cuenta"
+                                    checked={guardarEnCuenta}
+                                    onChange={(e) => setGuardarEnCuenta(e.target.checked)}
+                                />
+                            )}
+                            {guardarEnCuenta && puedeGuardar && (
+                                <div className="mt-2" style={{ maxWidth: 320 }}>
+                                    <Form.Label htmlFor="entrega-dir-alias" className="small">Nombre de la dirección (opcional)</Form.Label>
+                                    <Form.Control
+                                        id="entrega-dir-alias"
+                                        size="sm"
+                                        placeholder="Ej: Casa, Oficina, Obra"
+                                        maxLength={50}
+                                        value={direccion.alias}
+                                        onChange={(e) => setDireccion({ ...direccion, alias: e.target.value })}
+                                    />
+                                </div>
+                            )}
+                            {usuario && !puedeGuardar && (
+                                <p className="small text-muted mb-0">
+                                    Ya tienes {MAX_DIRECCIONES} direcciones guardadas. Esta dirección se usará solo para este pedido.
+                                </p>
+                            )}
+                        </>
+                    )}
                 </section>
             )}
 
@@ -313,7 +393,7 @@ function PaginaCarrito() {
                 </div>
                 <div className="d-flex justify-content-between">
                     <span>Despacho</span>
-                    <span>{textoEnvio(entrega, conDespacho, direccion.comuna, envio)}</span>
+                    <span>{textoEnvio(entrega, conDespacho, comuna, envio)}</span>
                 </div>
                 <hr className="my-2" />
                 <div className="d-flex justify-content-between fs-5">
@@ -322,7 +402,7 @@ function PaginaCarrito() {
                 </div>
                 {faltaGratis > 0 && carrito.length > 0 && (
                     <p className="text-success small mb-0 mt-2">
-                        Te faltan {formatearPrecio(faltaGratis)} para tener despacho gratis en {direccion.comuna}.
+                        Te faltan {formatearPrecio(faltaGratis)} para tener despacho gratis en {comuna}.
                     </p>
                 )}
             </section>

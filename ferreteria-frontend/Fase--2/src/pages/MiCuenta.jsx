@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Aviso from '../components/Aviso'
 import ErrorCampo from '../components/ErrorCampo'
-import FormularioDireccion from '../components/FormularioDireccion'
+import MisDirecciones from '../components/MisDirecciones'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { obtenerUsuarios } from '../services/usuarios'
-import { completarDireccion, erroresDireccion, limpiarDireccion } from '../utils/direccion'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
@@ -23,16 +22,12 @@ function MiCuenta() {
   const [claves, setClaves] = useState({ actual: '', nueva: '', repetir: '' })
   const [msgDatos, setMsgDatos] = useState(null)
   const [msgClave, setMsgClave] = useState(null)
-  const [direccion, setDireccion] = useState(() => completarDireccion(usuario.direccion))
-  const [msgDireccion, setMsgDireccion] = useState(null)
 
   // errores por campo: aparecen despues del primer intento y se actualizan al escribir
   const [intentoDatos, setIntentoDatos] = useState(false)
   const [intentoClave, setIntentoClave] = useState(false)
-  const [intentoDireccion, setIntentoDireccion] = useState(false)
   const errDatos = intentoDatos ? erroresDatos(datos) : {}
   const errClave = intentoClave ? erroresClaves(claves) : {}
-  const errDireccion = intentoDireccion ? erroresDireccion(direccion) : {}
 
   const [pedidos] = useState(() =>
     leer('pedidos', [])
@@ -62,21 +57,6 @@ function MiCuenta() {
 
     actualizarUsuario({ nombre, email })
     setMsgDatos({ tipo: 'success', texto: 'Tus datos se actualizaron correctamente' })
-  }
-
-  const guardarDireccion = (evento) => {
-    evento.preventDefault()
-    setIntentoDireccion(true)
-    if (hayErrores(erroresDireccion(direccion))) {
-      setMsgDireccion(REVISAR_CAMPOS)
-      enfocarPrimerError(evento.currentTarget)
-      return
-    }
-
-    const limpia = limpiarDireccion(direccion)
-    actualizarUsuario({ direccion: limpia })
-    setDireccion(limpia)
-    setMsgDireccion({ tipo: 'success', texto: 'Tu dirección de entrega se actualizó correctamente' })
   }
 
   const cambiarClave = (evento) => {
@@ -247,23 +227,7 @@ function MiCuenta() {
       </div>
 
   
-      {!esAdmin && (
-        <section className="card shadow-sm mt-4">
-          <div className="card-body p-4">
-            <h2 className="h5 fw-bold mb-1">Mi dirección de entrega</h2>
-            <p className="text-secondary small mb-3">
-              Se usa para completar tus compras con despacho a domicilio. Puedes cambiarla cuando quieras.
-            </p>
-            <form onSubmit={guardarDireccion} noValidate>
-              <FormularioDireccion prefijo="cuenta-dir" valor={direccion} onChange={setDireccion} errores={errDireccion} />
-              <div className="d-grid d-md-flex justify-content-md-end">
-                <button type="submit" className="btn btn-primary">Guardar dirección</button>
-              </div>
-              <Aviso mensaje={msgDireccion} />
-            </form>
-          </div>
-        </section>
-      )}
+      {!esAdmin && <MisDirecciones usuario={usuario} />}
 
       {/* Pedidos */}
       <section className="card shadow-sm mt-4">

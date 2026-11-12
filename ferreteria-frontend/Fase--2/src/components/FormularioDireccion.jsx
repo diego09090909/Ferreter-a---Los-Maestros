@@ -4,12 +4,29 @@ import { comunasConCobertura } from '../utils/despacho'
 import { claseCampo } from '../utils/validaciones'
 
 
-function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
+// errores: { calle, numero, comuna } con el mensaje de cada campo que falle
+// conAlias: muestra el campo "Nombre de la dirección" (Casa, Obra...) para las direcciones guardadas
+function FormularioDireccion({ valor, onChange, prefijo, errores = {}, conAlias = false }) {
     const cambiar = (parcial) => onChange({ ...valor, ...parcial })
     const comunas = comunasConCobertura()
 
     return (
         <>
+            {conAlias && (
+                <div className="mb-3">
+                    <label htmlFor={`${prefijo}-alias`} className="form-label">Nombre de la dirección (opcional)</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id={`${prefijo}-alias`}
+                        placeholder="Ej: Casa, Oficina, Obra"
+                        maxLength={50}
+                        value={valor.alias ?? ''}
+                        onChange={(e) => cambiar({ alias: e.target.value })}
+                    />
+                </div>
+            )}
+
             <div className="row g-3 mb-3">
                 <div className="col-12 col-sm-8">
                     <label htmlFor={`${prefijo}-calle`} className="form-label obligatorio">Calle</label>
@@ -53,6 +70,7 @@ function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
                     className="form-control"
                     id={`${prefijo}-departamento`}
                     placeholder="Ej: 603"
+                    maxLength={20}
                     value={valor.departamento}
                     onChange={(e) => cambiar({ departamento: e.target.value })}
                 />
@@ -102,6 +120,7 @@ function FormularioDireccion({ valor, onChange, prefijo, errores = {} }) {
                     id={`${prefijo}-indicaciones`}
                     rows="2"
                     placeholder="Ej: entre calles, color del edificio, no tiene timbre"
+                    maxLength={300}
                     value={valor.indicaciones}
                     onChange={(e) => cambiar({ indicaciones: e.target.value })}
                 />
