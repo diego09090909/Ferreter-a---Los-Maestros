@@ -13,7 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/admin/usuarios")
+@RequestMapping("/api/v1/admin/usuarios")
 @RequiredArgsConstructor
 public class AdminController {
 
