@@ -16,6 +16,5 @@ public class UsuarioResponse {
     private String rut;
     private String email;
     private String rol;
-    private boolean activo;
     private List<DireccionResponse> direcciones;
 }

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.ferreteria.ms_usuarios.model.Rol;
+import com.ferreteria.ms_usuarios.validation.RutValido;
+
 import jakarta.validation.constraints.NotNull;
 
 @Data
@@ -19,6 +21,7 @@ public class CrearUsuarioRequest {
     private String nombre;
 
     @NotBlank(message = "El RUT es obligatorio")
+    @RutValido 
     private String rut;
 
     @NotBlank(message = "El email es obligatorio")
