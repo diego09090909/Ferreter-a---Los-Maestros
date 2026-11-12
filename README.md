@@ -62,7 +62,7 @@ Plataforma web de comercio electrónico para **Ferretería Los Maestros**, una f
 
 ## 🏗️ Arquitectura
 
-El proyecto es un **monorepo** con un frontend en React y un backend de **microservicios** en Spring Boot. Cada microservicio tiene su propia base de datos y expone una API REST documentada con Swagger. La autenticación se maneja con **JWT**.
+El proyecto es un **monorepo** con un frontend en React y un backend de **microservicios** en Spring Boot. Cada microservicio expone su propia API REST documentada con Swagger y trabaja con su propia base de datos MySQL. La autenticación se maneja con **JWT**.
 
 ```
                     ┌──────────────────────────┐
