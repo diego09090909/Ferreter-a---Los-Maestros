@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { CarritoProvider } from './context/CarritoContext'
-import { obtenerCategorias, obtenerProductos } from './services/catalogo'
+import { obtenerCategorias, obtenerProducto, obtenerProductos } from './services/catalogo'
 
 vi.mock('./services/catalogo', () => ({
   obtenerProductos: vi.fn(),
@@ -28,6 +28,11 @@ const CATEGORIAS_API = [
 beforeEach(() => {
   obtenerProductos.mockResolvedValue(PRODUCTOS_API)
   obtenerCategorias.mockResolvedValue(CATEGORIAS_API)
+  obtenerProducto.mockImplementation(async (id) => {
+    const producto = PRODUCTOS_API.find((p) => p.id === Number(id))
+    if (!producto) throw { response: { status: 404 } }
+    return { ...producto, categoriaEtiqueta: 'Materiales de Construcción' }
+  })
 })
 
 const ADMIN = {
@@ -85,6 +90,34 @@ describe('catálogo y carrito', () => {
     expect(screen.getByText('1')).toBeInTheDocument()
     await user.click(screen.getByLabelText('Ver carrito'))
     expect(screen.getByText('Taladro Percutor 710W')).toBeInTheDocument()
+  })
+})
+
+
+
+
+describe('detalle de producto', () => {
+  it('desde el catálogo se abre el detalle del producto', async () => {
+    const user = userEvent.setup()
+    montar('/catalogo')
+    await user.click(await screen.findByRole('link', { name: 'Cemento Polpaico gris 25 kg' }))
+
+    expect(await screen.findByRole('heading', { name: 'Cemento Polpaico gris 25 kg' })).toBeInTheDocument()
+    expect(screen.getByText(/Código MC001/)).toBeInTheDocument()
+    expect(screen.getByText('Disponible · 80 en stock')).toBeInTheDocument()
+  })
+
+  it('agrega el producto al carrito desde el detalle', async () => {
+    const user = userEvent.setup()
+    montar('/catalogo/4')
+    await user.click(await screen.findByRole('button', { name: /Añadir al Carrito/ }))
+    expect(screen.getByRole('button', { name: /¡Agregado!/ })).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('carrito'))[0].nombre).toBe('Cemento Polpaico gris 25 kg')
+  })
+
+  it('muestra un aviso si el producto no existe', async () => {
+    montar('/catalogo/999')
+    expect(await screen.findByText('Producto no encontrado')).toBeInTheDocument()
   })
 })
 
