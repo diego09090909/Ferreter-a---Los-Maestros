@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { obtenerProductos } from '../data/almacen'
 import { useTitulo } from '../hooks/useTitulo'
+import ModalEditarUsuario from '../components/ModalEditarUsuario'
 import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
-import { obtenerUsuarios } from '../services/usuarios'
+import { useAuth } from '../context/AuthContext'
+import { eliminarUsuarioAdmin, obtenerUsuarios } from '../services/usuarios'
 import { colorRol } from '../utils/roles'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
@@ -65,46 +67,112 @@ function SeccionPedidos() {
 }
 
 function SeccionUsuarios() {
+  const { usuario: admin, actualizarUsuario } = useAuth()
   const [usuarios, setUsuarios] = useState(obtenerUsuarios)
   const [mostrarModal, setMostrarModal] = useState(false)
+  const [editando, setEditando] = useState(null)
+  const [porEliminar, setPorEliminar] = useState(null)
   const [aviso, setAviso] = useState(null)
-
-  // al crear un usuario se recarga la lista y se muestra un aviso de exito
+  const recargar = () => setUsuarios(obtenerUsuarios())
   const alCrear = (nuevo) => {
-    setUsuarios(obtenerUsuarios())
-    setAviso(`Se creó la cuenta de ${nuevo.nombre} (${nuevo.rol}).`)
+    recargar()
+    setAviso({ tipo: 'success', texto: `Se creó la cuenta de ${nuevo.nombre} (${nuevo.rol}).` })
+  }
+
+  const alEditar = (editado) => {
+    // si el admin se edita a si mismo, tambien se actualiza su sesion (nombre y correo del navbar)
+    if (editado.rut === admin.rut) actualizarUsuario({ nombre: editado.nombre, email: editado.email })
+    setEditando(null)
+    recargar()
+    setAviso({ tipo: 'success', texto: `Se actualizó la cuenta de ${editado.nombre}.` })
+  }
+
+  const eliminar = async (u) => {
+    try {
+      await eliminarUsuarioAdmin(u.rut, admin.rut)
+      recargar()
+      setAviso({ tipo: 'success', texto: `Se eliminó la cuenta de ${u.nombre}.` })
+    } catch (error) {
+      setAviso({ tipo: 'danger', texto: error.message })
+    }
+    setPorEliminar(null)
   }
 
   return (
     <>
       {aviso && (
-        <div className="alert alert-success alert-dismissible" role="status">
-          {aviso}
+        <div className={`alert alert-${aviso.tipo} alert-dismissible`} role={aviso.tipo === 'danger' ? 'alert' : 'status'}>
+          {aviso.texto}
           <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setAviso(null)}></button>
         </div>
       )}
       <Tabla
         titulo="Usuarios Registrados"
-        columnas={['RUT', 'Nombre', 'Correo', 'Rol', 'Estado']}
+        columnas={['RUT', 'Nombre', 'Correo', 'Rol', 'Estado', 'Acciones']}
         acciones={
           <button type="button" className="btn btn-sm btn-success" onClick={() => setMostrarModal(true)}>
             + Nuevo Usuario
           </button>
         }
       >
-        {usuarios.map((u) => (
-          <tr key={u.rut}>
-            <td data-label="RUT">{u.rut}</td>
-            <td data-label="Nombre">{u.nombre}</td>
-            <td data-label="Correo">{u.email}</td>
-            <td data-label="Rol">
-              <span className={`badge ${colorRol(u.rol)}`}>{u.rol}</span>
-            </td>
-            <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
-          </tr>
-        ))}
+        {usuarios.map((u) => {
+          const esPropia = u.rut === admin.rut
+          return (
+            <tr key={u.rut}>
+              <td data-label="RUT">{u.rut}</td>
+              <td data-label="Nombre">
+                {u.nombre}
+                {esPropia && <span className="badge bg-light text-dark border ms-2">Tú</span>}
+              </td>
+              <td data-label="Correo">{u.email}</td>
+              <td data-label="Rol">
+                <span className={`badge ${colorRol(u.rol)}`}>{u.rol}</span>
+              </td>
+              <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
+              <td data-label="Acciones">
+                {porEliminar === u.rut ? (
+                  <div className="d-flex flex-wrap align-items-center gap-2">
+                    <span>¿Eliminar a {u.nombre}?</span>
+                    <button type="button" className="btn btn-sm btn-danger" onClick={() => eliminar(u)}>Sí, eliminar</button>
+                    <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setPorEliminar(null)}>No</button>
+                  </div>
+                ) : (
+                  <div className="d-flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      aria-label={`Editar a ${u.nombre}`}
+                      onClick={() => setEditando(u)}
+                    >
+                      <i className="bi bi-pencil"></i> Editar
+                    </button>
+                    {!esPropia && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        aria-label={`Eliminar a ${u.nombre}`}
+                        onClick={() => setPorEliminar(u.rut)}
+                      >
+                        <i className="bi bi-trash"></i> Eliminar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </td>
+            </tr>
+          )
+        })}
       </Tabla>
       <ModalNuevoUsuario mostrar={mostrarModal} onCerrar={() => setMostrarModal(false)} onCreado={alCrear} />
+      {editando && (
+        <ModalEditarUsuario
+          key={editando.rut}
+          usuario={editando}
+          rutAdmin={admin.rut}
+          onCerrar={() => setEditando(null)}
+          onGuardado={alEditar}
+        />
+      )}
     </>
   )
 }

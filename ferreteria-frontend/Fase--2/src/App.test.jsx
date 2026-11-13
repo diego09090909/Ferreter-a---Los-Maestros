@@ -233,6 +233,99 @@ describe('panel admin: nuevo usuario', () => {
 
 
 
+describe('panel admin: editar y eliminar usuarios', () => {
+  const VENDEDOR = {
+    rut: '22.222.222-2', nombre: 'Pedro Vendedor', email: 'pedro@losmaestros.cl', password: 'vende123', rol: 'Vendedor',
+  }
+  const abrirUsuarios = async (user) => {
+    montar('/admin', { sesion: ADMIN })
+    localStorage.setItem('usuarios', JSON.stringify([ADMIN, CLIENTE, VENDEDOR]))
+    await user.click(screen.getByRole('button', { name: /Usuarios/ }))
+  }
+  const usuarioGuardado = (rut) => JSON.parse(localStorage.getItem('usuarios')).find((u) => u.rut === rut)
+
+  it('cambia el rol de una cuenta de personal y solo ofrece Administrador o Vendedor', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user)
+
+    await user.click(screen.getByRole('button', { name: 'Editar a Pedro Vendedor' }))
+    const modal = within(await screen.findByRole('dialog'))
+    expect(modal.getByLabelText('RUT')).toBeDisabled()
+    expect(modal.getAllByRole('option').map((o) => o.textContent)).toEqual(['Administrador', 'Vendedor'])
+
+    await user.selectOptions(modal.getByLabelText('Rol'), 'ADMIN')
+    await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText(/Se actualizó la cuenta de Pedro Vendedor/)).toBeInTheDocument()
+    expect(screen.getByText('pedro@losmaestros.cl').closest('tr')).toHaveTextContent('Administrador')
+    expect(usuarioGuardado(VENDEDOR.rut).rol).toBe('Administrador')
+  })
+
+  it('a un cliente se le edita el nombre pero su rol queda bloqueado', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user)
+
+    await user.click(screen.getByRole('button', { name: 'Editar a Ana Soto' }))
+    const modal = within(await screen.findByRole('dialog'))
+    expect(modal.getByLabelText('Rol')).toBeDisabled()
+    expect(modal.getByLabelText('Rol')).toHaveDisplayValue('Cliente')
+
+    const nombre = modal.getByLabelText('Nombre completo')
+    await user.clear(nombre)
+    await user.type(nombre, 'Ana María Soto')
+    await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText(/Se actualizó la cuenta de Ana María Soto/)).toBeInTheDocument()
+    expect(usuarioGuardado(CLIENTE.rut)).toMatchObject({ nombre: 'Ana María Soto', rol: 'Cliente' })
+  })
+
+  it('en su propia cuenta el admin no puede eliminarse ni cambiar su rol', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user)
+
+    expect(screen.queryByRole('button', { name: 'Eliminar a Administrador General' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Editar a Administrador General' }))
+    const modal = within(await screen.findByRole('dialog'))
+    expect(modal.getByLabelText('Rol')).toBeDisabled()
+    expect(modal.getByText('No puedes cambiar el rol de tu propia cuenta.')).toBeInTheDocument()
+  })
+
+  it('no deja usar el correo de otra cuenta', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user)
+
+    await user.click(screen.getByRole('button', { name: 'Editar a Ana Soto' }))
+    const modal = within(await screen.findByRole('dialog'))
+    const correo = modal.getByLabelText('Correo electrónico')
+    await user.clear(correo)
+    await user.type(correo, 'admin@losmaestros.cl')
+    await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await modal.findByRole('alert')).toHaveTextContent('El email ya esta registrado')
+    expect(usuarioGuardado(CLIENTE.rut).email).toBe('ana@correo.cl')
+  })
+
+  it('elimina una cuenta solo después de confirmar, junto con sus direcciones', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user)
+    localStorage.setItem('direcciones', JSON.stringify({ [CLIENTE.rut]: [{ id: 1, calle: 'Balmaceda' }] }))
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar a Ana Soto' }))
+    expect(screen.getByText('¿Eliminar a Ana Soto?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No' }))
+    expect(screen.getByText('ana@correo.cl')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar a Ana Soto' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }))
+
+    expect(await screen.findByText('Se eliminó la cuenta de Ana Soto.')).toBeInTheDocument()
+    expect(screen.queryByText('ana@correo.cl')).not.toBeInTheDocument()
+    expect(usuarioGuardado(CLIENTE.rut)).toBeUndefined()
+    expect(JSON.parse(localStorage.getItem('direcciones'))).toEqual({})
+  })
+})
+
 describe('direcciones guardadas', () => {
   const DIRECCIONES_ANA = {
     [CLIENTE.rut]: [
