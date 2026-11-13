@@ -18,14 +18,13 @@ public class AdminInicial implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.admin.password:Admin123}")
+    @Value("${app.admin.password}")
     private String adminPassword;
 
     @Override
     public void run(String... args) {
         String email = "admin@losmaestros.cl";
         String rut = "11111111-1";
-
 
         if (usuarioRepository.existsByEmail(email) || usuarioRepository.existsByRut(rut)) {
             return;

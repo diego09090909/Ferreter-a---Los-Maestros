@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ferreteria.ms_usuarios.dto.ActualizarUsuarioRequest;
 import com.ferreteria.ms_usuarios.dto.CrearUsuarioRequest;
 import com.ferreteria.ms_usuarios.dto.UsuarioResponse;
 import com.ferreteria.ms_usuarios.mapper.UsuarioMapper;
 import com.ferreteria.ms_usuarios.model.Rol;
 import com.ferreteria.ms_usuarios.model.Usuario;
 import com.ferreteria.ms_usuarios.repository.UsuarioRepository;
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -76,5 +78,27 @@ public class AdminService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
         usuarioRepository.delete(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponse actualizarUsuario(Long id, ActualizarUsuarioRequest req, Long adminId) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        if (id.equals(adminId) && req.getRol() != usuario.getRol()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No puedes cambiar tu propio rol");
+        }
+
+        String email = req.getEmail().trim().toLowerCase();
+        if (usuarioRepository.existsByEmailAndIdNot(email, id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya esta registrado");
+        }
+
+        usuario.setNombre(req.getNombre().trim());
+        usuario.setEmail(email);
+        usuario.setRol(req.getRol());
+
+        return usuarioMapper.aResponse(usuarioRepository.save(usuario));
     }
 }

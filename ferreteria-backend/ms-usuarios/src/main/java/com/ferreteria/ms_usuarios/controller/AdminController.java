@@ -7,10 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import com.ferreteria.ms_usuarios.dto.ActualizarUsuarioRequest;
 import com.ferreteria.ms_usuarios.dto.CrearUsuarioRequest;
 import com.ferreteria.ms_usuarios.dto.UsuarioResponse;
 import com.ferreteria.ms_usuarios.service.AdminService;
-
+import jakarta.validation.Valid;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -39,8 +40,15 @@ public class AdminController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id,
-                                         @AuthenticationPrincipal Long adminId) {
+            @AuthenticationPrincipal Long adminId) {
         adminService.eliminarUsuario(id, adminId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public UsuarioResponse actualizar(@PathVariable Long id,
+            @Valid @RequestBody ActualizarUsuarioRequest req,
+            @AuthenticationPrincipal Long adminId) {
+        return adminService.actualizarUsuario(id, req, adminId);
     }
 }
