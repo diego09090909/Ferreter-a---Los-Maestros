@@ -1,16 +1,13 @@
 package com.ferreteria.ms_usuarios.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.ferreteria.ms_usuarios.dto.ActualizarUsuarioRequest;
-import com.ferreteria.ms_usuarios.dto.CrearUsuarioRequest;
+import com.ferreteria.ms_usuarios.dto.CambiarPasswordRequest;
+import com.ferreteria.ms_usuarios.dto.PerfilRequest;
 import com.ferreteria.ms_usuarios.dto.UsuarioResponse;
-import com.ferreteria.ms_usuarios.service.AdminService;
+import com.ferreteria.ms_usuarios.service.UsuarioService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,84 +19,52 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/admin/usuarios")
+@RequestMapping("/api/v1/usuarios/me")
 @RequiredArgsConstructor
-@Tag(name = "Administración de usuarios", description = "Gestión de usuarios del sistema. Solo para administradores")
+@Tag(name = "Perfil de usuario", description = "Consulta y actualización del perfil del usuario autenticado")
 @SecurityRequirement(name = "bearerAuth")
-public class AdminController {
+public class UsuarioController {
 
-    private final AdminService adminService;
+    private final UsuarioService usuarioService;
 
-    @Operation(summary = "Listar usuarios",
-               description = "Devuelve todos los usuarios registrados en el sistema.")
+    @Operation(summary = "Obtener mi perfil",
+               description = "Devuelve los datos del perfil del usuario autenticado, identificado por su token de acceso.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente"),
+        @ApiResponse(responseCode = "200", description = "Perfil obtenido correctamente"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador")
+        @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
     @GetMapping
-    public List<UsuarioResponse> listar() {
-        return adminService.listarUsuarios();
+    public UsuarioResponse obtenerPerfil(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId) {
+        return usuarioService.obtenerPerfil(usuarioId);
     }
 
-    @Operation(summary = "Obtener usuario",
-               description = "Devuelve los datos de un usuario a partir de su ID.")
+    @Operation(summary = "Actualizar mi perfil",
+               description = "Modifica los datos personales del usuario autenticado y devuelve el perfil actualizado.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Usuario obtenido correctamente"),
+        @ApiResponse(responseCode = "200", description = "Perfil actualizado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes o con formato incorrecto)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
-    @GetMapping("/{id}")
-    public UsuarioResponse obtener(@Parameter(description = "ID del usuario") @PathVariable Long id) {
-        return adminService.obtenerUsuario(id);
+    @PutMapping
+    public UsuarioResponse actualizarPerfil(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId,
+            @Valid @RequestBody PerfilRequest req) {
+        return usuarioService.actualizarPerfil(usuarioId, req);
     }
 
-    @Operation(summary = "Crear usuario",
-               description = "Crea un usuario con el rol indicado y devuelve sus datos.")
+    @Operation(summary = "Cambiar contraseña",
+               description = "Cambia la contraseña del usuario autenticado. Requiere la contraseña actual y la nueva.")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Usuario creado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes, RUT inválido o rol no válido)"),
+        @ApiResponse(responseCode = "204", description = "Contraseña actualizada correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes, contraseña actual incorrecta o nueva contraseña no válida)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
-        @ApiResponse(responseCode = "409", description = "El email o el RUT ya están registrados")
-    })
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioResponse crear(@Valid @RequestBody CrearUsuarioRequest req) {
-        return adminService.crearUsuario(req);
-    }
-
-    @Operation(summary = "Eliminar usuario",
-               description = "Elimina un usuario del sistema. Un administrador no puede eliminarse a sí mismo.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Usuario eliminado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Operación no permitida (el administrador intenta eliminarse a sí mismo)"),
-        @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@Parameter(description = "ID del usuario") @PathVariable Long id,
-            @Parameter(hidden = true) @AuthenticationPrincipal Long adminId) {
-        adminService.eliminarUsuario(id, adminId);
+    @PutMapping("/password")
+    public ResponseEntity<Void> cambiarPassword(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId,
+            @Valid @RequestBody CambiarPasswordRequest req) {
+        usuarioService.actualizarContrasena(usuarioId, req);
         return ResponseEntity.noContent().build();
-    }
-
-    @Operation(summary = "Actualizar usuario",
-               description = "Modifica los datos de un usuario y devuelve el usuario actualizado.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o cambio no permitido"),
-        @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
-        @ApiResponse(responseCode = "404", description = "El usuario no existe"),
-        @ApiResponse(responseCode = "409", description = "El email o el RUT ya están registrados por otro usuario")
-    })
-    @PutMapping("/{id}")
-    public UsuarioResponse actualizar(@Parameter(description = "ID del usuario") @PathVariable Long id,
-            @Valid @RequestBody ActualizarUsuarioRequest req,
-            @Parameter(hidden = true) @AuthenticationPrincipal Long adminId) {
-        return adminService.actualizarUsuario(id, req, adminId);
     }
 }
