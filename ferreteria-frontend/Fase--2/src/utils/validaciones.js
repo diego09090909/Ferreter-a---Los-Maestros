@@ -114,3 +114,18 @@ export function erroresEditarUsuario(datos) {
   if (!datos.rol) errores.rol = 'Elige un rol'
   return errores
 }
+
+export const STOCK_MAXIMO_MOVIMIENTO = 9999
+
+// formulario de inventario: 'reponer' suma unidades (minimo 1) y 'ajustar' corrige al stock contado (0 o mas)
+export function erroresMovimientoStock({ cantidad }, modo, stockActual) {
+  const texto = String(cantidad).trim()
+  const numero = Number(texto)
+  if (texto === '') return { cantidad: modo === 'reponer' ? 'Ingresa la cantidad a reponer' : 'Ingresa el stock contado' }
+  if (!Number.isInteger(numero)) return { cantidad: 'Ingresa un número entero' }
+  if (modo === 'reponer' && numero < 1) return { cantidad: 'La cantidad debe ser al menos 1' }
+  if (modo === 'ajustar' && numero < 0) return { cantidad: 'El stock no puede ser negativo' }
+  if (numero > STOCK_MAXIMO_MOVIMIENTO) return { cantidad: `El máximo es ${STOCK_MAXIMO_MOVIMIENTO}` }
+  if (modo === 'ajustar' && numero === stockActual) return { cantidad: 'El stock contado es igual al actual' }
+  return {}
+}

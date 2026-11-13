@@ -40,9 +40,9 @@ describe('carrito', () => {
 })
 
 describe('registrarCompra', () => {
-    it('descuenta primero de la tienda y luego de la bodega', () => {
+    it('descuenta del stock del producto lo que se compró', () => {
         const productos = [
-            { id: 1, nombre: 'Martillo', categoria: 'Herramientas', stockTienda: 3, stockBodega: 10 },
+            { id: 1, nombre: 'Martillo', categoria: 'Herramientas', stock: 13, stockMinimo: 5 },
         ]
         const carrito = [{ codigo: 'producto-1', nombre: 'Martillo', precio: 5000, cantidad: 5 }]
 
@@ -54,8 +54,7 @@ describe('registrarCompra', () => {
             pago: 'Cuenta Corriente',
         })
 
-        expect(resultado.productos[0].stockTienda).toBe(0)
-        expect(resultado.productos[0].stockBodega).toBe(8)
+        expect(resultado.productos[0].stock).toBe(8)
         expect(resultado.pedido.total).toBe(25000)
         expect(resultado.pedido.cliente).toBe('Kevin')
         expect(resultado.pedido.estado).toBe('Pendiente')

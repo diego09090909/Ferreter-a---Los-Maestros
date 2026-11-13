@@ -74,14 +74,7 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, cl
 
         categoria = categoria === '' || categoria === producto.categoria ? producto.categoria : 'Varios'
 
-        const desdeTienda = Math.min(producto.stockTienda, item.cantidad)
-        const restante = item.cantidad - desdeTienda
-
-        return {
-            ...producto,
-            stockTienda: producto.stockTienda - desdeTienda,
-            stockBodega: Math.max(0, producto.stockBodega - restante),
-        }
+        return { ...producto, stock: Math.max(0, producto.stock - item.cantidad) }
     })
 
     const subtotal = calcularTotal(carrito)
