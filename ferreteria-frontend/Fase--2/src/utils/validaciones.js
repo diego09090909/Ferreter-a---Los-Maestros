@@ -105,3 +105,12 @@ export function erroresNuevoUsuario(datos) {
   if (!datos.rol) errores.rol = 'Elige un rol'
   return errores
 }
+
+// formulario "Editar usuario" del panel admin: { nombre, email, rol }
+export function erroresEditarUsuario(datos) {
+  const errores = Object.fromEntries(
+    Object.entries(erroresDatos(datos)).map(([campo, mensaje]) => [campo, mensaje.replace('Ingresa tu ', 'Ingresa el ')]),
+  )
+  if (!datos.rol) errores.rol = 'Elige un rol'
+  return errores
+}

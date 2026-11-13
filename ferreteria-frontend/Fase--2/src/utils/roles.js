@@ -12,6 +12,11 @@ export function etiquetaRol(valor) {
   return ROLES[valor] ?? valor
 }
 
+// lo contrario de etiquetaRol: 'Vendedor' -> 'VENDEDOR'
+export function valorRol(etiqueta) {
+  return Object.keys(ROLES).find((valor) => ROLES[valor] === etiqueta) ?? etiqueta
+}
+
 // color del badge de cada rol en las tablas
 export function colorRol(etiqueta) {
   if (etiqueta === ROLES.ADMIN) return 'bg-primary'

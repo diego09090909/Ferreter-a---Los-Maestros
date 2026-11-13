@@ -89,3 +89,9 @@ export async function eliminarDireccion(usuario, id) {
   }
   guardarLista(usuario, resto)
 }
+
+export function borrarDireccionesDe(rut) {
+  const mapa = leer(CLAVE, {})
+  delete mapa[rut]
+  guardar(CLAVE, mapa)
+}
