@@ -98,6 +98,7 @@ export function registrarCompra({ carrito, productos, usuario, entrega, pago, cl
             tipoPago: pago,
             tipoEntrega: entrega,
             direccionEntrega: direccion ?? null,
+            items: carrito.map((item) => ({ nombre: item.nombre, cantidad: item.cantidad, precio: item.precio })),
             subtotal,
             costoDespacho,
             total,

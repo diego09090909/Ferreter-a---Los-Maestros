@@ -15,7 +15,7 @@ const REVISAR_CAMPOS = { tipo: 'danger', texto: 'Revisa los campos marcados en r
 function MiCuenta() {
   useTitulo('Mi Cuenta - Ferretería Los Maestros')
 
-  const { usuario, esAdmin, actualizarUsuario, cerrarSesion } = useAuth()
+  const { usuario, esAdmin, esVendedor, actualizarUsuario, cerrarSesion } = useAuth()
   const navigate = useNavigate()
 
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email })
@@ -88,9 +88,9 @@ function MiCuenta() {
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <h1 className="h3 fw-bold mb-0">MI CUENTA</h1>
         <div className="d-flex gap-2">
-          {esAdmin && (
+          {(esAdmin || esVendedor) && (
             <Link to="/admin" className="btn btn-outline-primary">
-              <i className="bi bi-shield-lock me-2"></i>Panel Admin
+              <i className="bi bi-shield-lock me-2"></i>{esAdmin ? 'Panel Admin' : 'Panel Vendedor'}
             </Link>
           )}
           <button type="button" className="btn btn-outline-danger" onClick={salir}>

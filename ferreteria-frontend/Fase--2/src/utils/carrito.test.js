@@ -44,7 +44,7 @@ describe('registrarCompra', () => {
         const productos = [
             { id: 1, nombre: 'Martillo', categoria: 'Herramientas', stockTienda: 3, stockBodega: 10 },
         ]
-        const carrito = [{ codigo: 'producto-1', precio: 5000, cantidad: 5 }]
+        const carrito = [{ codigo: 'producto-1', nombre: 'Martillo', precio: 5000, cantidad: 5 }]
 
         const resultado = registrarCompra({
             carrito,
@@ -59,6 +59,8 @@ describe('registrarCompra', () => {
         expect(resultado.pedido.total).toBe(25000)
         expect(resultado.pedido.cliente).toBe('Kevin')
         expect(resultado.pedido.estado).toBe('Pendiente')
+        // el pedido guarda sus productos para verlos en el detalle del panel
+        expect(resultado.pedido.items).toEqual([{ nombre: 'Martillo', cantidad: 5, precio: 5000 }])
         expect(resultado.venta.categoria).toBe('Herramientas')
     })
 })

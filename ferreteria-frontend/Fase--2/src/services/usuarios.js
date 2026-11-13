@@ -11,6 +11,11 @@ export const ADMIN_PREDEFINIDO = {
   rol: 'Administrador',
 }
 
+// la cuenta principal es el admin que se crea al iniciar el sistema; se reconoce por su RUT, que no cambia
+export function esCuentaPrincipal(usuario) {
+  return usuario?.rut === ADMIN_PREDEFINIDO.rut
+}
+
 export function obtenerUsuarios() {
   return leer('usuarios', [])
 }
@@ -54,15 +59,19 @@ export async function actualizarUsuarioAdmin(rut, datos, rutAdmin) {
   const actual = usuarios.find((u) => u.rut === rut)
   if (!actual) throw new Error('Usuario no encontrado')
 
+  // los datos de un cliente son suyos: los cambia el propio cliente desde Mi Cuenta
+  if (actual.rol === ROLES.CLIENTE) {
+    throw new Error('Los datos de un cliente solo los puede cambiar el propio cliente desde Mi Cuenta')
+  }
+  if (esCuentaPrincipal(actual) && rut !== rutAdmin) {
+    throw new Error('La cuenta principal solo la puede modificar su dueño')
+  }
+
   const rol = etiquetaRol(datos.rol)
   if (rut === rutAdmin && rol !== actual.rol) {
     throw new Error('No puedes cambiar tu propio rol')
   }
-  // el panel solo maneja roles de personal: un cliente sigue siendo cliente y el personal no pasa a cliente
-  if (actual.rol === ROLES.CLIENTE && rol !== ROLES.CLIENTE) {
-    throw new Error('Las cuentas de cliente no cambian de rol')
-  }
-  if (rol === ROLES.CLIENTE && actual.rol !== ROLES.CLIENTE) {
+  if (rol === ROLES.CLIENTE) {
     throw new Error('Una cuenta de personal no se puede convertir en cliente')
   }
 
@@ -80,7 +89,9 @@ export async function eliminarUsuarioAdmin(rut, rutAdmin) {
   if (rut === rutAdmin) throw new Error('No puedes eliminar tu propia cuenta')
 
   const usuarios = obtenerUsuarios()
-  if (!usuarios.some((u) => u.rut === rut)) throw new Error('Usuario no encontrado')
+  const usuario = usuarios.find((u) => u.rut === rut)
+  if (!usuario) throw new Error('Usuario no encontrado')
+  if (esCuentaPrincipal(usuario)) throw new Error('La cuenta principal no se puede eliminar')
 
   guardarUsuarios(usuarios.filter((u) => u.rut !== rut))
   borrarDireccionesDe(rut)
