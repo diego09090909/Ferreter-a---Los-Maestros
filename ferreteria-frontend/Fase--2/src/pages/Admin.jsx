@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { obtenerProductos } from '../data/almacen'
+import { useEffect, useState } from 'react'
 import { useTitulo } from '../hooks/useTitulo'
 import ModalDetalle from '../components/ModalDetalle'
 import ModalEditarUsuario from '../components/ModalEditarUsuario'
 import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
+import ModalStock from '../components/ModalStock'
 import { useAuth } from '../context/AuthContext'
+import { listarInventario } from '../services/inventario'
 import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
 import { textoDireccion } from '../utils/direccion'
 import { imagenDe } from '../utils/imagen'
@@ -16,7 +17,7 @@ import { formatearPrecio } from '../utils/formato'
 const SECCIONES = [
   { id: 'pedidos', etiqueta: 'Pedidos', icono: 'bi-box-seam' },
   { id: 'usuarios', etiqueta: 'Usuarios', icono: 'bi-people', soloAdmin: true },
-  { id: 'stock', etiqueta: 'Stock', icono: 'bi-bricks' },
+  { id: 'stock', etiqueta: 'Inventario', icono: 'bi-bricks' },
   { id: 'ventas', etiqueta: 'Ventas', icono: 'bi-graph-up-arrow', soloAdmin: true },
 ]
 const PEDIDOS_EJEMPLO = [
@@ -238,50 +239,120 @@ function SeccionUsuarios() {
 }
 
 function SeccionStock() {
-  const [productos] = useState(obtenerProductos)
+  const { esAdmin } = useAuth()
+  const [productos, setProductos] = useState([])
+  const [soloBajo, setSoloBajo] = useState(false)
   const [detalle, setDetalle] = useState(null)
+  // { producto, modo: 'reponer' | 'ajustar' } mientras el admin mueve stock
+  const [movimiento, setMovimiento] = useState(null)
+  const [aviso, setAviso] = useState(null)
+
+  useEffect(() => {
+    listarInventario().then(setProductos)
+  }, [])
+
+  const visibles = soloBajo ? productos.filter((p) => p.stockBajo) : productos
+  const cantidadBajo = productos.filter((p) => p.stockBajo).length
+
+  const alGuardar = (actualizado, texto) => {
+    setProductos(productos.map((p) => (p.id === actualizado.id ? actualizado : p)))
+    setMovimiento(null)
+    setAviso(`${texto} de ${actualizado.nombre}. Stock actual: ${actualizado.stock}.`)
+  }
 
   return (
     <>
+      {aviso && (
+        <div className="alert alert-success alert-dismissible" role="status">
+          {aviso}
+          <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setAviso(null)}></button>
+        </div>
+      )}
       <Tabla
-        titulo="Control de Inventario y Bodega"
-        columnas={['ID', 'Producto', 'Categoría', 'Stock Tienda', 'Bodega', 'Estado Stock', 'Detalle']}
+        titulo="Inventario"
+        columnas={['ID', 'Producto', 'Categoría', 'Stock', 'Stock mínimo', 'Estado', 'Acciones']}
+        filtros={
+          <div className="form-check mb-3">
+            <input
+              id="filtro-stock-bajo"
+              type="checkbox"
+              className="form-check-input"
+              checked={soloBajo}
+              onChange={(e) => setSoloBajo(e.target.checked)}
+            />
+            <label htmlFor="filtro-stock-bajo" className="form-check-label">
+              Ver solo productos con stock bajo ({cantidadBajo})
+            </label>
+          </div>
+        }
       >
-        {productos.length === 0 && (
+        {visibles.length === 0 && (
           <tr>
-            <td colSpan="7" className="text-center text-muted">No hay productos en inventario.</td>
+            <td colSpan="7" className="text-center text-muted">
+              {soloBajo ? 'No hay productos con stock bajo.' : 'No hay productos en inventario.'}
+            </td>
           </tr>
         )}
-        {productos.map((p) => {
-          const tienda = p.stockTienda ?? 0
-          const bodega = p.stockBodega ?? 0
+        {visibles.map((p) => {
           let estado = <span className="badge bg-success">Disponible</span>
-          if (tienda + bodega === 0) estado = <span className="badge bg-danger">Agotado</span>
-          else if (tienda < 5) estado = <span className="badge bg-warning text-dark">Stock Bajo</span>
+          if (p.stock === 0) estado = <span className="badge bg-danger">Agotado</span>
+          else if (p.stockBajo) estado = <span className="badge bg-warning text-dark">Stock bajo</span>
 
           return (
             <tr key={p.id}>
               <td data-label="ID">{p.id}</td>
               <td data-label="Producto">{p.nombre}</td>
               <td data-label="Categoría">{p.categoria || 'General'}</td>
-              <td data-label="Stock Tienda">{tienda}</td>
-              <td data-label="Bodega">{bodega}</td>
-              <td data-label="Estado Stock">{estado}</td>
-              <td data-label="Detalle">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-primary"
-                  aria-label={`Ver detalle de ${p.nombre}`}
-                  onClick={() => setDetalle(p)}
-                >
-                  <i className="bi bi-eye"></i> Ver
-                </button>
+              <td data-label="Stock">{p.stock}</td>
+              <td data-label="Stock mínimo">{p.stockMinimo}</td>
+              <td data-label="Estado">{estado}</td>
+              <td data-label="Acciones">
+                <div className="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary"
+                    aria-label={`Ver detalle de ${p.nombre}`}
+                    onClick={() => setDetalle(p)}
+                  >
+                    <i className="bi bi-eye"></i> Ver
+                  </button>
+                  {/* mover stock es solo del admin; el vendedor solo visualiza */}
+                  {esAdmin && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-success"
+                        aria-label={`Reponer stock de ${p.nombre}`}
+                        onClick={() => setMovimiento({ producto: p, modo: 'reponer' })}
+                      >
+                        <i className="bi bi-plus-circle"></i> Reponer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        aria-label={`Ajustar stock de ${p.nombre}`}
+                        onClick={() => setMovimiento({ producto: p, modo: 'ajustar' })}
+                      >
+                        <i className="bi bi-sliders"></i> Ajustar
+                      </button>
+                    </>
+                  )}
+                </div>
               </td>
             </tr>
           )
         })}
       </Tabla>
       {detalle && <DetalleProducto producto={detalle} onCerrar={() => setDetalle(null)} />}
+      {movimiento && (
+        <ModalStock
+          key={`${movimiento.modo}-${movimiento.producto.id}`}
+          producto={movimiento.producto}
+          modo={movimiento.modo}
+          onCerrar={() => setMovimiento(null)}
+          onGuardado={alGuardar}
+        />
+      )}
     </>
   )
 }
@@ -292,8 +363,10 @@ function DetalleProducto({ producto, onCerrar }) {
     ['Categoría', producto.categoria || 'General'],
     ['Marca', producto.marca],
     ['Precio', formatearPrecio(producto.precio)],
-    ['Stock tienda', producto.stockTienda ?? 0],
-    ['Stock bodega', producto.stockBodega ?? 0],
+    ['Precio de compra', producto.precioCompra != null ? formatearPrecio(producto.precioCompra) : null],
+    ['Margen', producto.margen != null ? formatearPrecio(producto.margen) : null],
+    ['Stock', producto.stock],
+    ['Stock mínimo', producto.stockMinimo],
   ]
 
   return (

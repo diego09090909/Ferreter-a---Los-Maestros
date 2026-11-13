@@ -354,11 +354,11 @@ describe('panel del vendedor', () => {
     expect(await screen.findByRole('heading', { name: 'Panel Vendedor' }, { timeout: 3000 })).toBeInTheDocument()
   })
 
-  it('solo ve Pedidos y Stock: no ve Usuarios ni Ventas', () => {
+  it('solo ve Pedidos e Inventario: no ve Usuarios ni Ventas', () => {
     montar('/admin', { sesion: VENDEDOR })
     expect(screen.getByRole('heading', { name: 'Panel Vendedor' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Pedidos/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Stock/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Inventario/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Usuarios/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Ventas/ })).not.toBeInTheDocument()
   })
@@ -366,7 +366,7 @@ describe('panel del vendedor', () => {
   it('el admin sigue viendo las cuatro secciones', () => {
     montar('/admin', { sesion: ADMIN })
     expect(screen.getByRole('heading', { name: 'Panel Admin' })).toBeInTheDocument()
-    for (const seccion of [/Pedidos/, /Usuarios/, /Stock/, /Ventas/]) {
+    for (const seccion of [/Pedidos/, /Usuarios/, /Inventario/, /Ventas/]) {
       expect(screen.getByRole('button', { name: seccion })).toBeInTheDocument()
     }
   })
@@ -384,15 +384,96 @@ describe('panel del vendedor', () => {
     expect(modal).toHaveTextContent(/Total\s*\$15\.970/)
   })
 
-  it('ve el detalle de un producto desde Stock', async () => {
+  it('ve el detalle de un producto desde Inventario', async () => {
     const user = userEvent.setup()
     montar('/admin', { sesion: VENDEDOR })
 
-    await user.click(screen.getByRole('button', { name: /Stock/ }))
-    await user.click(screen.getByRole('button', { name: 'Ver detalle de Taladro Percutor 710W' }))
+    await user.click(screen.getByRole('button', { name: /Inventario/ }))
+    await user.click(await screen.findByRole('button', { name: 'Ver detalle de Taladro Percutor 710W' }))
     const modal = await screen.findByRole('dialog')
     expect(modal).toHaveTextContent('Bauker')
     expect(modal).toHaveTextContent('$49.990')
+  })
+})
+
+describe('inventario del panel', () => {
+  const VENDEDOR = {
+    rut: '22.222.222-2', nombre: 'Pedro Vendedor', email: 'pedro@losmaestros.cl', password: 'vende123', rol: 'Vendedor',
+  }
+  const abrirInventario = async (user, sesion = ADMIN) => {
+    montar('/admin', { sesion })
+    await user.click(screen.getByRole('button', { name: /Inventario/ }))
+  }
+  const stockGuardado = (nombre) => JSON.parse(localStorage.getItem('productos')).find((p) => p.nombre === nombre).stock
+
+  it('muestra un solo stock por producto (tienda y bodega juntos) con su stock mínimo', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    const fila = (await screen.findByText('Taladro Percutor 710W')).closest('tr')
+    expect(within(fila).getByText('30')).toBeInTheDocument()
+    expect(within(fila).getByText('5')).toBeInTheDocument()
+    expect(fila).toHaveTextContent('Disponible')
+  })
+
+  it('el admin repone stock y queda guardado', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Reponer stock de Taladro Percutor 710W' }))
+    const modal = within(await screen.findByRole('dialog'))
+    await user.type(modal.getByLabelText('Cantidad que llegó'), '5')
+    expect(modal.getByText(/Quedará en 35 unidades/)).toBeInTheDocument()
+    await user.click(modal.getByRole('button', { name: 'Reponer' }))
+
+    expect(await screen.findByText(/Se repusieron 5 unidades de Taladro Percutor 710W/)).toBeInTheDocument()
+    expect(screen.getByText('Taladro Percutor 710W').closest('tr')).toHaveTextContent('35')
+    expect(stockGuardado('Taladro Percutor 710W')).toBe(35)
+  })
+
+  it('el admin ajusta al stock contado y el producto queda con stock bajo', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Ajustar stock de Sierra Circular 1400W' }))
+    const modal = within(await screen.findByRole('dialog'))
+    await user.type(modal.getByLabelText('Stock contado'), '3')
+    await user.click(modal.getByRole('button', { name: 'Guardar ajuste' }))
+
+    expect(await screen.findByText(/Stock ajustado a 3 unidades de Sierra Circular 1400W/)).toBeInTheDocument()
+    expect(stockGuardado('Sierra Circular 1400W')).toBe(3)
+
+    await user.click(screen.getByLabelText(/Ver solo productos con stock bajo/))
+    expect(screen.getByText('Sierra Circular 1400W').closest('tr')).toHaveTextContent('Stock bajo')
+    expect(screen.queryByText('Taladro Percutor 710W')).not.toBeInTheDocument()
+  })
+
+  it('valida la cantidad: reponer al menos 1 y el ajuste distinto al stock actual', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(await screen.findByRole('button', { name: 'Reponer stock de Taladro Percutor 710W' }))
+    let modal = within(await screen.findByRole('dialog'))
+    await user.type(modal.getByLabelText('Cantidad que llegó'), '0')
+    await user.click(modal.getByRole('button', { name: 'Reponer' }))
+    expect(modal.getByText('La cantidad debe ser al menos 1')).toBeInTheDocument()
+    await user.click(modal.getByRole('button', { name: 'Cancelar' }))
+
+    await user.click(screen.getByRole('button', { name: 'Ajustar stock de Taladro Percutor 710W' }))
+    modal = within(await screen.findByRole('dialog'))
+    await user.type(modal.getByLabelText('Stock contado'), '30')
+    await user.click(modal.getByRole('button', { name: 'Guardar ajuste' }))
+    expect(modal.getByText('El stock contado es igual al actual')).toBeInTheDocument()
+    expect(stockGuardado('Taladro Percutor 710W')).toBe(30)
+  })
+
+  it('el vendedor ve el inventario pero no puede mover stock', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user, VENDEDOR)
+
+    expect(await screen.findByRole('button', { name: 'Ver detalle de Taladro Percutor 710W' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Reponer stock/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ajustar stock/ })).not.toBeInTheDocument()
   })
 })
 
