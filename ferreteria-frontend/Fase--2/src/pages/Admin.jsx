@@ -1,19 +1,23 @@
 import { useState } from 'react'
 import { obtenerProductos } from '../data/almacen'
 import { useTitulo } from '../hooks/useTitulo'
+import ModalDetalle from '../components/ModalDetalle'
 import ModalEditarUsuario from '../components/ModalEditarUsuario'
 import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
 import { useAuth } from '../context/AuthContext'
-import { eliminarUsuarioAdmin, obtenerUsuarios } from '../services/usuarios'
-import { colorRol } from '../utils/roles'
+import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
+import { textoDireccion } from '../utils/direccion'
+import { imagenDe } from '../utils/imagen'
+import { ROLES, colorRol } from '../utils/roles'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 
+// soloAdmin: secciones que el vendedor no ve (el vendedor solo revisa pedidos y productos)
 const SECCIONES = [
   { id: 'pedidos', etiqueta: 'Pedidos', icono: 'bi-box-seam' },
-  { id: 'usuarios', etiqueta: 'Usuarios', icono: 'bi-people' },
+  { id: 'usuarios', etiqueta: 'Usuarios', icono: 'bi-people', soloAdmin: true },
   { id: 'stock', etiqueta: 'Stock', icono: 'bi-bricks' },
-  { id: 'ventas', etiqueta: 'Ventas', icono: 'bi-graph-up-arrow' },
+  { id: 'ventas', etiqueta: 'Ventas', icono: 'bi-graph-up-arrow', soloAdmin: true },
 ]
 const PEDIDOS_EJEMPLO = [
   { id: 101, cliente: 'Juan Pérez', tipoPago: 'WebPay (Debito)', tipoEntrega: 'Despacho a Domicilio', total: 49990, estado: 'Pendiente' },
@@ -50,19 +54,67 @@ function Tabla({ titulo, columnas, acciones, filtros, children }) {
 
 function SeccionPedidos() {
   const [pedidos] = useState(() => leer('pedidos', PEDIDOS_EJEMPLO))
+  const [detalle, setDetalle] = useState(null)
+
   return (
-    <Tabla titulo="Pedidos del Mes" columnas={['ID', 'Cliente', 'Tipo Pago', 'Entrega', 'Total', 'Estado']}>
-      {pedidos.map((p) => (
-        <tr key={p.id}>
-          <td data-label="ID">#PED-{p.id}</td>
-          <td data-label="Cliente">{p.cliente}</td>
-          <td data-label="Tipo Pago"><span className="badge bg-warning text-dark">{p.tipoPago}</span></td>
-          <td data-label="Entrega">{p.tipoEntrega}</td>
-          <td data-label="Total">{formatearPrecio(p.total)}</td>
-          <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
-        </tr>
-      ))}
-    </Tabla>
+    <>
+      <Tabla titulo="Pedidos del Mes" columnas={['ID', 'Cliente', 'Tipo Pago', 'Entrega', 'Total', 'Estado', 'Detalle']}>
+        {pedidos.map((p) => (
+          <tr key={p.id}>
+            <td data-label="ID">#PED-{p.id}</td>
+            <td data-label="Cliente">{p.cliente}</td>
+            <td data-label="Tipo Pago"><span className="badge bg-warning text-dark">{p.tipoPago}</span></td>
+            <td data-label="Entrega">{p.tipoEntrega}</td>
+            <td data-label="Total">{formatearPrecio(p.total)}</td>
+            <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
+            <td data-label="Detalle">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary"
+                aria-label={`Ver detalle del pedido #PED-${p.id}`}
+                onClick={() => setDetalle(p)}
+              >
+                <i className="bi bi-eye"></i> Ver
+              </button>
+            </td>
+          </tr>
+        ))}
+      </Tabla>
+      {detalle && <DetallePedido pedido={detalle} onCerrar={() => setDetalle(null)} />}
+    </>
+  )
+}
+
+function DetallePedido({ pedido, onCerrar }) {
+  const items = pedido.items ?? []
+  const filas = [
+    ['Cliente', pedido.cliente],
+    ['Correo', pedido.email],
+    ['Entrega', pedido.tipoEntrega],
+    ['Dirección', pedido.direccionEntrega ? textoDireccion(pedido.direccionEntrega) : null],
+    ['Tipo de pago', pedido.tipoPago],
+    ['Estado', pedido.estado],
+    ['Subtotal', pedido.subtotal !== undefined ? formatearPrecio(pedido.subtotal) : null],
+    ['Despacho', pedido.costoDespacho ? formatearPrecio(pedido.costoDespacho) : null],
+    ['Total', formatearPrecio(pedido.total)],
+  ]
+
+  return (
+    <ModalDetalle titulo={`Pedido #PED-${pedido.id}`} filas={filas} onCerrar={onCerrar}>
+      <h3 className="h6 fw-bold mt-3">Productos</h3>
+      {items.length === 0 ? (
+        <p className="text-muted small mb-0">Este pedido no tiene el detalle de productos guardado.</p>
+      ) : (
+        <ul className="list-group list-group-flush small">
+          {items.map((item) => (
+            <li key={item.nombre} className="list-group-item d-flex justify-content-between px-0">
+              <span>{item.cantidad} x {item.nombre}</span>
+              <span>{formatearPrecio(item.precio * item.cantidad)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </ModalDetalle>
   )
 }
 
@@ -117,11 +169,16 @@ function SeccionUsuarios() {
       >
         {usuarios.map((u) => {
           const esPropia = u.rut === admin.rut
+          const esPrincipal = esCuentaPrincipal(u)
+          // los datos del cliente los cambia el cliente; la cuenta principal solo la toca su dueño
+          const puedeEditar = u.rol !== ROLES.CLIENTE && (!esPrincipal || esPropia)
+          const puedeEliminar = !esPropia && !esPrincipal
           return (
             <tr key={u.rut}>
               <td data-label="RUT">{u.rut}</td>
               <td data-label="Nombre">
                 {u.nombre}
+                {esPrincipal && <span className="badge bg-dark ms-2">Principal</span>}
                 {esPropia && <span className="badge bg-light text-dark border ms-2">Tú</span>}
               </td>
               <td data-label="Correo">{u.email}</td>
@@ -137,16 +194,18 @@ function SeccionUsuarios() {
                     <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setPorEliminar(null)}>No</button>
                   </div>
                 ) : (
-                  <div className="d-flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      aria-label={`Editar a ${u.nombre}`}
-                      onClick={() => setEditando(u)}
-                    >
-                      <i className="bi bi-pencil"></i> Editar
-                    </button>
-                    {!esPropia && (
+                  <div className="d-flex flex-wrap align-items-center gap-2">
+                    {puedeEditar && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        aria-label={`Editar a ${u.nombre}`}
+                        onClick={() => setEditando(u)}
+                      >
+                        <i className="bi bi-pencil"></i> Editar
+                      </button>
+                    )}
+                    {puedeEliminar && (
                       <button
                         type="button"
                         className="btn btn-sm btn-outline-danger"
@@ -156,6 +215,7 @@ function SeccionUsuarios() {
                         <i className="bi bi-trash"></i> Eliminar
                       </button>
                     )}
+                    {!puedeEditar && !puedeEliminar && <span className="text-muted small">Sin acciones</span>}
                   </div>
                 )}
               </td>
@@ -179,36 +239,67 @@ function SeccionUsuarios() {
 
 function SeccionStock() {
   const [productos] = useState(obtenerProductos)
+  const [detalle, setDetalle] = useState(null)
 
   return (
-    <Tabla
-      titulo="Control de Inventario y Bodega"
-      columnas={['ID', 'Producto', 'Categoría', 'Stock Tienda', 'Bodega', 'Estado Stock']}
-    >
-      {productos.length === 0 && (
-        <tr>
-          <td colSpan="6" className="text-center text-muted">No hay productos en inventario.</td>
-        </tr>
-      )}
-      {productos.map((p) => {
-        const tienda = p.stockTienda ?? 0
-        const bodega = p.stockBodega ?? 0
-        let estado = <span className="badge bg-success">Disponible</span>
-        if (tienda + bodega === 0) estado = <span className="badge bg-danger">Agotado</span>
-        else if (tienda < 5) estado = <span className="badge bg-warning text-dark">Stock Bajo</span>
-
-        return (
-          <tr key={p.id}>
-            <td data-label="ID">{p.id}</td>
-            <td data-label="Producto">{p.nombre}</td>
-            <td data-label="Categoría">{p.categoria || 'General'}</td>
-            <td data-label="Stock Tienda">{tienda}</td>
-            <td data-label="Bodega">{bodega}</td>
-            <td data-label="Estado Stock">{estado}</td>
+    <>
+      <Tabla
+        titulo="Control de Inventario y Bodega"
+        columnas={['ID', 'Producto', 'Categoría', 'Stock Tienda', 'Bodega', 'Estado Stock', 'Detalle']}
+      >
+        {productos.length === 0 && (
+          <tr>
+            <td colSpan="7" className="text-center text-muted">No hay productos en inventario.</td>
           </tr>
-        )
-      })}
-    </Tabla>
+        )}
+        {productos.map((p) => {
+          const tienda = p.stockTienda ?? 0
+          const bodega = p.stockBodega ?? 0
+          let estado = <span className="badge bg-success">Disponible</span>
+          if (tienda + bodega === 0) estado = <span className="badge bg-danger">Agotado</span>
+          else if (tienda < 5) estado = <span className="badge bg-warning text-dark">Stock Bajo</span>
+
+          return (
+            <tr key={p.id}>
+              <td data-label="ID">{p.id}</td>
+              <td data-label="Producto">{p.nombre}</td>
+              <td data-label="Categoría">{p.categoria || 'General'}</td>
+              <td data-label="Stock Tienda">{tienda}</td>
+              <td data-label="Bodega">{bodega}</td>
+              <td data-label="Estado Stock">{estado}</td>
+              <td data-label="Detalle">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-primary"
+                  aria-label={`Ver detalle de ${p.nombre}`}
+                  onClick={() => setDetalle(p)}
+                >
+                  <i className="bi bi-eye"></i> Ver
+                </button>
+              </td>
+            </tr>
+          )
+        })}
+      </Tabla>
+      {detalle && <DetalleProducto producto={detalle} onCerrar={() => setDetalle(null)} />}
+    </>
+  )
+}
+
+function DetalleProducto({ producto, onCerrar }) {
+  const filas = [
+    ['Descripción', producto.descripcion],
+    ['Categoría', producto.categoria || 'General'],
+    ['Marca', producto.marca],
+    ['Precio', formatearPrecio(producto.precio)],
+    ['Stock tienda', producto.stockTienda ?? 0],
+    ['Stock bodega', producto.stockBodega ?? 0],
+  ]
+
+  return (
+    <ModalDetalle titulo={producto.nombre} filas={filas} onCerrar={onCerrar}>
+      <img src={imagenDe(producto)} alt={producto.nombre} className="img-fluid rounded border mt-2" style={{ maxHeight: 180 }} />
+    </ModalDetalle>
   )
 }
 
@@ -277,18 +368,20 @@ const VISTAS = {
 }
 
 function Admin() {
-  useTitulo('Panel de Administración - Ferretería Los Maestros')
+  const { esAdmin } = useAuth()
+  useTitulo(`${esAdmin ? 'Panel de Administración' : 'Panel de Vendedor'} - Ferretería Los Maestros`)
+  const secciones = SECCIONES.filter((s) => esAdmin || !s.soloAdmin)
   const [seccion, setSeccion] = useState('pedidos')
-  const Vista = VISTAS[seccion]
+  const Vista = VISTAS[secciones.some((s) => s.id === seccion) ? seccion : 'pedidos']
 
   return (
     <main className="container-fluid pt-3">
       <div className="row g-3">
         <aside className="col-12 col-md-3 col-lg-2">
           <div className="bg-white p-3 rounded border shadow-sm sticky-md-top" style={{ top: 90 }}>
-            <h2 className="h6 fw-bold mb-3 border-bottom pb-2">Panel Admin</h2>
+            <h2 className="h6 fw-bold mb-3 border-bottom pb-2">{esAdmin ? 'Panel Admin' : 'Panel Vendedor'}</h2>
             <nav className="d-grid gap-2">
-              {SECCIONES.map(({ id, etiqueta, icono }) => (
+              {secciones.map(({ id, etiqueta, icono }) => (
                 <button
                   key={id}
                   type="button"

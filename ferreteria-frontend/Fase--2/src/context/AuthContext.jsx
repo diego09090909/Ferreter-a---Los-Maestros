@@ -10,7 +10,6 @@ export function AuthProvider({ children }) {
     return leer('usuarioActivo', null)
   })
 
-  // true mientras se cierra la sesión a propósito: la ruta protegida usa esto para volver al inicio
   const saliendoRef = useRef(false)
 
   const iniciarSesion = (u) => {
@@ -25,7 +24,6 @@ export function AuthProvider({ children }) {
     setUsuario(null)
   }
 
-  // guarda los datos nuevos del usuario (en la lista de usuarios y en la sesión)
   const actualizarUsuario = (cambios) => {
     const nuevo = { ...usuario, ...cambios }
     guardarUsuarios(obtenerUsuarios().map((u) => (u.rut === usuario.rut ? nuevo : u)))
@@ -34,9 +32,10 @@ export function AuthProvider({ children }) {
   }
 
   const esAdmin = usuario?.rol === 'Administrador'
+  const esVendedor = usuario?.rol === 'Vendedor'
 
   return (
-    <AuthContext.Provider value={{ usuario, esAdmin, iniciarSesion, cerrarSesion, actualizarUsuario, saliendoRef }}>
+    <AuthContext.Provider value={{ usuario, esAdmin, esVendedor, iniciarSesion, cerrarSesion, actualizarUsuario, saliendoRef }}>
       {children}
     </AuthContext.Provider>
   )

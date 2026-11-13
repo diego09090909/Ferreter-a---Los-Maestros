@@ -68,7 +68,7 @@ function Login() {
 
     iniciarSesion(encontrado)
     setMensajeIngreso({ texto: `Bienvenido ${encontrado.nombre}, entrando al sitio...`, tipo: 'success' })
-    irA(encontrado.rol === 'Administrador' ? '/admin' : '/')
+    irA(encontrado.rol === 'Administrador' || encontrado.rol === 'Vendedor' ? '/admin' : '/')
   }
 
   const registrarse = async (evento) => {
@@ -103,7 +103,6 @@ function Login() {
       rol: 'Cliente',
     }
     guardarUsuarios([...usuarios, nuevoUsuario])
-    // la direccion del registro queda como la primera de "Mis direcciones" (predeterminada), igual que en ms-usuarios
     await agregarDireccion(nuevoUsuario, limpiarDireccion(direccionRegistro))
 
 
@@ -121,7 +120,7 @@ function Login() {
 
       {state?.accesoDenegado && (
         <div className="alert alert-warning" role="alert">
-          Acceso denegado. Debe iniciar sesión con una cuenta de Administrador.
+          Acceso denegado. Debe iniciar sesión con una cuenta de Administrador o Vendedor.
         </div>
       )}
 

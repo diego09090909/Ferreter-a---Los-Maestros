@@ -3,15 +3,12 @@ import { Modal } from 'react-bootstrap'
 import Aviso from './Aviso'
 import ErrorCampo from './ErrorCampo'
 import { actualizarUsuarioAdmin } from '../services/usuarios'
-import { ROLES, ROLES_CREABLES_POR_ADMIN, etiquetaRol, valorRol } from '../utils/roles'
+import { ROLES_CREABLES_POR_ADMIN, etiquetaRol, valorRol } from '../utils/roles'
 import { claseCampo, enfocarPrimerError, erroresEditarUsuario, hayErrores } from '../utils/validaciones'
 
 
 function ModalEditarUsuario({ usuario, rutAdmin, onCerrar, onGuardado }) {
   const esPropia = usuario.rut === rutAdmin
-  const esCliente = usuario.rol === ROLES.CLIENTE
-  // el rol de la propia cuenta y el de un cliente no se cambian aqui
-  const rolBloqueado = esPropia || esCliente
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email, rol: valorRol(usuario.rol) })
   const [intento, setIntento] = useState(false)
   const [mensaje, setMensaje] = useState(null)
@@ -19,8 +16,6 @@ function ModalEditarUsuario({ usuario, rutAdmin, onCerrar, onGuardado }) {
   const errores = intento ? erroresEditarUsuario(datos) : {}
   const cambiar = (campo, valor) => setDatos({ ...datos, [campo]: valor })
 
-  // el panel solo maneja roles de personal: los clientes se crean al registrarse en la tienda
-  const roles = esCliente ? ['CLIENTE'] : ROLES_CREABLES_POR_ADMIN
   const guardar = async (evento) => {
     evento.preventDefault()
     setIntento(true)
@@ -82,24 +77,19 @@ function ModalEditarUsuario({ usuario, rutAdmin, onCerrar, onGuardado }) {
               id="editar-rol"
               className={claseCampo('form-select', errores.rol)}
               required
-              disabled={rolBloqueado}
+              disabled={esPropia}
               aria-invalid={Boolean(errores.rol)}
               aria-describedby="editar-rol-error editar-rol-ayuda"
               value={datos.rol}
               onChange={(e) => cambiar('rol', e.target.value)}
             >
-              {roles.map((valor) => (
+              {ROLES_CREABLES_POR_ADMIN.map((valor) => (
                 <option key={valor} value={valor}>{etiquetaRol(valor)}</option>
               ))}
             </select>
             <ErrorCampo id="editar-rol-error" mensaje={errores.rol} />
             {esPropia && (
               <p id="editar-rol-ayuda" className="form-text mb-0">No puedes cambiar el rol de tu propia cuenta.</p>
-            )}
-            {esCliente && (
-              <p id="editar-rol-ayuda" className="form-text mb-0">
-                Las cuentas de cliente se crean al registrarse en la tienda y su rol no se cambia.
-              </p>
             )}
           </div>
 

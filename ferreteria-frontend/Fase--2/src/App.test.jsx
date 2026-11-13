@@ -237,9 +237,12 @@ describe('panel admin: editar y eliminar usuarios', () => {
   const VENDEDOR = {
     rut: '22.222.222-2', nombre: 'Pedro Vendedor', email: 'pedro@losmaestros.cl', password: 'vende123', rol: 'Vendedor',
   }
-  const abrirUsuarios = async (user) => {
-    montar('/admin', { sesion: ADMIN })
-    localStorage.setItem('usuarios', JSON.stringify([ADMIN, CLIENTE, VENDEDOR]))
+  const OTRO_ADMIN = {
+    rut: '33.333.333-3', nombre: 'Laura Admin', email: 'laura@losmaestros.cl', password: 'laura123', rol: 'Administrador',
+  }
+  const abrirUsuarios = async (user, sesion = ADMIN) => {
+    montar('/admin', { sesion })
+    localStorage.setItem('usuarios', JSON.stringify([ADMIN, CLIENTE, VENDEDOR, OTRO_ADMIN]))
     await user.click(screen.getByRole('button', { name: /Usuarios/ }))
   }
   const usuarioGuardado = (rut) => JSON.parse(localStorage.getItem('usuarios')).find((u) => u.rut === rut)
@@ -261,22 +264,25 @@ describe('panel admin: editar y eliminar usuarios', () => {
     expect(usuarioGuardado(VENDEDOR.rut).rol).toBe('Administrador')
   })
 
-  it('a un cliente se le edita el nombre pero su rol queda bloqueado', async () => {
+  it('los datos de un cliente no se editan desde el panel, solo se puede eliminar la cuenta', async () => {
     const user = userEvent.setup()
     await abrirUsuarios(user)
 
-    await user.click(screen.getByRole('button', { name: 'Editar a Ana Soto' }))
-    const modal = within(await screen.findByRole('dialog'))
-    expect(modal.getByLabelText('Rol')).toBeDisabled()
-    expect(modal.getByLabelText('Rol')).toHaveDisplayValue('Cliente')
+    expect(screen.queryByRole('button', { name: 'Editar a Ana Soto' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Eliminar a Ana Soto' })).toBeInTheDocument()
+  })
 
-    const nombre = modal.getByLabelText('Nombre completo')
-    await user.clear(nombre)
-    await user.type(nombre, 'Ana María Soto')
-    await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
+  it('otro admin no puede editar ni eliminar la cuenta principal', async () => {
+    const user = userEvent.setup()
+    await abrirUsuarios(user, OTRO_ADMIN)
 
-    expect(await screen.findByText(/Se actualizó la cuenta de Ana María Soto/)).toBeInTheDocument()
-    expect(usuarioGuardado(CLIENTE.rut)).toMatchObject({ nombre: 'Ana María Soto', rol: 'Cliente' })
+    const fila = screen.getByText('admin@losmaestros.cl').closest('tr')
+    expect(fila).toHaveTextContent('Principal')
+    expect(fila).toHaveTextContent('Sin acciones')
+    expect(screen.queryByRole('button', { name: 'Editar a Administrador General' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Eliminar a Administrador General' })).not.toBeInTheDocument()
+    // al resto del personal si lo puede gestionar
+    expect(screen.getByRole('button', { name: 'Editar a Pedro Vendedor' })).toBeInTheDocument()
   })
 
   it('en su propia cuenta el admin no puede eliminarse ni cambiar su rol', async () => {
@@ -295,7 +301,7 @@ describe('panel admin: editar y eliminar usuarios', () => {
     const user = userEvent.setup()
     await abrirUsuarios(user)
 
-    await user.click(screen.getByRole('button', { name: 'Editar a Ana Soto' }))
+    await user.click(screen.getByRole('button', { name: 'Editar a Pedro Vendedor' }))
     const modal = within(await screen.findByRole('dialog'))
     const correo = modal.getByLabelText('Correo electrónico')
     await user.clear(correo)
@@ -303,7 +309,7 @@ describe('panel admin: editar y eliminar usuarios', () => {
     await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
 
     expect(await modal.findByRole('alert')).toHaveTextContent('El email ya esta registrado')
-    expect(usuarioGuardado(CLIENTE.rut).email).toBe('ana@correo.cl')
+    expect(usuarioGuardado(VENDEDOR.rut).email).toBe('pedro@losmaestros.cl')
   })
 
   it('elimina una cuenta solo después de confirmar, junto con sus direcciones', async () => {
@@ -323,6 +329,70 @@ describe('panel admin: editar y eliminar usuarios', () => {
     expect(screen.queryByText('ana@correo.cl')).not.toBeInTheDocument()
     expect(usuarioGuardado(CLIENTE.rut)).toBeUndefined()
     expect(JSON.parse(localStorage.getItem('direcciones'))).toEqual({})
+  })
+})
+
+describe('panel del vendedor', () => {
+  const VENDEDOR = {
+    rut: '22.222.222-2', nombre: 'Pedro Vendedor', email: 'pedro@losmaestros.cl', password: 'vende123', rol: 'Vendedor',
+  }
+  const PEDIDO = {
+    id: '2715', cliente: 'Ana Soto', email: 'ana@correo.cl', rut: CLIENTE.rut,
+    tipoPago: 'Crédito', tipoEntrega: 'Despacho a domicilio',
+    direccionEntrega: { calle: 'Balmaceda', numero: '123', departamento: '', comuna: 'La Serena', region: 'Región de Coquimbo' },
+    items: [{ nombre: 'Cemento Polpaico gris 25 kg', cantidad: 2, precio: 5990 }],
+    subtotal: 11980, costoDespacho: 3990, total: 15970, estado: 'Pendiente',
+  }
+
+  it('el vendedor inicia sesión y llega a su panel', async () => {
+    const user = userEvent.setup()
+    montar('/login')
+    localStorage.setItem('usuarios', JSON.stringify([ADMIN, CLIENTE, VENDEDOR]))
+    await user.type(screen.getByLabelText('RUT o correo'), 'pedro@losmaestros.cl')
+    await user.type(screen.getByLabelText('Contraseña', { selector: '#ingreso-password' }), 'vende123')
+    await user.click(screen.getByRole('button', { name: 'Entrar' }))
+    expect(await screen.findByRole('heading', { name: 'Panel Vendedor' }, { timeout: 3000 })).toBeInTheDocument()
+  })
+
+  it('solo ve Pedidos y Stock: no ve Usuarios ni Ventas', () => {
+    montar('/admin', { sesion: VENDEDOR })
+    expect(screen.getByRole('heading', { name: 'Panel Vendedor' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Pedidos/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Stock/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Usuarios/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ventas/ })).not.toBeInTheDocument()
+  })
+
+  it('el admin sigue viendo las cuatro secciones', () => {
+    montar('/admin', { sesion: ADMIN })
+    expect(screen.getByRole('heading', { name: 'Panel Admin' })).toBeInTheDocument()
+    for (const seccion of [/Pedidos/, /Usuarios/, /Stock/, /Ventas/]) {
+      expect(screen.getByRole('button', { name: seccion })).toBeInTheDocument()
+    }
+  })
+
+  it('ve el detalle de un pedido con sus productos y la dirección', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('pedidos', JSON.stringify([PEDIDO]))
+    montar('/admin', { sesion: VENDEDOR })
+
+    await user.click(screen.getByRole('button', { name: 'Ver detalle del pedido #PED-2715' }))
+    const modal = await screen.findByRole('dialog')
+    expect(modal).toHaveTextContent('Pedido #PED-2715')
+    expect(modal).toHaveTextContent('2 x Cemento Polpaico gris 25 kg')
+    expect(modal).toHaveTextContent('Balmaceda 123, La Serena')
+    expect(modal).toHaveTextContent(/Total\s*\$15\.970/)
+  })
+
+  it('ve el detalle de un producto desde Stock', async () => {
+    const user = userEvent.setup()
+    montar('/admin', { sesion: VENDEDOR })
+
+    await user.click(screen.getByRole('button', { name: /Stock/ }))
+    await user.click(screen.getByRole('button', { name: 'Ver detalle de Taladro Percutor 710W' }))
+    const modal = await screen.findByRole('dialog')
+    expect(modal).toHaveTextContent('Bauker')
+    expect(modal).toHaveTextContent('$49.990')
   })
 })
 

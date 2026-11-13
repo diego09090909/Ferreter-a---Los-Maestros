@@ -32,7 +32,7 @@ function Buscador({ inicial, onBuscar }) {
 }
 
 function Navbar() {
-  const { usuario, esAdmin, cerrarSesion } = useAuth()
+  const { usuario, esAdmin, esVendedor, cerrarSesion } = useAuth()
   const { unidades: cantidadTotal } = useCarrito()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -166,10 +166,10 @@ function Navbar() {
                   </button>
                 </li>
 
-                {esAdmin && (
+                {(esAdmin || esVendedor) && (
                   <li className="nav-item mt-1">
                     <NavLink className={claseLink} to="/admin" onClick={cerrarMenu}>
-                      <i className="bi bi-shield-lock me-2"></i> Panel Admin
+                      <i className="bi bi-shield-lock me-2"></i> {esAdmin ? 'Panel Admin' : 'Panel Vendedor'}
                     </NavLink>
                   </li>
                 )}
