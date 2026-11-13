@@ -1,6 +1,7 @@
 package com.ferreteria.ms_usuarios.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.ferreteria.ms_usuarios.dto.CambiarPasswordRequest;
@@ -12,27 +13,27 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/v1/usuarios/me")
 @RequiredArgsConstructor
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    @GetMapping("/{id}")
-    public UsuarioResponse obtenerPerfil(@PathVariable Long id) {
-        return usuarioService.obtenerPerfil(id);
+    @GetMapping
+    public UsuarioResponse obtenerPerfil(@AuthenticationPrincipal Long usuarioId) {
+        return usuarioService.obtenerPerfil(usuarioId);
     }
 
-    @PutMapping("/{id}")
-    public UsuarioResponse actualizarPerfil(@PathVariable Long id,
-                                            @Valid @RequestBody PerfilRequest req) {
-        return usuarioService.actualizarPerfil(id, req);
+    @PutMapping
+    public UsuarioResponse actualizarPerfil(@AuthenticationPrincipal Long usuarioId,
+            @Valid @RequestBody PerfilRequest req) {
+        return usuarioService.actualizarPerfil(usuarioId, req);
     }
 
-    @PutMapping("/{id}/password")
-    public ResponseEntity<Void> cambiarPassword(@PathVariable Long id,
-                                                @Valid @RequestBody CambiarPasswordRequest req) {
-        usuarioService.actualizarContrasena(id, req);
+    @PutMapping("/password")
+    public ResponseEntity<Void> cambiarPassword(@AuthenticationPrincipal Long usuarioId,
+            @Valid @RequestBody CambiarPasswordRequest req) {
+        usuarioService.actualizarContrasena(usuarioId, req);
         return ResponseEntity.noContent().build();
     }
 }

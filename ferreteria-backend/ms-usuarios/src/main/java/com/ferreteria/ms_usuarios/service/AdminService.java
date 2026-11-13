@@ -26,7 +26,6 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
 
-
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll(Sort.by("id")).stream()
@@ -34,10 +33,15 @@ public class AdminService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtenerUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        return usuarioMapper.aResponse(usuario);
+    }
 
     @Transactional
     public UsuarioResponse crearUsuario(CrearUsuarioRequest req) {
-        
         if (req.getRol() == Rol.CLIENTE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Los clientes se registran desde la tienda");
@@ -61,5 +65,16 @@ public class AdminService {
         usuario.setRol(req.getRol());
 
         return usuarioMapper.aResponse(usuarioRepository.save(usuario));
+    }
+
+    @Transactional
+    public void eliminarUsuario(Long id, Long adminId) {
+        if (id.equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No puedes eliminar tu propia cuenta");
+        }
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        usuarioRepository.delete(usuario);
     }
 }

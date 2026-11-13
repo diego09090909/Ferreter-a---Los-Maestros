@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ferreteria.ms_usuarios.dto.AuthResponse;
 import com.ferreteria.ms_usuarios.dto.CambiarPasswordRequest;
 import com.ferreteria.ms_usuarios.dto.LoginRequest;
 import com.ferreteria.ms_usuarios.dto.PerfilRequest;
+import com.ferreteria.ms_usuarios.dto.RefreshRequest;
 import com.ferreteria.ms_usuarios.dto.RegistroRequest;
 import com.ferreteria.ms_usuarios.dto.UsuarioResponse;
 import com.ferreteria.ms_usuarios.mapper.DireccionMapper;
@@ -17,7 +19,10 @@ import com.ferreteria.ms_usuarios.model.Direccion;
 import com.ferreteria.ms_usuarios.model.Rol;
 import com.ferreteria.ms_usuarios.model.Usuario;
 import com.ferreteria.ms_usuarios.repository.UsuarioRepository;
+import com.ferreteria.ms_usuarios.security.JwtService;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,9 +33,10 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
     private final DireccionMapper direccionMapper;
+    private final JwtService jwtService;
 
     @Transactional
-    public UsuarioResponse registrar(RegistroRequest req) {
+    public AuthResponse registrar(RegistroRequest req) {
         String email = req.getEmail().trim().toLowerCase();
         String rut = req.getRut().trim().replace(".", "").toUpperCase();
 
@@ -54,11 +60,12 @@ public class UsuarioService {
             usuario.addDireccion(dir);
         }
 
-        return usuarioMapper.aResponse(usuarioRepository.save(usuario));
+        Usuario guardado = usuarioRepository.save(usuario);
+        return construirAuth(guardado);
     }
 
     @Transactional(readOnly = true)
-    public UsuarioResponse login(LoginRequest req) {
+    public AuthResponse login(LoginRequest req) {
         String identificador = req.getUsuario().trim();
         String email = identificador.toLowerCase();
         String rut = identificador.replace(".", "").toUpperCase();
@@ -70,7 +77,28 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
         }
 
-        return usuarioMapper.aResponse(usuario);
+        return construirAuth(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthResponse renovar(RefreshRequest req) {
+        Claims claims;
+        try {
+            claims = jwtService.validarRefreshToken(req.getRefreshToken());
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token de renovación inválido o vencido");
+        }
+
+        Number id = claims.get("id", Number.class);
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token de renovación inválido o vencido");
+        }
+
+        Usuario usuario = usuarioRepository.findById(id.longValue())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Token de renovación inválido o vencido"));
+
+        return construirAuth(usuario);
     }
 
     @Transactional
@@ -116,5 +144,14 @@ public class UsuarioService {
         usuario.setEmail(email);
 
         return usuarioMapper.aResponse(usuarioRepository.save(usuario));
+    }
+
+    private AuthResponse construirAuth(Usuario usuario) {
+        return new AuthResponse(
+                jwtService.generarAccessToken(usuario),
+                jwtService.generarRefreshToken(usuario),
+                "Bearer",
+                jwtService.getAccessExpirationMs(),
+                usuarioMapper.aResponse(usuario));
     }
 }
