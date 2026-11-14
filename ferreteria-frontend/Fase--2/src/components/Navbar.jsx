@@ -57,7 +57,6 @@ function Navbar() {
 
   const claseLink = ({ isActive }) => 'nav-link' + (isActive ? ' active' : '')
 
-
   const manejarClickCuenta = () => {
     cerrarMenu()
 
@@ -149,9 +148,12 @@ function Navbar() {
                 <li className="nav-item">
                   <NavLink className={claseLink} to="/catalogo" onClick={cerrarMenu}>Catálogo de Productos</NavLink>
                 </li>
-                <li className="nav-item">
-                  <NavLink className={claseLink} to="/cobertura" onClick={cerrarMenu}>Cobertura y Ubicación</NavLink>
-                </li>
+                {/* el vendedor solo ve productos y órdenes: Cobertura queda oculta */}
+                {!esVendedor && (
+                  <li className="nav-item">
+                    <NavLink className={claseLink} to="/cobertura" onClick={cerrarMenu}>Cobertura y Ubicación</NavLink>
+                  </li>
+                )}
                 {!esPersonal && (
                   <li className="nav-item">
                     <NavLink className={claseLink} to="/carrito" onClick={cerrarMenu}>Mi Carrito</NavLink>
@@ -161,7 +163,6 @@ function Navbar() {
 
               <p className="text-uppercase text-secondary small fw-bold mb-1">Cuenta</p>
               <ul className="navbar-nav mb-3">
-                
                 <li className="nav-item">
                   <button
                     type="button"
@@ -172,7 +173,7 @@ function Navbar() {
                   </button>
                 </li>
 
-                {(esAdmin || esVendedor) && (
+                {esPersonal && (
                   <li className="nav-item mt-1">
                     <NavLink className={claseLink} to="/admin" onClick={cerrarMenu}>
                       <i className="bi bi-shield-lock me-2"></i> {esAdmin ? 'Panel Admin' : 'Panel Vendedor'}
