@@ -45,3 +45,57 @@ export async function ajustarStock(producto, stockContado) {
   if (diferencia > 0) return reponerStock(producto.id, diferencia)
   return descontarStock(producto.id, -diferencia)
 }
+
+// los mismos campos que ProductoRequest de ms-catalogo; el codigo se guarda en mayusculas
+function aProducto(datos, categorias) {
+  const categoria = categorias.find((c) => c.id === Number(datos.categoriaId))
+  return {
+    codigo: datos.codigo.trim().toUpperCase(),
+    nombre: datos.nombre.trim(),
+    descripcion: datos.descripcion.trim(),
+    subcategoria: datos.subcategoria.trim(),
+    marca: datos.marca.trim(),
+    unidad: datos.unidad.trim(),
+    precioCompra: Number(datos.precioCompra),
+    precio: Number(datos.precio),
+    stock: Number(datos.stock),
+    stockMinimo: Number(datos.stockMinimo),
+    imagen: datos.imagen.trim() || null,
+    categoriaId: Number(datos.categoriaId),
+    categoria: categoria?.nombre ?? '',
+  }
+}
+
+function validarProducto(producto, productos, id = null) {
+  if (productos.some((p) => p.id !== id && (p.codigo ?? '').toUpperCase() === producto.codigo)) {
+    throw new Error(`Ya existe un producto con el codigo ${producto.codigo}`)
+  }
+  if (producto.precio <= producto.precioCompra) {
+    throw new Error('El precio de venta debe ser mayor al precio de compra')
+  }
+}
+
+// API: POST /api/v1/productos
+export async function crearProducto(datos, categorias) {
+  const productos = obtenerProductos()
+  const producto = aProducto(datos, categorias)
+  validarProducto(producto, productos)
+
+  const nuevo = { id: Math.max(0, ...productos.map((p) => p.id)) + 1, ...producto }
+  guardarProductos([...productos, nuevo])
+  return aRespuestaAdmin(nuevo)
+}
+
+// API: PUT /api/v1/productos/{id}
+export async function actualizarProducto(id, datos, categorias) {
+  const productos = obtenerProductos()
+  const actual = productos.find((p) => p.id === id)
+  if (!actual) throw new Error('No existe el producto')
+
+  const producto = aProducto(datos, categorias)
+  validarProducto(producto, productos, id)
+
+  const actualizado = { ...actual, ...producto }
+  guardarProductos(productos.map((p) => (p.id === id ? actualizado : p)))
+  return aRespuestaAdmin(actualizado)
+}
