@@ -5,8 +5,7 @@ import ErrorCampo from '../components/ErrorCampo'
 import MisDirecciones from '../components/MisDirecciones'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
-import { mensajeDeError } from '../services/api'
-import { obtenerUsuarios } from '../services/usuarios'
+import api, { URL_USUARIOS, mensajeDeError } from '../services/api'
 import { ENTREGAS_VENTA, ESTADOS_VENTA, obtenerMisVentas } from '../services/ventas'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
@@ -24,8 +23,9 @@ function MiCuenta() {
   const [claves, setClaves] = useState({ actual: '', nueva: '', repetir: '' })
   const [msgDatos, setMsgDatos] = useState(null)
   const [msgClave, setMsgClave] = useState(null)
+  const [guardandoDatos, setGuardandoDatos] = useState(false)
+  const [guardandoClave, setGuardandoClave] = useState(false)
 
-  // errores por campo: aparecen despues del primer intento y se actualizan al escribir
   const [intentoDatos, setIntentoDatos] = useState(false)
   const [intentoClave, setIntentoClave] = useState(false)
   const errDatos = intentoDatos ? erroresDatos(datos) : {}
@@ -58,7 +58,7 @@ function MiCuenta() {
       }))
     : pedidosLocales
 
-  const guardarDatos = (evento) => {
+  const guardarDatos = async (evento) => {
     evento.preventDefault()
     const nombre = datos.nombre.trim()
     const email = datos.email.trim()
@@ -70,21 +70,21 @@ function MiCuenta() {
       return
     }
 
-    const repetido = obtenerUsuarios().some(
-      (u) => u.rut !== usuario.rut && (u.email ?? '').toLowerCase() === email.toLowerCase(),
-    )
-    if (repetido) {
-      setMsgDatos({ tipo: 'danger', texto: 'Ya existe otra cuenta con ese correo' })
-      return
+    setGuardandoDatos(true)
+    try {
+      const { data } = await api.put(`${URL_USUARIOS}/usuarios/me`, { nombre, email })
+      actualizarUsuario({ nombre: data.nombre, email: data.email })
+      setDatos({ nombre: data.nombre, email: data.email })
+      setMsgDatos({ tipo: 'success', texto: 'Tus datos se actualizaron correctamente' })
+    } catch (error) {
+      setMsgDatos({ tipo: 'danger', texto: mensajeDeError(error) })
+    } finally {
+      setGuardandoDatos(false)
     }
-
-    actualizarUsuario({ nombre, email })
-    setMsgDatos({ tipo: 'success', texto: 'Tus datos se actualizaron correctamente' })
   }
 
-  const cambiarClave = (evento) => {
+  const cambiarClave = async (evento) => {
     evento.preventDefault()
-    const error = (texto) => setMsgClave({ tipo: 'danger', texto })
 
     setIntentoClave(true)
     if (hayErrores(erroresClaves(claves))) {
@@ -92,16 +92,24 @@ function MiCuenta() {
       enfocarPrimerError(evento.currentTarget)
       return
     }
-    if (claves.actual !== usuario.password) return error('La contraseña actual no es correcta')
 
-    actualizarUsuario({ password: claves.nueva })
-    setClaves({ actual: '', nueva: '', repetir: '' })
-    setIntentoClave(false)
-    setMsgClave({ tipo: 'success', texto: 'Contraseña actualizada correctamente' })
+    setGuardandoClave(true)
+    try {
+      await api.put(`${URL_USUARIOS}/usuarios/me/password`, {
+        passwordActual: claves.actual,
+        passwordNueva: claves.nueva,
+      })
+      setClaves({ actual: '', nueva: '', repetir: '' })
+      setIntentoClave(false)
+      setMsgClave({ tipo: 'success', texto: 'Contraseña actualizada correctamente' })
+    } catch (error) {
+      setMsgClave({ tipo: 'danger', texto: mensajeDeError(error) })
+    } finally {
+      setGuardandoClave(false)
+    }
   }
 
   const salir = () => {
-  
     navigate('/')
     cerrarSesion()
   }
@@ -123,7 +131,6 @@ function MiCuenta() {
       </div>
 
       <div className="row g-4">
-      
         <div className="col-lg-4">
           <div className="card h-100 shadow-sm">
             <div className="card-body text-center p-4">
@@ -138,7 +145,6 @@ function MiCuenta() {
           </div>
         </div>
 
-      
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
@@ -178,7 +184,9 @@ function MiCuenta() {
                   <ErrorCampo id="cuenta-email-error" mensaje={errDatos.email} />
                 </div>
                 <div className="d-grid">
-                  <button type="submit" className="btn btn-primary">Guardar cambios</button>
+                  <button type="submit" className="btn btn-primary" disabled={guardandoDatos}>
+                    Guardar cambios
+                  </button>
                 </div>
                 <Aviso mensaje={msgDatos} />
               </form>
@@ -186,7 +194,6 @@ function MiCuenta() {
           </div>
         </div>
 
-      
         <div className="col-lg-4 col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body p-4">
@@ -240,7 +247,9 @@ function MiCuenta() {
                   <ErrorCampo id="clave-repetir-error" mensaje={errClave.repetir} />
                 </div>
                 <div className="d-grid">
-                  <button type="submit" className="btn btn-success">Actualizar contraseña</button>
+                  <button type="submit" className="btn btn-success" disabled={guardandoClave}>
+                    Actualizar contraseña
+                  </button>
                 </div>
                 <Aviso mensaje={msgClave} />
               </form>
@@ -249,10 +258,8 @@ function MiCuenta() {
         </div>
       </div>
 
-  
-      {!esAdmin && <MisDirecciones usuario={usuario} />}
+      {!esAdmin && !esVendedor && <MisDirecciones usuario={usuario} />}
 
-      {/* Pedidos */}
       <section className="card shadow-sm mt-4">
         <div className="card-body p-4">
           <h2 className="h5 fw-bold mb-3">Mis pedidos</h2>
