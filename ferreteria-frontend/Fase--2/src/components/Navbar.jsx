@@ -33,6 +33,8 @@ function Buscador({ inicial, onBuscar }) {
 
 function Navbar() {
   const { usuario, esAdmin, esVendedor, cerrarSesion } = useAuth()
+  // el personal (admin y vendedor) no compra: no ve el carrito
+  const esPersonal = esAdmin || esVendedor
   const { unidades: cantidadTotal } = useCarrito()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -96,18 +98,20 @@ function Navbar() {
               </Link>
             )}
 
-            <Link
-              className="btn btn-outline-secondary border-0 position-relative p-2"
-              to="/carrito"
-              aria-label="Ver carrito"
-            >
-              <i className="bi bi-cart3 icono-carrito" aria-hidden="true"></i>
-              {cantidadTotal > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {cantidadTotal}
-                </span>
-              )}
-            </Link>
+            {!esPersonal && (
+              <Link
+                className="btn btn-outline-secondary border-0 position-relative p-2"
+                to="/carrito"
+                aria-label="Ver carrito"
+              >
+                <i className="bi bi-cart3 icono-carrito" aria-hidden="true"></i>
+                {cantidadTotal > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {cantidadTotal}
+                  </span>
+                )}
+              </Link>
+            )}
 
             <button
               className="navbar-toggler"
@@ -148,9 +152,11 @@ function Navbar() {
                 <li className="nav-item">
                   <NavLink className={claseLink} to="/cobertura" onClick={cerrarMenu}>Cobertura y Ubicación</NavLink>
                 </li>
-                <li className="nav-item">
-                  <NavLink className={claseLink} to="/carrito" onClick={cerrarMenu}>Mi Carrito</NavLink>
-                </li>
+                {!esPersonal && (
+                  <li className="nav-item">
+                    <NavLink className={claseLink} to="/carrito" onClick={cerrarMenu}>Mi Carrito</NavLink>
+                  </li>
+                )}
               </ul>
 
               <p className="text-uppercase text-secondary small fw-bold mb-1">Cuenta</p>
