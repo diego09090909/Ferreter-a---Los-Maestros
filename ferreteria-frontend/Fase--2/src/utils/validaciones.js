@@ -129,3 +129,38 @@ export function erroresMovimientoStock({ cantidad }, modo, stockActual) {
   if (modo === 'ajustar' && numero === stockActual) return { cantidad: 'El stock contado es igual al actual' }
   return {}
 }
+
+const PATRON_CODIGO = /^[A-Z]{2}\d{3}$/
+
+function errorEntero(valor, minimo, vacio, menor) {
+  const texto = String(valor).trim()
+  if (texto === '') return vacio
+  if (!Number.isInteger(Number(texto))) return 'Ingresa un número entero'
+  if (Number(texto) < minimo) return menor
+  return null
+}
+
+// formulario de producto del panel: mismas reglas que ProductoRequest de ms-catalogo
+export function erroresProducto(datos) {
+  const largo = (campo, maximo, nombre) =>
+    datos[campo].trim().length > maximo ? `${nombre} no puede tener más de ${maximo} caracteres` : null
+  const codigo = datos.codigo.trim().toUpperCase()
+
+  const errores = {
+    codigo: codigo === '' ? 'Ingresa el código' : !PATRON_CODIGO.test(codigo) ? 'Usa 2 letras y 3 números (ej: MC001)' : null,
+    nombre: datos.nombre.trim() === '' ? 'Ingresa el nombre' : largo('nombre', 100, 'El nombre'),
+    descripcion: largo('descripcion', 500, 'La descripción'),
+    categoriaId: datos.categoriaId === '' ? 'Elige una categoría' : null,
+    subcategoria: datos.subcategoria.trim() === '' ? 'Ingresa la subcategoría' : largo('subcategoria', 50, 'La subcategoría'),
+    marca: largo('marca', 50, 'La marca'),
+    unidad: datos.unidad.trim() === '' ? 'Ingresa la unidad (ej: Unidad, Saco, Galón)' : largo('unidad', 30, 'La unidad'),
+    precioCompra: errorEntero(datos.precioCompra, 1, 'Ingresa el precio de compra', 'El precio de compra debe ser mayor a 0'),
+    precio: errorEntero(datos.precio, 1, 'Ingresa el precio de venta', 'El precio de venta debe ser mayor a 0'),
+    stock: errorEntero(datos.stock, 0, 'Ingresa el stock', 'El stock no puede ser negativo'),
+    stockMinimo: errorEntero(datos.stockMinimo, 0, 'Ingresa el stock mínimo', 'El stock mínimo no puede ser negativo'),
+  }
+  if (!errores.precio && !errores.precioCompra && Number(datos.precio) <= Number(datos.precioCompra)) {
+    errores.precio = 'El precio de venta debe ser mayor al de compra'
+  }
+  return armar(errores)
+}

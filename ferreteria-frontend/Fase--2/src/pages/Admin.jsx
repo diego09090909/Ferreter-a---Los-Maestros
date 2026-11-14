@@ -3,9 +3,11 @@ import { useTitulo } from '../hooks/useTitulo'
 import ModalDetalle from '../components/ModalDetalle'
 import ModalEditarUsuario from '../components/ModalEditarUsuario'
 import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
+import ModalProducto from '../components/ModalProducto'
 import ModalStock from '../components/ModalStock'
 import { useAuth } from '../context/AuthContext'
 import { mensajeDeError } from '../services/api'
+import { obtenerCategorias } from '../services/catalogo'
 import { listarInventario } from '../services/inventario'
 import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
 import { ENTREGAS_VENTA, ESTADOS_VENTA, cambiarEstadoVenta, obtenerTodasLasVentas } from '../services/ventas'
@@ -339,10 +341,15 @@ function SeccionStock() {
   const [detalle, setDetalle] = useState(null)
   // { producto, modo: 'reponer' | 'ajustar' } mientras el admin mueve stock
   const [movimiento, setMovimiento] = useState(null)
+  // { producto } para editar, { producto: null } para crear uno nuevo
+  const [formulario, setFormulario] = useState(null)
+  const [categorias, setCategorias] = useState([])
   const [aviso, setAviso] = useState(null)
 
   useEffect(() => {
     listarInventario().then(setProductos)
+    // las categorias vienen de ms-catalogo (ruta publica), asi cada producto queda con un categoriaId real
+    obtenerCategorias().then(setCategorias).catch(() => setCategorias([]))
   }, [])
 
   const visibles = soloBajo ? productos.filter((p) => p.stockBajo) : productos
@@ -352,6 +359,12 @@ function SeccionStock() {
     setProductos(productos.map((p) => (p.id === actualizado.id ? actualizado : p)))
     setMovimiento(null)
     setAviso(`${texto} de ${actualizado.nombre}. Stock actual: ${actualizado.stock}.`)
+  }
+
+  const alGuardarProducto = (guardado, esNuevo) => {
+    setProductos(esNuevo ? [...productos, guardado] : productos.map((p) => (p.id === guardado.id ? guardado : p)))
+    setFormulario(null)
+    setAviso(esNuevo ? `Se creó el producto ${guardado.nombre}.` : `Se actualizó el producto ${guardado.nombre}.`)
   }
 
   return (
@@ -365,6 +378,13 @@ function SeccionStock() {
       <Tabla
         titulo="Inventario"
         columnas={['ID', 'Producto', 'Categoría', 'Stock', 'Stock mínimo', 'Estado', 'Acciones']}
+        acciones={
+          esAdmin && (
+            <button type="button" className="btn btn-sm btn-success" onClick={() => setFormulario({ producto: null })}>
+              + Nuevo producto
+            </button>
+          )
+        }
         filtros={
           <div className="form-check mb-3">
             <input
@@ -415,6 +435,14 @@ function SeccionStock() {
                     <>
                       <button
                         type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        aria-label={`Editar producto ${p.nombre}`}
+                        onClick={() => setFormulario({ producto: p })}
+                      >
+                        <i className="bi bi-pencil"></i> Editar
+                      </button>
+                      <button
+                        type="button"
                         className="btn btn-sm btn-outline-success"
                         aria-label={`Reponer stock de ${p.nombre}`}
                         onClick={() => setMovimiento({ producto: p, modo: 'reponer' })}
@@ -438,6 +466,15 @@ function SeccionStock() {
         })}
       </Tabla>
       {detalle && <DetalleProducto producto={detalle} onCerrar={() => setDetalle(null)} />}
+      {formulario && (
+        <ModalProducto
+          key={formulario.producto?.id ?? 'nuevo'}
+          producto={formulario.producto}
+          categorias={categorias}
+          onCerrar={() => setFormulario(null)}
+          onGuardado={alGuardarProducto}
+        />
+      )}
       {movimiento && (
         <ModalStock
           key={`${movimiento.modo}-${movimiento.producto.id}`}
@@ -453,8 +490,11 @@ function SeccionStock() {
 
 function DetalleProducto({ producto, onCerrar }) {
   const filas = [
+    ['Código', producto.codigo],
     ['Descripción', producto.descripcion],
     ['Categoría', producto.categoria || 'General'],
+    ['Subcategoría', producto.subcategoria],
+    ['Unidad', producto.unidad],
     ['Marca', producto.marca],
     ['Precio', formatearPrecio(producto.precio)],
     ['Precio de compra', producto.precioCompra != null ? formatearPrecio(producto.precioCompra) : null],

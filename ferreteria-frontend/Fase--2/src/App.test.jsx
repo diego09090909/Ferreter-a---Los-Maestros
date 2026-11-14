@@ -474,6 +474,95 @@ describe('inventario del panel', () => {
     expect(await screen.findByRole('button', { name: 'Ver detalle de Taladro Percutor 710W' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Reponer stock/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Ajustar stock/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Editar producto/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '+ Nuevo producto' })).not.toBeInTheDocument()
+  })
+})
+
+describe('inventario: crear y editar productos', () => {
+  const TALADRO = {
+    id: 1, codigo: 'HE001', nombre: 'Taladro percutor 650W 13mm', descripcion: '', categoriaId: 1, categoria: 'Herramientas',
+    subcategoria: 'Eléctricas', marca: 'Makita', unidad: 'Unidad', precioCompra: 32000, precio: 49990, stock: 10, stockMinimo: 5, imagen: null,
+  }
+  const abrirInventario = async (user) => {
+    localStorage.setItem('productos', JSON.stringify([TALADRO]))
+    montar('/admin', { sesion: ADMIN })
+    await user.click(screen.getByRole('button', { name: /Inventario/ }))
+    await screen.findByText('Taladro percutor 650W 13mm')
+  }
+  const productosGuardados = () => JSON.parse(localStorage.getItem('productos'))
+  const escribir = async (user, modal, etiqueta, texto) => {
+    const campo = modal.getByLabelText(etiqueta)
+    await user.clear(campo)
+    await user.type(campo, texto)
+  }
+
+  it('crea un producto con las mismas reglas que ms-catalogo', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(screen.getByRole('button', { name: '+ Nuevo producto' }))
+    const modal = within(await screen.findByRole('dialog'))
+    await user.click(modal.getByRole('button', { name: 'Crear producto' }))
+    expect(modal.getByText('Ingresa el código')).toBeInTheDocument()
+    expect(modal.getByText('Elige una categoría')).toBeInTheDocument()
+
+    await escribir(user, modal, 'Código', 'he007')
+    await escribir(user, modal, 'Nombre', 'Taladro inalámbrico 18V')
+    await user.selectOptions(modal.getByLabelText('Categoría'), 'Herramientas')
+    await escribir(user, modal, 'Subcategoría', 'Eléctricas')
+    await escribir(user, modal, 'Unidad', 'Unidad')
+    await escribir(user, modal, 'Precio de compra', '30000')
+    await escribir(user, modal, 'Precio de venta', '25000')
+    await escribir(user, modal, 'Stock inicial', '12')
+    await escribir(user, modal, 'Stock mínimo', '3')
+    await user.click(modal.getByRole('button', { name: 'Crear producto' }))
+    expect(modal.getByText('El precio de venta debe ser mayor al de compra', { selector: '.invalid-feedback, [id$="-error"]' })).toBeInTheDocument()
+
+    await escribir(user, modal, 'Precio de venta', '45990')
+    expect(modal.getByText('Margen por unidad: $15.990')).toBeInTheDocument()
+    await user.click(modal.getByRole('button', { name: 'Crear producto' }))
+
+    expect(await screen.findByText('Se creó el producto Taladro inalámbrico 18V.')).toBeInTheDocument()
+    expect(screen.getByText('Taladro inalámbrico 18V').closest('tr')).toHaveTextContent('12')
+    expect(productosGuardados().find((p) => p.codigo === 'HE007')).toMatchObject({ categoriaId: 1, categoria: 'Herramientas', precio: 45990, stock: 12 })
+  })
+
+  it('no deja repetir un código', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(screen.getByRole('button', { name: '+ Nuevo producto' }))
+    const modal = within(await screen.findByRole('dialog'))
+    await escribir(user, modal, 'Código', 'HE001')
+    await escribir(user, modal, 'Nombre', 'Otro taladro')
+    await user.selectOptions(modal.getByLabelText('Categoría'), 'Herramientas')
+    await escribir(user, modal, 'Subcategoría', 'Eléctricas')
+    await escribir(user, modal, 'Unidad', 'Unidad')
+    await escribir(user, modal, 'Precio de compra', '30000')
+    await escribir(user, modal, 'Precio de venta', '45990')
+    await escribir(user, modal, 'Stock inicial', '5')
+    await escribir(user, modal, 'Stock mínimo', '2')
+    await user.click(modal.getByRole('button', { name: 'Crear producto' }))
+
+    expect(await modal.findByRole('alert')).toHaveTextContent('Ya existe un producto con el codigo HE001')
+    expect(productosGuardados()).toHaveLength(1)
+  })
+
+  it('edita el precio de un producto sin tocar su stock', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+
+    await user.click(screen.getByRole('button', { name: 'Editar producto Taladro percutor 650W 13mm' }))
+    const modal = within(await screen.findByRole('dialog'))
+    expect(modal.getByLabelText('Código')).toHaveValue('HE001')
+    expect(modal.getByLabelText('Stock actual')).toBeDisabled()
+
+    await escribir(user, modal, 'Precio de venta', '52990')
+    await user.click(modal.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText('Se actualizó el producto Taladro percutor 650W 13mm.')).toBeInTheDocument()
+    expect(productosGuardados()[0]).toMatchObject({ precio: 52990, stock: 10 })
   })
 })
 
