@@ -56,10 +56,10 @@ public class AdminController {
     }
 
     @Operation(summary = "Crear usuario",
-               description = "Crea un usuario con el rol indicado y devuelve sus datos.")
+               description = "Crea un usuario de personal (ADMIN o VENDEDOR) y devuelve sus datos. Los clientes se registran desde la tienda.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Usuario creado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes, RUT inválido o rol no válido)"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes, RUT inválido o rol CLIENTE no permitido: los clientes se registran desde la tienda)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
         @ApiResponse(responseCode = "409", description = "El email o el RUT ya están registrados")
@@ -71,10 +71,10 @@ public class AdminController {
     }
 
     @Operation(summary = "Eliminar usuario",
-               description = "Elimina un usuario del sistema. Un administrador no puede eliminarse a sí mismo.")
+               description = "Elimina un usuario del sistema. Un administrador no puede eliminarse a sí mismo y el administrador general no puede ser eliminado.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Usuario eliminado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Operación no permitida (el administrador intenta eliminarse a sí mismo)"),
+        @ApiResponse(responseCode = "400", description = "Operación no permitida (el administrador intenta eliminar su propia cuenta)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador, o se intenta eliminar al administrador general"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe")
@@ -87,14 +87,14 @@ public class AdminController {
     }
 
     @Operation(summary = "Actualizar usuario",
-               description = "Modifica los datos de un usuario y devuelve el usuario actualizado.")
+               description = "Modifica el nombre, el email y el rol de un usuario y devuelve el usuario actualizado. Un administrador no puede cambiar su propio rol y solo el administrador general puede modificar su cuenta.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o cambio no permitido"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos o intento de cambiar el propio rol"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador, o se intenta modificar al administrador general"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe"),
-        @ApiResponse(responseCode = "409", description = "El email o el RUT ya están registrados por otro usuario")
+        @ApiResponse(responseCode = "409", description = "El email ya está registrado por otro usuario")
     })
     @PutMapping("/{id}")
     public UsuarioResponse actualizar(@Parameter(description = "ID del usuario") @PathVariable Long id,

@@ -41,11 +41,12 @@ public class DireccionController {
     }
 
     @Operation(summary = "Agregar dirección",
-               description = "Registra una nueva dirección para el usuario autenticado. Solo se despacha a comunas de la Región de Coquimbo.")
+               description = "Registra una nueva dirección para el usuario autenticado. Solo se despacha a comunas de la Región de Coquimbo y se permiten hasta 5 direcciones por usuario.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Dirección creada correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes o comuna no permitida)"),
-        @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)")
+        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes o comuna no permitida) o se alcanzó el máximo de 5 direcciones"),
+        @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
+        @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -83,7 +84,7 @@ public class DireccionController {
     }
 
     @Operation(summary = "Eliminar dirección",
-               description = "Elimina una dirección del usuario autenticado.")
+               description = "Elimina una dirección del usuario autenticado. Si era la predeterminada, otra queda como predeterminada.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Dirección eliminada correctamente"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),

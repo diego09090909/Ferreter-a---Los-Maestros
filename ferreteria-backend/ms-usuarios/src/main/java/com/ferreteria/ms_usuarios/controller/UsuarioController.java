@@ -40,12 +40,13 @@ public class UsuarioController {
     }
 
     @Operation(summary = "Actualizar mi perfil",
-               description = "Modifica los datos personales del usuario autenticado y devuelve el perfil actualizado.")
+               description = "Modifica el nombre y el email del usuario autenticado y devuelve el perfil actualizado.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Perfil actualizado correctamente"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes o con formato incorrecto)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "404", description = "El usuario no existe")
+        @ApiResponse(responseCode = "404", description = "El usuario no existe"),
+        @ApiResponse(responseCode = "409", description = "El email ya está registrado por otro usuario")
     })
     @PutMapping
     public UsuarioResponse actualizarPerfil(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId,
@@ -57,8 +58,8 @@ public class UsuarioController {
                description = "Cambia la contraseña del usuario autenticado. Requiere la contraseña actual y la nueva.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Contraseña actualizada correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes, contraseña actual incorrecta o nueva contraseña no válida)"),
-        @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos (campos faltantes o la nueva contraseña es igual a la actual)"),
+        @ApiResponse(responseCode = "401", description = "No autenticado (token inválido o vencido) o la contraseña actual es incorrecta"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
     @PutMapping("/password")
