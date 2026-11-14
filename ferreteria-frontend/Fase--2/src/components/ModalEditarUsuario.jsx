@@ -7,8 +7,8 @@ import { ROLES_CREABLES_POR_ADMIN, etiquetaRol, valorRol } from '../utils/roles'
 import { claseCampo, enfocarPrimerError, erroresEditarUsuario, hayErrores } from '../utils/validaciones'
 
 
-function ModalEditarUsuario({ usuario, rutAdmin, onCerrar, onGuardado }) {
-  const esPropia = usuario.rut === rutAdmin
+function ModalEditarUsuario({ usuario, idAdmin, onCerrar, onGuardado }) {
+  const esPropia = usuario.id === idAdmin
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email, rol: valorRol(usuario.rol) })
   const [intento, setIntento] = useState(false)
   const [mensaje, setMensaje] = useState(null)
@@ -28,7 +28,7 @@ function ModalEditarUsuario({ usuario, rutAdmin, onCerrar, onGuardado }) {
 
     setGuardando(true)
     try {
-      const editado = await actualizarUsuarioAdmin(usuario.rut, datos, rutAdmin)
+      const editado = await actualizarUsuarioAdmin(usuario.id, datos)
       onGuardado(editado)
     } catch (error) {
       setMensaje({ tipo: 'danger', texto: error.message })

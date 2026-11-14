@@ -217,12 +217,27 @@ function DetallePedido({ pedido, onCerrar }) {
 
 function SeccionUsuarios() {
   const { usuario: admin, actualizarUsuario } = useAuth()
-  const [usuarios, setUsuarios] = useState(obtenerUsuarios)
+  const [usuarios, setUsuarios] = useState([])
+  const [cargando, setCargando] = useState(true)
   const [mostrarModal, setMostrarModal] = useState(false)
   const [editando, setEditando] = useState(null)
   const [porEliminar, setPorEliminar] = useState(null)
   const [aviso, setAviso] = useState(null)
-  const recargar = () => setUsuarios(obtenerUsuarios())
+
+  const recargar = async () => {
+    try {
+      setUsuarios(await obtenerUsuarios())
+    } catch (error) {
+      setAviso({ tipo: 'danger', texto: error.message })
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  useEffect(() => {
+    recargar()
+  }, [])
+
   const alCrear = (nuevo) => {
     recargar()
     setAviso({ tipo: 'success', texto: `Se creó la cuenta de ${nuevo.nombre} (${nuevo.rol}).` })
@@ -230,7 +245,7 @@ function SeccionUsuarios() {
 
   const alEditar = (editado) => {
     // si el admin se edita a si mismo, tambien se actualiza su sesion (nombre y correo del navbar)
-    if (editado.rut === admin.rut) actualizarUsuario({ nombre: editado.nombre, email: editado.email })
+    if (editado.id === admin.id) actualizarUsuario({ nombre: editado.nombre, email: editado.email })
     setEditando(null)
     recargar()
     setAviso({ tipo: 'success', texto: `Se actualizó la cuenta de ${editado.nombre}.` })
@@ -238,7 +253,7 @@ function SeccionUsuarios() {
 
   const eliminar = async (u) => {
     try {
-      await eliminarUsuarioAdmin(u.rut, admin.rut)
+      await eliminarUsuarioAdmin(u.id)
       recargar()
       setAviso({ tipo: 'success', texto: `Se eliminó la cuenta de ${u.nombre}.` })
     } catch (error) {
@@ -264,14 +279,19 @@ function SeccionUsuarios() {
           </button>
         }
       >
+        {cargando && (
+          <tr>
+            <td colSpan="6" className="text-center text-muted">Cargando usuarios...</td>
+          </tr>
+        )}
         {usuarios.map((u) => {
-          const esPropia = u.rut === admin.rut
+          const esPropia = u.id === admin.id
           const esPrincipal = esCuentaPrincipal(u)
           // los datos del cliente los cambia el cliente; la cuenta principal solo la toca su dueño
           const puedeEditar = u.rol !== ROLES.CLIENTE && (!esPrincipal || esPropia)
           const puedeEliminar = !esPropia && !esPrincipal
           return (
-            <tr key={u.rut}>
+            <tr key={u.id}>
               <td data-label="RUT">{u.rut}</td>
               <td data-label="Nombre">
                 {u.nombre}
@@ -284,7 +304,7 @@ function SeccionUsuarios() {
               </td>
               <td data-label="Estado"><span className="badge bg-success">Activo</span></td>
               <td data-label="Acciones">
-                {porEliminar === u.rut ? (
+                {porEliminar === u.id ? (
                   <div className="d-flex flex-wrap align-items-center gap-2">
                     <span>¿Eliminar a {u.nombre}?</span>
                     <button type="button" className="btn btn-sm btn-danger" onClick={() => eliminar(u)}>Sí, eliminar</button>
@@ -307,7 +327,7 @@ function SeccionUsuarios() {
                         type="button"
                         className="btn btn-sm btn-outline-danger"
                         aria-label={`Eliminar a ${u.nombre}`}
-                        onClick={() => setPorEliminar(u.rut)}
+                        onClick={() => setPorEliminar(u.id)}
                       >
                         <i className="bi bi-trash"></i> Eliminar
                       </button>
@@ -323,9 +343,9 @@ function SeccionUsuarios() {
       <ModalNuevoUsuario mostrar={mostrarModal} onCerrar={() => setMostrarModal(false)} onCreado={alCrear} />
       {editando && (
         <ModalEditarUsuario
-          key={editando.rut}
+          key={editando.id}
           usuario={editando}
-          rutAdmin={admin.rut}
+          idAdmin={admin.id}
           onCerrar={() => setEditando(null)}
           onGuardado={alEditar}
         />
