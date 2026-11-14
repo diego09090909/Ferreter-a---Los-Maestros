@@ -17,12 +17,15 @@ import com.ferreteria.ms_usuarios.model.Rol;
 import com.ferreteria.ms_usuarios.model.Usuario;
 import com.ferreteria.ms_usuarios.repository.UsuarioRepository;
 
-
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
+
+    // RUT del administrador general (el que crea AdminInicial al arrancar).
+    // Nadie puede eliminarlo ni modificarlo, salvo él mismo.
+    public static final String RUT_ADMIN_GENERAL = "11111111-1";
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -71,12 +74,18 @@ public class AdminService {
 
     @Transactional
     public void eliminarUsuario(Long id, Long adminId) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        if (RUT_ADMIN_GENERAL.equals(usuario.getRut())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "El administrador general no puede eliminarse");
+        }
         if (id.equals(adminId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes eliminar tu propia cuenta");
         }
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
         usuarioRepository.delete(usuario);
     }
 
@@ -85,6 +94,10 @@ public class AdminService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        if (RUT_ADMIN_GENERAL.equals(usuario.getRut()) && !id.equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo el administrador general puede modificar su propia cuenta");
+        }
         if (id.equals(adminId) && req.getRol() != usuario.getRol()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes cambiar tu propio rol");

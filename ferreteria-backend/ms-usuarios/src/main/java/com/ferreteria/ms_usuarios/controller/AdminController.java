@@ -76,7 +76,7 @@ public class AdminController {
         @ApiResponse(responseCode = "204", description = "Usuario eliminado correctamente"),
         @ApiResponse(responseCode = "400", description = "Operación no permitida (el administrador intenta eliminarse a sí mismo)"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador, o se intenta eliminar al administrador general"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe")
     })
     @DeleteMapping("/{id}")
@@ -92,7 +92,7 @@ public class AdminController {
         @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos o cambio no permitido"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador, o se intenta modificar al administrador general"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe"),
         @ApiResponse(responseCode = "409", description = "El email o el RUT ya están registrados por otro usuario")
     })
