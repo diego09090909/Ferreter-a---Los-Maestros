@@ -1,41 +1,96 @@
-import { createContext, useContext, useRef, useState } from 'react'
-import { leer, guardar, borrar } from '../utils/storage'
-import { guardarUsuarios, inicializarAdminPorDefecto, obtenerUsuarios } from '../services/usuarios'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import api, {
+  URL_USUARIOS,
+  alExpirarSesion,
+  aUsuarioFront,
+  borrarSesion,
+  guardarSesion,
+  leerSesion,
+  sesionDesdeRespuesta,
+  usuarioDeSesion,
+} from '../services/api'
+import { ROLES } from '../utils/roles'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(() => {
-    inicializarAdminPorDefecto()
-    return leer('usuarioActivo', null)
+    const sesion = leerSesion()
+    return sesion ? usuarioDeSesion(sesion) : null
   })
 
   const saliendoRef = useRef(false)
 
-  const iniciarSesion = (u) => {
+  useEffect(() => {
+    alExpirarSesion(() => setUsuario(null))
+
+    if (!leerSesion()) return
+    api
+      .get(`${URL_USUARIOS}/usuarios/me`)
+      .then(({ data }) => {
+        const sesion = leerSesion()
+        if (!sesion) return
+        const actualizada = { ...sesion, ...aUsuarioFront(data) }
+        guardarSesion(actualizada)
+        setUsuario(usuarioDeSesion(actualizada))
+      })
+      .catch(() => {})
+  }, [])
+
+  const abrirSesion = (datos) => {
+    const sesion = sesionDesdeRespuesta(datos)
     saliendoRef.current = false
-    guardar('usuarioActivo', u)
-    setUsuario(u)
+    guardarSesion(sesion)
+    const logueado = usuarioDeSesion(sesion)
+    setUsuario(logueado)
+    return logueado
+  }
+
+  const ingresar = async (identificador, password) => {
+    const { data } = await api.post(
+      `${URL_USUARIOS}/auth/login`,
+      { usuario: identificador, password },
+      { publica: true },
+    )
+    return abrirSesion(data)
+  }
+
+  const registrar = async (cuerpo) => {
+    const { data } = await api.post(`${URL_USUARIOS}/auth/registro`, cuerpo, { publica: true })
+    return abrirSesion(data)
   }
 
   const cerrarSesion = () => {
     saliendoRef.current = true
-    borrar('usuarioActivo')
+    borrarSesion()
     setUsuario(null)
   }
 
   const actualizarUsuario = (cambios) => {
     const nuevo = { ...usuario, ...cambios }
-    guardarUsuarios(obtenerUsuarios().map((u) => (u.rut === usuario.rut ? nuevo : u)))
-    guardar('usuarioActivo', nuevo)
+    const sesion = leerSesion()
+    if (sesion) guardarSesion({ ...sesion, ...cambios })
     setUsuario(nuevo)
   }
 
-  const esAdmin = usuario?.rol === 'Administrador'
-  const esVendedor = usuario?.rol === 'Vendedor'
+  const esAdmin = usuario?.rol === ROLES.ADMIN
+  const esVendedor = usuario?.rol === ROLES.VENDEDOR
+  const esCliente = usuario?.rol === ROLES.CLIENTE
 
   return (
-    <AuthContext.Provider value={{ usuario, esAdmin, esVendedor, iniciarSesion, cerrarSesion, actualizarUsuario, saliendoRef }}>
+    <AuthContext.Provider
+      value={{
+        usuario,
+        esAdmin,
+        esVendedor,
+        esCliente,
+        ingresar,
+        registrar,
+        cerrarSesion,
+        actualizarUsuario,
+        saliendoRef,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

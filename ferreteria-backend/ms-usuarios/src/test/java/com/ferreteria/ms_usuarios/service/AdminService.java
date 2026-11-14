@@ -23,8 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminService {
 
-    // RUT del administrador general (el que crea AdminInicial al arrancar).
-    // Nadie puede eliminarlo ni modificarlo, salvo él mismo.
+ 
     public static final String RUT_ADMIN_GENERAL = "11111111-1";
 
     private final UsuarioRepository usuarioRepository;

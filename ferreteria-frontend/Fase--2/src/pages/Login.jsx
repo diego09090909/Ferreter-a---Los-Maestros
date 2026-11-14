@@ -5,10 +5,10 @@ import ErrorCampo from '../components/ErrorCampo'
 import FormularioDireccion from '../components/FormularioDireccion'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
-import { agregarDireccion } from '../services/direcciones'
-import { guardarUsuarios, obtenerUsuarios } from '../services/usuarios'
+import { mensajeDeError } from '../services/api'
 import { DIRECCION_VACIA, erroresDireccion, limpiarDireccion } from '../utils/direccion'
-import { formatearMientrasEscribe, formatearRut, limpiarRut, pareceRut } from '../utils/rut'
+import { ROLES } from '../utils/roles'
+import { formatearMientrasEscribe, formatearRut, pareceRut } from '../utils/rut'
 import { claseCampo, enfocarPrimerError, erroresIngreso, erroresRegistro, hayErrores } from '../utils/validaciones'
 
 const REVISAR_CAMPOS = { texto: 'Revisa los campos marcados en rojo', tipo: 'danger' }
@@ -16,7 +16,7 @@ const REVISAR_CAMPOS = { texto: 'Revisa los campos marcados en rojo', tipo: 'dan
 function Login() {
   useTitulo('Iniciar Sesión / Registro')
 
-  const { iniciarSesion } = useAuth()
+  const { ingresar, registrar } = useAuth()
   const navigate = useNavigate()
   const { state } = useLocation()
 
@@ -31,7 +31,6 @@ function Login() {
   const errRegistro = intentoRegistro ? erroresRegistro(registro) : {}
   const errDireccion = intentoRegistro ? erroresDireccion(direccionRegistro) : {}
 
-
   const temporizador = useRef(null)
   useEffect(() => () => clearTimeout(temporizador.current), [])
   const irA = (ruta) => {
@@ -39,13 +38,11 @@ function Login() {
   }
 
   const cambiarUsuarioIngreso = (valor) => {
-
     setIngreso({ ...ingreso, usuario: pareceRut(valor) ? formatearMientrasEscribe(valor) : valor })
   }
 
-  const entrar = (evento) => {
+  const entrar = async (evento) => {
     evento.preventDefault()
-    const usuarioEscrito = ingreso.usuario.trim()
 
     setIntentoIngreso(true)
     if (hayErrores(erroresIngreso(ingreso))) {
@@ -54,31 +51,18 @@ function Login() {
       return
     }
 
-
-    const encontrado = obtenerUsuarios().find(
-      (u) =>
-        (u.email ?? '').toLowerCase() === usuarioEscrito.toLowerCase() ||
-        limpiarRut(u.rut ?? '') === limpiarRut(usuarioEscrito),
-    )
-
-    if (!encontrado || encontrado.password !== ingreso.password) {
-      setMensajeIngreso({ texto: 'Usuario o contraseña incorrectos', tipo: 'danger' })
-      return
+    try {
+      const usuario = await ingresar(ingreso.usuario.trim(), ingreso.password)
+      setMensajeIngreso({ texto: `Bienvenido ${usuario.nombre}, entrando al sitio...`, tipo: 'success' })
+      irA(usuario.rol === ROLES.ADMIN || usuario.rol === ROLES.VENDEDOR ? '/admin' : '/')
+    } catch (error) {
+      const texto = error.response?.status === 401 ? 'Usuario o contraseña incorrectos' : mensajeDeError(error)
+      setMensajeIngreso({ texto, tipo: 'danger' })
     }
-
-    iniciarSesion(encontrado)
-    setMensajeIngreso({ texto: `Bienvenido ${encontrado.nombre}, entrando al sitio...`, tipo: 'success' })
-    irA(encontrado.rol === 'Administrador' || encontrado.rol === 'Vendedor' ? '/admin' : '/')
   }
 
   const registrarse = async (evento) => {
     evento.preventDefault()
-    const nombre = registro.nombre.trim()
-    const rut = registro.rut.trim()
-    const correo = registro.email.trim()
-    const { password } = registro
-
-    const error = (texto) => setMensajeRegistro({ texto, tipo: 'danger' })
 
     setIntentoRegistro(true)
     if (hayErrores({ ...erroresRegistro(registro), ...erroresDireccion(direccionRegistro) })) {
@@ -87,31 +71,22 @@ function Login() {
       return
     }
 
-    const usuarios = obtenerUsuarios()
-    if (usuarios.some((u) => limpiarRut(u.rut ?? '') === limpiarRut(rut))) {
-      return error('Ya existe una cuenta con ese RUT')
+    try {
+      const usuario = await registrar({
+        nombre: registro.nombre.trim(),
+        rut: formatearRut(registro.rut.trim()).replace(/\./g, ''),
+        email: registro.email.trim(),
+        password: registro.password,
+        direccion: limpiarDireccion(direccionRegistro),
+      })
+      setMensajeRegistro({ texto: `Cuenta creada correctamente. Bienvenido ${usuario.nombre}`, tipo: 'success' })
+      setRegistro({ nombre: '', rut: '', email: '', password: '' })
+      setDireccionRegistro(DIRECCION_VACIA)
+      setIntentoRegistro(false)
+      irA('/')
+    } catch (error) {
+      setMensajeRegistro({ texto: mensajeDeError(error), tipo: 'danger' })
     }
-    if (usuarios.some((u) => (u.email ?? '').toLowerCase() === correo.toLowerCase())) {
-      return error('Ya existe una cuenta con ese correo')
-    }
-
-    const nuevoUsuario = {
-      rut: formatearRut(rut),
-      nombre,
-      email: correo,
-      password,
-      rol: 'Cliente',
-    }
-    guardarUsuarios([...usuarios, nuevoUsuario])
-    await agregarDireccion(nuevoUsuario, limpiarDireccion(direccionRegistro))
-
-
-    iniciarSesion(nuevoUsuario)
-    setMensajeRegistro({ texto: `Cuenta creada correctamente. Bienvenido ${nombre}`, tipo: 'success' })
-    setRegistro({ nombre: '', rut: '', email: '', password: '' })
-    setDireccionRegistro(DIRECCION_VACIA)
-    setIntentoRegistro(false)
-    irA('/')
   }
 
   return (
@@ -125,7 +100,7 @@ function Login() {
       )}
 
       <div className="row g-4 justify-content-center">
-    
+
         <div className="col-lg-5 col-md-6">
           <div className="card h-100 shadow-sm tarjeta-cuenta">
             <div className="card-body p-4">
@@ -178,7 +153,6 @@ function Login() {
           </div>
         </div>
 
-        
         <div className="col-lg-5 col-md-6">
           <div className="card h-100 shadow-sm tarjeta-cuenta">
             <div className="card-body p-4">
@@ -274,7 +248,7 @@ function Login() {
       </div>
 
       <p className="text-secondary small text-center mt-4 mb-0">
-        Tus datos se guardan solo en este navegador. Proyecto académico, no ingreses información real.
+        Proyecto académico, no ingreses información real.
       </p>
     </main>
   )
