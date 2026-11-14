@@ -5,8 +5,9 @@ import { useCarrito } from '../context/CarritoContext'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { MAX_DIRECCIONES, agregarDireccion, listarDirecciones } from '../services/direcciones'
-import { leer, guardar } from '../utils/storage'
 import { obtenerProductos } from '../data/almacen'
+import { mensajeDeError } from '../services/api'
+import { armarVentaRequest, crearVenta } from '../services/ventas'
 import {
     ENTREGA_DOMICILIO,
     OPCIONES_ENTREGA,
@@ -14,13 +15,11 @@ import {
     CANTIDAD_MINIMA,
     CANTIDAD_MAXIMA,
     hayCantidadInvalida,
-    registrarCompra,
 } from '../utils/carrito'
 import { DIRECCION_VACIA, erroresDireccion, limpiarDireccion, textoDireccion } from '../utils/direccion'
 import { costoDespacho, faltaParaDespachoGratis } from '../utils/despacho'
 import { formatearPrecio } from '../utils/formato'
 import { enfocarPrimerError, erroresDatos, hayErrores } from '../utils/validaciones'
-
 
 function rutaImagen(item, catalogo) {
     const producto = catalogo.find((p) => `producto-${p.id}` === item.codigo)
@@ -41,7 +40,6 @@ function textoEnvio(entrega, conDespacho, comuna, envio) {
     return formatearPrecio(envio)
 }
 
-
 export default function Carrito() {
     const { usuario } = useAuth()
     return <PaginaCarrito key={usuario ? usuario.rut : 'sin-sesion'} />
@@ -55,6 +53,7 @@ function PaginaCarrito() {
     const [entrega, setEntrega] = useState('')
     const [pago, setPago] = useState('')
     const [mensaje, setMensaje] = useState(null)
+    const [enviando, setEnviando] = useState(false)
 
     const catalogo = obtenerProductos()
 
@@ -121,7 +120,6 @@ function PaginaCarrito() {
             })
         }
 
-
         setIntento(true)
         if (hayErrores({ ...erroresCompra, ...erroresEntrega })) {
             setMensaje({ tipo: 'danger', texto: 'Revisa los campos marcados en rojo.' })
@@ -129,23 +127,26 @@ function PaginaCarrito() {
             return
         }
 
+        if (!usuario.token) {
+            return setMensaje({
+                tipo: 'danger',
+                texto: 'Tu sesión no está conectada con el servidor. Cierra sesión y vuelve a ingresar.',
+            })
+        }
+
         let direccionFinal
         if (conDespacho) direccionFinal = usaNueva ? limpiarDireccion(direccion) : direccionElegida
 
-        const resultado = registrarCompra({
-            carrito,
-            productos: obtenerProductos(),
-            usuario,
-            entrega,
-            pago,
-            cliente: { nombre: datosCliente.nombre.trim(), email: datosCliente.email.trim() },
-            direccion: direccionFinal,
-            costoDespacho: envio ?? 0,
-        })
-
-        guardar('productos', resultado.productos)
-        guardar('pedidos', [...leer('pedidos', []), resultado.pedido])
-        guardar('ventas', [...leer('ventas', []), resultado.venta])
+        let venta
+        setEnviando(true)
+        try {
+            venta = await crearVenta(armarVentaRequest({ carrito, entrega, direccion: direccionFinal }))
+        } catch (error) {
+            setMensaje({ tipo: 'danger', texto: mensajeDeError(error) })
+            return
+        } finally {
+            setEnviando(false)
+        }
 
         // la direccion nueva se guarda en "Mis direcciones" si el cliente lo pidio
         if (conDespacho && usaNueva && guardarEnCuenta && puedeGuardar) {
@@ -166,7 +167,7 @@ function PaginaCarrito() {
         setGuardarEnCuenta(false)
         setMensaje({
             tipo: 'success',
-            texto: `Compra realizada con éxito. Pedido #${resultado.pedido.id} por ${formatearPrecio(resultado.pedido.total)}.${destino}`,
+            texto: `Compra realizada con éxito. Pedido #${venta.id} por ${formatearPrecio(venta.total)}.${destino}`,
         })
     }
 
@@ -407,8 +408,8 @@ function PaginaCarrito() {
                 )}
             </section>
 
-            <Button variant="success" className="mt-4" onClick={confirmar}>
-                Confirmar compra
+            <Button variant="success" className="mt-4" onClick={confirmar} disabled={enviando}>
+                {enviando ? 'Procesando compra...' : 'Confirmar compra'}
             </Button>
 
             {mensaje && (

@@ -11,10 +11,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
@@ -27,24 +27,33 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(ServicioNoDisponibleException.class)
+    public ResponseEntity<Map<String, Object>> servicioNoDisponible(ServicioNoDisponibleException ex) {
+        return respuesta(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> validacion(MethodArgumentNotValidException ex) {
         Map<String, String> campos = new LinkedHashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> campos.put(error.getField(), error.getDefaultMessage()));
-        return respuesta(HttpStatus.BAD_REQUEST, "Hay datos invalidos en la solicitud", campos);
+        return respuesta(HttpStatus.BAD_REQUEST, "Hay datos inválidos en la solicitud", campos);
     }
 
-    
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> tipoInvalido(MethodArgumentTypeMismatchException ex) {
+        return respuesta(HttpStatus.BAD_REQUEST,
+                "El valor '" + ex.getValue() + "' no es válido para el parámetro '" + ex.getName() + "'", null);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> jsonInvalido(HttpMessageNotReadableException ex) {
         return respuesta(HttpStatus.BAD_REQUEST,
-                "El cuerpo de la solicitud no es valido. Revise el formato y los valores enviados", null);
+                "El cuerpo de la solicitud no es válido. Revise el formato y los valores enviados", null);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> general(Exception ex) {
-        
         log.error("Error no controlado", ex);
         return respuesta(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", null);
     }

@@ -12,7 +12,7 @@ public enum EstadoVenta {
             case PENDIENTE -> nuevo == PAGADA || nuevo == ANULADA;
             case PAGADA -> nuevo == DESPACHADA || nuevo == ANULADA;
             case DESPACHADA -> nuevo == ENTREGADA;
-            case ENTREGADA, ANULADA -> false; // estados finales
+            case ENTREGADA, ANULADA -> false;
         };
     }
 }

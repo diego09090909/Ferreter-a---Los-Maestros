@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Aviso from '../components/Aviso'
 import ErrorCampo from '../components/ErrorCampo'
 import MisDirecciones from '../components/MisDirecciones'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
+import { mensajeDeError } from '../services/api'
 import { obtenerUsuarios } from '../services/usuarios'
+import { ENTREGAS_VENTA, ESTADOS_VENTA, obtenerMisVentas } from '../services/ventas'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
@@ -29,11 +31,32 @@ function MiCuenta() {
   const errDatos = intentoDatos ? erroresDatos(datos) : {}
   const errClave = intentoClave ? erroresClaves(claves) : {}
 
-  const [pedidos] = useState(() =>
+  const [pedidosLocales] = useState(() =>
     leer('pedidos', [])
       .filter((p) => (p.rut ? p.rut === usuario.rut : p.cliente === usuario.nombre))
       .reverse(),
   )
+
+  const [ventas, setVentas] = useState(null)
+  const [errorVentas, setErrorVentas] = useState(null)
+  const cargandoVentas = Boolean(usuario.token) && ventas === null && !errorVentas
+
+  useEffect(() => {
+    if (!usuario.token) return
+    obtenerMisVentas()
+      .then(setVentas)
+      .catch((error) => setErrorVentas(mensajeDeError(error)))
+  }, [usuario.token])
+
+  const pedidos = ventas
+    ? ventas.map((v) => ({
+        id: v.id,
+        tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
+        tipoPago: '—',
+        total: v.total,
+        estado: ESTADOS_VENTA[v.estado] ?? v.estado,
+      }))
+    : pedidosLocales
 
   const guardarDatos = (evento) => {
     evento.preventDefault()
@@ -233,7 +256,11 @@ function MiCuenta() {
       <section className="card shadow-sm mt-4">
         <div className="card-body p-4">
           <h2 className="h5 fw-bold mb-3">Mis pedidos</h2>
-          {pedidos.length === 0 ? (
+          {errorVentas ? (
+            <p className="text-danger mb-0">No se pudo cargar tu historial: {errorVentas}</p>
+          ) : cargandoVentas ? (
+            <p className="text-muted mb-0">Cargando tus pedidos...</p>
+          ) : pedidos.length === 0 ? (
             <p className="text-muted mb-0">
               Aún no tienes pedidos. Ve al <Link to="/catalogo">catálogo</Link> para comprar.
             </p>

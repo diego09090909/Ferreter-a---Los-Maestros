@@ -5,8 +5,10 @@ import ModalEditarUsuario from '../components/ModalEditarUsuario'
 import ModalNuevoUsuario from '../components/ModalNuevoUsuario'
 import ModalStock from '../components/ModalStock'
 import { useAuth } from '../context/AuthContext'
+import { mensajeDeError } from '../services/api'
 import { listarInventario } from '../services/inventario'
 import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
+import { ENTREGAS_VENTA, ESTADOS_VENTA, cambiarEstadoVenta, obtenerTodasLasVentas } from '../services/ventas'
 import { textoDireccion } from '../utils/direccion'
 import { imagenDe } from '../utils/imagen'
 import { ROLES, colorRol } from '../utils/roles'
@@ -28,6 +30,54 @@ const VENTAS_EJEMPLO = [
   { id: 501, fecha: '11/09/2026', categoria: 'Herramientas', monto: 49990, medioPago: 'Débito' },
   { id: 502, fecha: '10/09/2026', categoria: 'Construccion', monto: 15600, medioPago: 'Crédito' },
 ]
+const SIGUIENTES_ESTADOS = {
+  PENDIENTE: ['PAGADA', 'ANULADA'],
+  PAGADA: ['DESPACHADA', 'ANULADA'],
+  DESPACHADA: ['ENTREGADA'],
+}
+
+function fechaCorta(fechaIso) {
+  const [anio, mes, dia] = String(fechaIso).slice(0, 10).split('-')
+  return `${dia}/${mes}/${anio}`
+}
+
+function pedidoDesdeVenta(v) {
+  return {
+    id: v.id,
+    cliente: `Usuario #${v.usuarioId}`,
+    tipoPago: '—',
+    tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
+    direccionTexto: v.direccionDespacho,
+    subtotal: v.subtotal,
+    costoDespacho: v.costoDespacho,
+    total: v.total,
+    estado: ESTADOS_VENTA[v.estado] ?? v.estado,
+    estadoCodigo: v.estado,
+    items: v.detalles.map((d) => ({ nombre: d.nombreProducto, cantidad: d.cantidad, precio: d.precioUnitario })),
+  }
+}
+
+function useVentasBackend() {
+  const { usuario } = useAuth()
+  const conBackend = Boolean(usuario?.token)
+  const [ventas, setVentas] = useState(null)
+  const [error, setError] = useState(null)
+
+  const cargar = () =>
+    obtenerTodasLasVentas()
+      .then((datos) => {
+        setVentas(datos)
+        setError(null)
+      })
+      .catch((e) => setError(mensajeDeError(e)))
+
+  useEffect(() => {
+    if (conBackend) cargar()
+  }, [conBackend])
+
+  return { conBackend, ventas, error, cargar }
+}
+
 function partesFecha(fecha) {
   const [, mes = '', anio = ''] = String(fecha).split(/[/-]/)
   return { mes: mes.padStart(2, '0'), anio }
@@ -54,12 +104,37 @@ function Tabla({ titulo, columnas, acciones, filtros, children }) {
 }
 
 function SeccionPedidos() {
-  const [pedidos] = useState(() => leer('pedidos', PEDIDOS_EJEMPLO))
+  const { esAdmin } = useAuth()
+  const { conBackend, ventas, error, cargar } = useVentasBackend()
+  const [pedidosLocales] = useState(() => leer('pedidos', PEDIDOS_EJEMPLO))
   const [detalle, setDetalle] = useState(null)
+  const [aviso, setAviso] = useState(null)
+
+  const pedidos = conBackend ? (ventas ?? []).map(pedidoDesdeVenta) : pedidosLocales
+  const puedeCambiarEstado = conBackend && esAdmin
+  const columnas = ['ID', 'Cliente', 'Tipo Pago', 'Entrega', 'Total', 'Estado', 'Detalle']
+  if (puedeCambiarEstado) columnas.push('Cambiar estado')
+
+  const cambiarEstado = async (id, estado) => {
+    try {
+      await cambiarEstadoVenta(id, estado)
+      setAviso({ tipo: 'success', texto: `Pedido #PED-${id} actualizado a ${ESTADOS_VENTA[estado]}.` })
+      cargar()
+    } catch (e) {
+      setAviso({ tipo: 'danger', texto: mensajeDeError(e) })
+    }
+  }
 
   return (
     <>
-      <Tabla titulo="Pedidos del Mes" columnas={['ID', 'Cliente', 'Tipo Pago', 'Entrega', 'Total', 'Estado', 'Detalle']}>
+      {error && <div className="alert alert-danger" role="alert">No se pudieron cargar los pedidos: {error}</div>}
+      {aviso && (
+        <div className={`alert alert-${aviso.tipo} alert-dismissible`} role={aviso.tipo === 'danger' ? 'alert' : 'status'}>
+          {aviso.texto}
+          <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setAviso(null)}></button>
+        </div>
+      )}
+      <Tabla titulo="Pedidos del Mes" columnas={columnas}>
         {pedidos.map((p) => (
           <tr key={p.id}>
             <td data-label="ID">#PED-{p.id}</td>
@@ -78,6 +153,25 @@ function SeccionPedidos() {
                 <i className="bi bi-eye"></i> Ver
               </button>
             </td>
+            {puedeCambiarEstado && (
+              <td data-label="Cambiar estado">
+                {(SIGUIENTES_ESTADOS[p.estadoCodigo] ?? []).length === 0 ? (
+                  <span className="text-muted">—</span>
+                ) : (
+                  <select
+                    className="form-select form-select-sm"
+                    aria-label={`Cambiar estado del pedido #PED-${p.id}`}
+                    value=""
+                    onChange={(e) => cambiarEstado(p.id, e.target.value)}
+                  >
+                    <option value="">Elegir...</option>
+                    {SIGUIENTES_ESTADOS[p.estadoCodigo].map((estado) => (
+                      <option key={estado} value={estado}>{ESTADOS_VENTA[estado]}</option>
+                    ))}
+                  </select>
+                )}
+              </td>
+            )}
           </tr>
         ))}
       </Tabla>
@@ -92,7 +186,7 @@ function DetallePedido({ pedido, onCerrar }) {
     ['Cliente', pedido.cliente],
     ['Correo', pedido.email],
     ['Entrega', pedido.tipoEntrega],
-    ['Dirección', pedido.direccionEntrega ? textoDireccion(pedido.direccionEntrega) : null],
+    ['Dirección', pedido.direccionTexto ?? (pedido.direccionEntrega ? textoDireccion(pedido.direccionEntrega) : null)],
     ['Tipo de pago', pedido.tipoPago],
     ['Estado', pedido.estado],
     ['Subtotal', pedido.subtotal !== undefined ? formatearPrecio(pedido.subtotal) : null],
@@ -377,7 +471,19 @@ function DetalleProducto({ producto, onCerrar }) {
 }
 
 function SeccionVentas() {
-  const [ventas] = useState(() => leer('ventas', VENTAS_EJEMPLO))
+  const { conBackend, ventas: ventasBackend, error } = useVentasBackend()
+  const [ventasLocales] = useState(() => leer('ventas', VENTAS_EJEMPLO))
+  const ventas = conBackend
+    ? (ventasBackend ?? [])
+        .filter((v) => v.estado !== 'ANULADA')
+        .map((v) => ({
+          id: v.id,
+          fecha: fechaCorta(v.fecha),
+          categoria: v.detalles.map((d) => `${d.cantidad} x ${d.nombreProducto}`).join(', '),
+          monto: v.total,
+          medioPago: '—',
+        }))
+    : ventasLocales
   const [anio, setAnio] = useState('')
   const [mes, setMes] = useState('')
 
@@ -387,9 +493,11 @@ function SeccionVentas() {
   })
 
   return (
+    <>
+    {error && <div className="alert alert-danger" role="alert">No se pudieron cargar las ventas: {error}</div>}
     <Tabla
       titulo="Histórico de Ventas"
-      columnas={['N° Venta', 'Fecha', 'Categoría', 'Monto', 'Medio Pago']}
+      columnas={['N° Venta', 'Fecha', conBackend ? 'Productos' : 'Categoría', 'Monto', 'Medio Pago']}
       filtros={
         <div className="row g-2 mb-3">
           <div className="col-6 col-md-3">
@@ -412,6 +520,8 @@ function SeccionVentas() {
               onChange={(e) => setMes(e.target.value)}
             >
               <option value="">Filtrar por Mes</option>
+              <option value="12">Diciembre</option>
+              <option value="11">Noviembre</option>
               <option value="10">Octubre</option>
               <option value="09">Septiembre</option>
               <option value="08">Agosto</option>
@@ -424,12 +534,13 @@ function SeccionVentas() {
         <tr key={v.id}>
           <td data-label="N° Venta">#VNT-{v.id}</td>
           <td data-label="Fecha">{v.fecha}</td>
-          <td data-label="Categoría">{v.categoria}</td>
+          <td data-label={conBackend ? 'Productos' : 'Categoría'}>{v.categoria}</td>
           <td data-label="Monto">{formatearPrecio(v.monto)}</td>
           <td data-label="Medio Pago">{v.medioPago}</td>
         </tr>
       ))}
     </Tabla>
+    </>
   )
 }
 

@@ -1,0 +1,102 @@
+@usuarios = http://localhost:8081/api/v1/auth
+@base = http://localhost:8083/api/v1/ventas
+@tokenCliente = PEGA_AQUI_EL_TOKEN_DEL_CLIENTE
+@tokenAdmin = PEGA_AQUI_EL_TOKEN_DEL_ADMIN
+@tokenVendedor = PEGA_AQUI_EL_TOKEN_DEL_VENDEDOR
+
+### A. Login como cliente (usa un usuario CLIENTE que exista)
+POST {{usuarios}}/login
+Content-Type: application/json
+
+{ "usuario": "cliente@correo.cl", "password": "su_clave" }
+
+### B. Login como admin
+POST {{usuarios}}/login
+Content-Type: application/json
+
+{ "usuario": "admin@correo.cl", "password": "su_clave" }
+
+### 1. Sin token -> 401
+GET {{base}}/mis-ventas
+
+### 2. Token inventado -> 401
+GET {{base}}/mis-ventas
+Authorization: Bearer token-falso
+
+### 3. Cliente crea una venta con despacho -> 201 (el usuarioId sale del token)
+POST {{base}}
+Content-Type: application/json
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "items": [ { "productoId": 1, "cantidad": 2 } ],
+  "tipoEntrega": "DESPACHO_A_DOMICILIO",
+  "direccionDespacho": "Av. Francisco de Aguirre 123",
+  "comunaDespacho": "La Serena"
+}
+
+### 4. Cliente ve su historial -> 200
+GET {{base}}/mis-ventas
+Authorization: Bearer {{tokenCliente}}
+
+### 5. Cliente intenta listar TODAS las ventas -> 403
+GET {{base}}
+Authorization: Bearer {{tokenCliente}}
+
+### 6. Cliente intenta cambiar un estado -> 403
+PATCH {{base}}/1/estado
+Content-Type: application/json
+Authorization: Bearer {{tokenCliente}}
+
+{ "estado": "PAGADA" }
+
+### 7. Vendedor lista las ventas -> 200 (solo consulta)
+GET {{base}}?estado=PENDIENTE
+Authorization: Bearer {{tokenVendedor}}
+
+### 8. Vendedor intenta cambiar un estado -> 403
+PATCH {{base}}/1/estado
+Content-Type: application/json
+Authorization: Bearer {{tokenVendedor}}
+
+{ "estado": "PAGADA" }
+
+### 9. Admin marca la venta 1 como pagada -> 200
+PATCH {{base}}/1/estado
+Content-Type: application/json
+Authorization: Bearer {{tokenAdmin}}
+
+{ "estado": "PAGADA" }
+
+### 10. Transición inválida (PAGADA -> ENTREGADA) -> 400
+PATCH {{base}}/1/estado
+Content-Type: application/json
+Authorization: Bearer {{tokenAdmin}}
+
+{ "estado": "ENTREGADA" }
+
+### 11. Admin anula -> 200 y el stock vuelve (revisar GET http://localhost:8082/api/v1/productos/1)
+PATCH {{base}}/1/estado
+Content-Type: application/json
+Authorization: Bearer {{tokenAdmin}}
+
+{ "estado": "ANULADA" }
+
+### 12. Comuna sin cobertura -> 400
+POST {{base}}
+Content-Type: application/json
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "items": [ { "productoId": 1, "cantidad": 1 } ],
+  "tipoEntrega": "DESPACHO_A_DOMICILIO",
+  "direccionDespacho": "Calle Uno 1",
+  "comunaDespacho": "La Higuera"
+}
+
+### 13. Carrito vacío -> 400
+POST {{base}}
+Content-Type: application/json
+Authorization: Bearer {{tokenCliente}}
+
+{ "items": [], "tipoEntrega": "RETIRO_EN_TIENDA" }

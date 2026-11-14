@@ -26,7 +26,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Venta {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,6 +46,15 @@ public class Venta {
 
     @Column(length = 300)
     private String direccionDespacho;
+
+    @Column(length = 50)
+    private String comunaDespacho;
+
+    @Column(nullable = false)
+    private Long subtotal;
+
+    @Column(nullable = false)
+    private Long costoDespacho;
 
     @Column(nullable = false)
     private Long total;
