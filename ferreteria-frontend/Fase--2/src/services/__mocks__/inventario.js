@@ -1,4 +1,4 @@
-import { guardarProductos, obtenerProductos } from '../../data/almacen'
+import { guardarProductos, obtenerProductos } from '../../test/almacenDePrueba'
 
 function aRespuestaAdmin(p) {
   return {
