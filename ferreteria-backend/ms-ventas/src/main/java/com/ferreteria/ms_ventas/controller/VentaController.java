@@ -32,12 +32,13 @@ public class VentaController {
     private final VentaService ventaService;
 
     @PostMapping
-    @Operation(summary = "Crea una venta para el usuario del token (checkout del carrito)",
+    @Operation(summary = "Crea una venta para el usuario del token (checkout del carrito, solo CLIENTE)",
             description = "Valida stock y disponibilidad en ms-catalogo, descuenta el stock, calcula el costo "
                     + "de despacho según la comuna y guarda la venta en estado PENDIENTE.")
     @ApiResponse(responseCode = "201", description = "Venta creada")
     @ApiResponse(responseCode = "400", description = "Datos inválidos, sin stock, producto no disponible o comuna sin cobertura")
     @ApiResponse(responseCode = "401", description = "Sin token o token inválido")
+    @ApiResponse(responseCode = "403", description = "Solo los clientes pueden comprar y ver sus compras")
     @ApiResponse(responseCode = "404", description = "Algún producto no existe")
     @ApiResponse(responseCode = "503", description = "ms-catalogo no disponible")
     public ResponseEntity<VentaResponse> crear(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId,
@@ -47,19 +48,21 @@ public class VentaController {
     }
 
     @GetMapping("/mis-ventas")
-    @Operation(summary = "Historial de compras del usuario del token",
+    @Operation(summary = "Historial de compras del usuario del token (solo CLIENTE)",
             description = "Ordenadas de la más reciente a la más antigua.")
     @ApiResponse(responseCode = "200", description = "Lista de ventas (puede venir vacía)")
     @ApiResponse(responseCode = "401", description = "Sin token o token inválido")
+    @ApiResponse(responseCode = "403", description = "Solo los clientes pueden comprar y ver sus compras")
     public ResponseEntity<List<VentaResponse>> misVentas(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId) {
         return ResponseEntity.ok(ventaService.listarDelUsuario(usuarioId));
     }
 
     @GetMapping("/mis-ventas/{ventaId}")
-    @Operation(summary = "Detalle de una compra del usuario del token",
+    @Operation(summary = "Detalle de una compra del usuario del token (solo CLIENTE)",
             description = "Responde 404 si la venta no existe o pertenece a otro usuario.")
     @ApiResponse(responseCode = "200", description = "Venta encontrada")
     @ApiResponse(responseCode = "401", description = "Sin token o token inválido")
+    @ApiResponse(responseCode = "403", description = "Solo los clientes pueden comprar y ver sus compras")
     @ApiResponse(responseCode = "404", description = "No existe o es de otro usuario")
     public ResponseEntity<VentaResponse> miVenta(@Parameter(hidden = true) @AuthenticationPrincipal Long usuarioId,
                                                  @Parameter(description = "ID de la venta", example = "1")
