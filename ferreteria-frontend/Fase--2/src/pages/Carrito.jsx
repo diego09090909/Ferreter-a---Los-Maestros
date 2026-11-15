@@ -5,7 +5,6 @@ import { useCarrito } from '../context/CarritoContext'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { MAX_DIRECCIONES, agregarDireccion, listarDirecciones } from '../services/direcciones'
-import { obtenerProductos } from '../data/almacen'
 import { mensajeDeError } from '../services/api'
 import { armarVentaRequest, crearVenta } from '../services/ventas'
 import {
@@ -21,9 +20,8 @@ import { costoDespacho, faltaParaDespachoGratis } from '../utils/despacho'
 import { formatearPrecio } from '../utils/formato'
 import { enfocarPrimerError, erroresDatos, hayErrores } from '../utils/validaciones'
 
-function rutaImagen(item, catalogo) {
-    const producto = catalogo.find((p) => `producto-${p.id}` === item.codigo)
-    const origen = item.imagen ?? producto?.imagen
+function rutaImagen(item) {
+    const origen = item.imagen
 
     if (!origen) return null
     if (/^(https?:|data:|\/)/.test(origen)) return origen
@@ -54,8 +52,6 @@ function PaginaCarrito() {
     const [pago, setPago] = useState('')
     const [mensaje, setMensaje] = useState(null)
     const [enviando, setEnviando] = useState(false)
-
-    const catalogo = obtenerProductos()
 
     const [datosCliente, setDatosCliente] = useState(() => ({
         nombre: usuario?.nombre ?? '',
@@ -197,7 +193,7 @@ function PaginaCarrito() {
                         )}
 
                         {carrito.map((item) => {
-                            const imagen = rutaImagen(item, catalogo)
+                            const imagen = rutaImagen(item)
 
                             return (
                                 <tr key={item.codigo}>

@@ -1,14 +1,7 @@
+import { leer, guardar } from '../utils/storage'
 
-export const CATEGORIAS = [
-  { valor: 'Herramientas', etiqueta: 'Herramientas' },
-  { valor: 'Construccion', etiqueta: 'Construcción' },
-  { valor: 'Electricidad', etiqueta: 'Electricidad' },
-  { valor: 'Pinturas', etiqueta: 'Pinturas' },
-  { valor: 'Plomeria', etiqueta: 'Plomería' },
-  { valor: 'Jardineria', etiqueta: 'Jardinería' },
-]
-
-export const PRODUCTOS_INICIALES = [
+// productos de ejemplo que usa el reemplazo de services/inventario en las pruebas (services/__mocks__)
+const PRODUCTOS_DE_PRUEBA = [
   { id: 1, nombre: 'Taladro Percutor 710W', descripcion: 'Taladro de alta potencia para perforaciones en concreto y madera.', precio: 49990, categoria: 'Herramientas', marca: 'Bauker', stockTienda: 10, stockBodega: 20, imagen: '/imagenes/taladroBAUKER-710.png' },
   { id: 2, nombre: 'Cemento Bío Bío 25kg', descripcion: 'Saco de cemento de alta resistencia para obras y estructuras.', precio: 7800, categoria: 'Construccion', marca: 'Cintac', stockTienda: 50, stockBodega: 200, imagen: '/imagenes/cemento-biobio-25kg.png' },
   { id: 3, nombre: 'Esmalte al Agua 1 Galón', descripcion: 'Pintura lavable de alto cubrimiento para interiores y exteriores.', precio: 24990, categoria: 'Pinturas', marca: 'Kolor', stockTienda: 15, stockBodega: 30, imagen: '/imagenes/esmalte-agua-kolor.png' },
@@ -26,3 +19,23 @@ export const PRODUCTOS_INICIALES = [
   { id: 15, nombre: 'Pintura Anticorrosiva 1Gal', descripcion: 'Protección anticorrosiva de secado rápido para estructuras metálicas.', precio: 21990, categoria: 'Pinturas', marca: 'Kolor', stockTienda: 9, stockBodega: 18, imagen: '/imagenes/pintura-anticorrosiva-kolor.png' },
   { id: 16, nombre: 'Foco LED Proyector 50W', descripcion: 'Foco exterior IP65 luz fría de bajo consumo energético.', precio: 14990, categoria: 'Electricidad', marca: 'Sipetrol', stockTienda: 22, stockBodega: 40, imagen: '/imagenes/focoled-50w.png' },
 ]
+
+export const STOCK_MINIMO_POR_DEFECTO = 5
+
+// un solo stock por producto, igual que ms-catalogo (stock + stockMinimo).
+// Los productos guardados con stock de tienda y bodega por separado se juntan en uno.
+function aStockUnico(producto) {
+  if (producto.stock !== undefined) return producto
+  const { stockTienda = 0, stockBodega = 0, ...resto } = producto
+  return { ...resto, stock: stockTienda + stockBodega, stockMinimo: producto.stockMinimo ?? STOCK_MINIMO_POR_DEFECTO }
+}
+
+export function obtenerProductos() {
+  const productos = leer('productos', PRODUCTOS_DE_PRUEBA).map(aStockUnico)
+  guardar('productos', productos)
+  return productos
+}
+
+export function guardarProductos(productos) {
+  guardar('productos', productos)
+}

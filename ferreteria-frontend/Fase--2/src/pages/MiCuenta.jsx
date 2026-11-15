@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import api, { URL_USUARIOS, mensajeDeError } from '../services/api'
 import { ENTREGAS_VENTA, ESTADOS_VENTA, MEDIOS_PAGO, obtenerMisVentas } from '../services/ventas'
-import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
 
@@ -31,12 +30,6 @@ function MiCuenta() {
   const errDatos = intentoDatos ? erroresDatos(datos) : {}
   const errClave = intentoClave ? erroresClaves(claves) : {}
 
-  const [pedidosLocales] = useState(() =>
-    leer('pedidos', [])
-      .filter((p) => (p.rut ? p.rut === usuario.rut : p.cliente === usuario.nombre))
-      .reverse(),
-  )
-
   const [ventas, setVentas] = useState(null)
   const [errorVentas, setErrorVentas] = useState(null)
   const cargandoVentas = conectado && esCliente && ventas === null && !errorVentas
@@ -48,15 +41,13 @@ function MiCuenta() {
       .catch((error) => setErrorVentas(mensajeDeError(error)))
   }, [conectado, esCliente])
 
-  const pedidos = ventas
-    ? ventas.map((v) => ({
-        id: v.id,
-        tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
-        tipoPago: MEDIOS_PAGO[v.medioPago] ?? '—',
-        total: v.total,
-        estado: ESTADOS_VENTA[v.estado] ?? v.estado,
-      }))
-    : pedidosLocales
+  const pedidos = (ventas ?? []).map((v) => ({
+    id: v.id,
+    tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
+    tipoPago: MEDIOS_PAGO[v.medioPago] ?? '—',
+    total: v.total,
+    estado: ESTADOS_VENTA[v.estado] ?? v.estado,
+  }))
 
   const guardarDatos = async (evento) => {
     evento.preventDefault()

@@ -3,7 +3,6 @@ import {
     agregarItem,
     calcularTotal,
     cantidadValida,
-    registrarCompra,
 } from './carrito'
 
 const martillo = { id: 1, nombre: 'Martillo', precio: 5000, imagen: 'martillo.jpg' }
@@ -36,30 +35,5 @@ describe('carrito', () => {
         expect(cantidadValida(0)).toBe(false)
         expect(cantidadValida(11)).toBe(false)
         expect(cantidadValida(2.5)).toBe(false)
-    })
-})
-
-describe('registrarCompra', () => {
-    it('descuenta del stock del producto lo que se compró', () => {
-        const productos = [
-            { id: 1, nombre: 'Martillo', categoria: 'Herramientas', stock: 13, stockMinimo: 5 },
-        ]
-        const carrito = [{ codigo: 'producto-1', nombre: 'Martillo', precio: 5000, cantidad: 5 }]
-
-        const resultado = registrarCompra({
-            carrito,
-            productos,
-            usuario: { nombre: 'Kevin' },
-            entrega: 'Retiro en tienda',
-            pago: 'Cuenta Corriente',
-        })
-
-        expect(resultado.productos[0].stock).toBe(8)
-        expect(resultado.pedido.total).toBe(25000)
-        expect(resultado.pedido.cliente).toBe('Kevin')
-        expect(resultado.pedido.estado).toBe('Pendiente')
-        // el pedido guarda sus productos para verlos en el detalle del panel
-        expect(resultado.pedido.items).toEqual([{ nombre: 'Martillo', cantidad: 5, precio: 5000 }])
-        expect(resultado.venta.categoria).toBe('Herramientas')
     })
 })
