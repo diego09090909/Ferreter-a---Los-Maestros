@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { MAX_DIRECCIONES, agregarDireccion, listarDirecciones } from '../services/direcciones'
 import { obtenerProductos } from '../data/almacen'
-import { mensajeDeError } from '../services/api'
+import { leerSesion, mensajeDeError } from '../services/api'
 import { armarVentaRequest, crearVenta } from '../services/ventas'
 import {
     ENTREGA_DOMICILIO,
@@ -127,7 +127,8 @@ function PaginaCarrito() {
             return
         }
 
-        if (!usuario.token) {
+        // el token no viaja en "usuario" (api.js lo quita), se revisa en la sesion guardada
+        if (!leerSesion()?.token) {
             return setMensaje({
                 tipo: 'danger',
                 texto: 'Tu sesión no está conectada con el servidor. Cierra sesión y vuelve a ingresar.',

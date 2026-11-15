@@ -39,14 +39,14 @@ function MiCuenta() {
 
   const [ventas, setVentas] = useState(null)
   const [errorVentas, setErrorVentas] = useState(null)
-  const cargandoVentas = Boolean(usuario.token) && esCliente && ventas === null && !errorVentas
+  const cargandoVentas = esCliente && ventas === null && !errorVentas
 
   useEffect(() => {
-    if (!usuario.token || !esCliente) return
+    if (!esCliente) return
     obtenerMisVentas()
       .then(setVentas)
       .catch((error) => setErrorVentas(mensajeDeError(error)))
-  }, [usuario.token, esCliente])
+  }, [esCliente])
 
   const pedidos = ventas
     ? ventas.map((v) => ({

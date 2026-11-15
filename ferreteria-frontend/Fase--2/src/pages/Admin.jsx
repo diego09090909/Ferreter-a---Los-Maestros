@@ -61,7 +61,7 @@ function pedidoDesdeVenta(v) {
 
 function useVentasBackend() {
   const { usuario } = useAuth()
-  const conBackend = Boolean(usuario?.token)
+  const conBackend = Boolean(usuario)
   const [ventas, setVentas] = useState(null)
   const [error, setError] = useState(null)
 
