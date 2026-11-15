@@ -32,55 +32,55 @@ HE001;Herramientas;Eléctricas;Taladro percutor 650W 13mm;Makita;Unidad;42000;79
 HE002;Herramientas;Eléctricas;Atornillador inalámbrico 12V (kit);Makita;Unidad;55000;104990;5;2;/imagenes/productos/HE002-atornillador-12v-makita.webp
 HE003;Herramientas;Eléctricas;Amoladora angular 4.5" 800W;Makita;Unidad;28000;54990;8;2;/imagenes/productos/HE003-amoladora-800w-makita.webp
 HE004;Herramientas;Eléctricas;Sierra circular 7-1/4" 1200W;Skil;Unidad;38000;72990;4;1;/imagenes/productos/HE004-sierra-circular.webp
-HE005;Herramientas;Eléctricas;Lijadora orbital 180W;Black+Decker;Unidad;18000;34990;6;2;/imagenes/productos/HE005-lijadora-orbital.webp
-HE006;Herramientas;Eléctricas;Caladora 500W;Skil;Unidad;22000;42990;4;1;
+HE005;Herramientas;Eléctricas;Lijadora orbital 180W;Black+Decker;Unidad;18000;34990;6;2;/imagenes/productos/HE005.webp
+HE006;Herramientas;Eléctricas;Caladora 500W;Skil;Unidad;22000;42990;4;1;/imagenes/productos/HE006.webp
 GS001;Gasfitería;Tuberías;Cañería PVC 1/2" x 6m;Tigre;Unidad;2800;5490;30;10;/imagenes/productos/GS001-caneria-pvc-media.webp
 GS002;Gasfitería;Tuberías;Cañería PVC 3/4" x 6m;Tigre;Unidad;3900;7490;25;8;/imagenes/productos/GS002-caneria-pvc-tres-cuartos.webp
-GS003;Gasfitería;Tuberías;Cañería cobre 1/2" x 5m;Codelco;Unidad;9500;17990;15;5;
-GS004;Gasfitería;Uniones;Codo PVC 1/2" 90°;Tigre;Unidad;180;390;100;30;
-GS005;Gasfitería;Uniones;Te PVC 1/2";Tigre;Unidad;220;450;80;25;
-GS006;Gasfitería;Uniones;Unión doble PVC 1/2";Tigre;Unidad;150;320;80;25;
-GS007;Gasfitería;Llaves;Llave de paso esfera 1/2" latón;Emmeti;Unidad;1800;3490;30;10;
-GS008;Gasfitería;Llaves;Llave de paso esfera 3/4" latón;Emmeti;Unidad;2500;4990;20;8;
-GS009;Gasfitería;Grifería;Grifería lavamanos monocomando cromo;Corona;Unidad;12000;22990;10;3;/imagenes/productos/GS009-griferia-lavamanos-monocomando.webp
+GS003;Gasfitería;Tuberías;Cañería cobre 1/2" x 5m;Codelco;Unidad;9500;17990;15;5;/imagenes/productos/GS003.webp
+GS004;Gasfitería;Uniones;Codo PVC 1/2" 90°;Tigre;Unidad;180;390;100;30;/imagenes/productos/GS004.webp
+GS005;Gasfitería;Uniones;Te PVC 1/2";Tigre;Unidad;220;450;80;25;/imagenes/productos/GS005.webp
+GS006;Gasfitería;Uniones;Unión doble PVC 1/2";Tigre;Unidad;150;320;80;25;/imagenes/productos/GS006.webp
+GS007;Gasfitería;Llaves;Llave de paso esfera 1/2" latón;Emmeti;Unidad;1800;3490;30;10;/imagenes/productos/GS007.webp
+GS008;Gasfitería;Llaves;Llave de paso esfera 3/4" latón;Emmeti;Unidad;2500;4990;20;8;/imagenes/productos/GS008.webp
+GS009;Gasfitería;Grifería;Grifería lavamanos monocomando cromo;Corona;Unidad;12000;22990;10;3;/imagenes/productos/GS009.webp
 GS010;Gasfitería;Grifería;Grifería cocina monocomando cuello alto;Corona;Unidad;15000;28990;8;2;/imagenes/productos/GS010-griferia-cocina-monocomando.webp
-GS011;Gasfitería;Sellos;Teflón 3/4" x 12m;3M;Rollo;350;790;80;25;
-GS012;Gasfitería;Sellos;Silicona transparente 280ml;Wacker;Cartucho;2800;5490;25;8;
+GS011;Gasfitería;Sellos;Teflón 3/4" x 12m;3M;Rollo;350;790;80;25;/imagenes/productos/GS011.webp
+GS012;Gasfitería;Sellos;Silicona transparente 280ml;Wacker;Cartucho;2800;5490;25;8;/imagenes/productos/GS012.webp
 EL001;Electricidad;Conductores;Cable unipolar 1.5mm² (por metro);Condulac;Metro;290;590;100;30;/imagenes/productos/EL001-cable-unipolar-1-5mm.webp
 EL002;Electricidad;Conductores;Cable unipolar 2.5mm² (por metro);Condulac;Metro;390;790;100;30;/imagenes/productos/EL002-cable-unipolar-2-5mm.webp
 EL003;Electricidad;Conductores;Cable dúplex paralelo 2x1.5mm² (por metro);Condulac;Metro;490;990;80;25;/imagenes/productos/EL003-cable-duplex-2x1-5mm.webp
-EL004;Electricidad;Enchufes;Enchufe empotrar 16A c/tierra (schuko);Bticino;Unidad;1900;3690;50;15;
-EL005;Electricidad;Enchufes;Enchufe doble empotrar 16A c/tierra;Bticino;Unidad;2800;5490;40;12;
-EL006;Electricidad;Interruptores;Interruptor simple empotrar;Bticino;Unidad;1600;3190;50;15;
-EL007;Electricidad;Interruptores;Interruptor doble empotrar;Bticino;Unidad;2200;4290;35;10;
+EL004;Electricidad;Enchufes;Enchufe empotrar 16A c/tierra (schuko);Bticino;Unidad;1900;3690;50;15;/imagenes/productos/EL004.webp
+EL005;Electricidad;Enchufes;Enchufe doble empotrar 16A c/tierra;Bticino;Unidad;2800;5490;40;12;/imagenes/productos/EL005.webp
+EL006;Electricidad;Interruptores;Interruptor simple empotrar;Bticino;Unidad;1600;3190;50;15;/imagenes/productos/EL006.webp
+EL007;Electricidad;Interruptores;Interruptor doble empotrar;Bticino;Unidad;2200;4290;35;10;/imagenes/productos/EL007.webp
 EL008;Electricidad;Tableros;Tablero eléctrico 4 espacios DIN;Legrand;Unidad;12000;22990;8;2;/imagenes/productos/EL008-tablero-electrico-din.webp
-EL009;Electricidad;Tableros;Disyuntor termomagnético 16A unipolar;Schneider;Unidad;3200;6490;20;5;
-EL010;Electricidad;Tableros;Disyuntor termomagnético 25A unipolar;Schneider;Unidad;3500;6990;20;5;
-EL011;Electricidad;Iluminación;Ampolleta LED 9W E27 luz fría;Philips;Unidad;1900;3990;60;20;
-EL012;Electricidad;Iluminación;Ampolleta LED 12W E27 luz cálida;Philips;Unidad;2200;4490;50;15;
-EL013;Electricidad;Iluminación;Panel LED empotrar 18W 22cm;Ledvance;Unidad;5800;11490;20;6;
+EL009;Electricidad;Tableros;Disyuntor termomagnético 16A unipolar;Schneider;Unidad;3200;6490;20;5;/imagenes/productos/EL009.webp
+EL010;Electricidad;Tableros;Disyuntor termomagnético 25A unipolar;Schneider;Unidad;3500;6990;20;5;/imagenes/productos/EL010.webp
+EL011;Electricidad;Iluminación;Ampolleta LED 9W E27 luz fría;Philips;Unidad;1900;3990;60;20;/imagenes/productos/EL011.webp
+EL012;Electricidad;Iluminación;Ampolleta LED 12W E27 luz cálida;Philips;Unidad;2200;4490;50;15;/imagenes/productos/EL012.webp
+EL013;Electricidad;Iluminación;Panel LED empotrar 18W 22cm;Ledvance;Unidad;5800;11490;20;6;/imagenes/productos/EL013.webp
 TR001;Tornillería;Tornillos;Tornillo autoperf. 8x1" caja 100 unid.;Hilti;Caja;1500;2990;40;12;
-TR002;Tornillería;Tornillos;Tornillo madera 4x40mm caja 100 unid.;Hilti;Caja;1200;2490;40;12;
-TR003;Tornillería;Tornillos;Tornillo volcanita 3.5x25mm caja 200 unid.;Hilti;Caja;1800;3490;30;10;
-TR004;Tornillería;Tacos;Taco fisher S6 bolsa 100 unid.;Fischer;Bolsa;1600;3190;35;10;
-TR005;Tornillería;Tacos;Taco fisher S8 bolsa 50 unid.;Fischer;Bolsa;1400;2890;30;10;
-TR006;Tornillería;Pernos;Perno hex. 3/8" x 2" c/tuerca y golilla;Granel;Unidad;120;290;200;50;
-TR007;Tornillería;Anclajes;Perno de anclaje 10x100mm;Hilti;Unidad;480;990;60;15;
-TR008;Tornillería;Anclajes;Anclaje químico epoxi 300ml;Fischer;Cartucho;8500;15990;8;2;
-MD001;Madera;Pino cepillado;Pino cepillado 1x3" x 3m;Local;Unidad;2100;4290;40;12;
-MD002;Madera;Pino cepillado;Pino cepillado 2x4" x 3m;Local;Unidad;3800;7490;30;10;
-MD003;Madera;Tableros;Terciado estructural 18mm 1.22x2.44m;Arauco;Plancha;18000;34990;20;5;
-MD004;Madera;Tableros;MDF 15mm 1.22x2.44m;Arauco;Plancha;14000;27990;15;4;
-MD005;Madera;Tableros;OSB 9mm 1.22x2.44m;Arauco;Plancha;9500;18990;18;5;
-MD006;Madera;Tableros;Volcanita estándar 10mm 1.2x2.4m;Volcán;Plancha;4500;8990;30;8;
-MD007;Madera;Tableros;Volcanita resistente humedad 10mm;Volcán;Plancha;6200;11990;15;4;
-SE001;Seguridad;EPP;Casco seguridad blanco;3M;Unidad;3500;6990;15;5;
-SE002;Seguridad;EPP;Guantes de cuero talla L;3M;Par;1800;3690;20;6;
-SE003;Seguridad;EPP;Antiparras de seguridad clear;3M;Unidad;1200;2490;25;8;
-SE004;Seguridad;EPP;Mascarilla respirador N95 (caja x10);3M;Caja;5500;10990;10;3;
-SE005;Seguridad;EPP;Arnés de seguridad 1 punto;3M;Unidad;18000;34990;4;1;
+TR002;Tornillería;Tornillos;Tornillo madera 4x40mm caja 100 unid.;Hilti;Caja;1200;2490;40;12;/imagenes/productos/TR002.webp
+TR003;Tornillería;Tornillos;Tornillo volcanita 3.5x25mm caja 200 unid.;Hilti;Caja;1800;3490;30;10;/imagenes/productos/TR003.webp
+TR004;Tornillería;Tacos;Taco fisher S6 bolsa 100 unid.;Fischer;Bolsa;1600;3190;35;10;/imagenes/productos/TR004.webp
+TR005;Tornillería;Tacos;Taco fisher S8 bolsa 50 unid.;Fischer;Bolsa;1400;2890;30;10;/imagenes/productos/TR005.webp
+TR006;Tornillería;Pernos;Perno hex. 3/8" x 2" c/tuerca y golilla;Granel;Unidad;120;290;200;50;/imagenes/productos/TR006.webp
+TR007;Tornillería;Anclajes;Perno de anclaje 10x100mm;Hilti;Unidad;480;990;60;15;/imagenes/productos/TR007.webp
+TR008;Tornillería;Anclajes;Anclaje químico epoxi 300ml;Fischer;Cartucho;8500;15990;8;2;/imagenes/productos/TR008.webp
+MD001;Madera;Pino cepillado;Pino cepillado 1x3" x 3m;Local;Unidad;2100;4290;40;12;/imagenes/productos/MD001.webp
+MD002;Madera;Pino cepillado;Pino cepillado 2x4" x 3m;Local;Unidad;3800;7490;30;10;/imagenes/productos/MD002.webp
+MD003;Madera;Tableros;Terciado estructural 18mm 1.22x2.44m;Arauco;Plancha;18000;34990;20;5;/imagenes/productos/MD003.webp
+MD004;Madera;Tableros;MDF 15mm 1.22x2.44m;Arauco;Plancha;14000;27990;15;4;/imagenes/productos/MD004.webp
+MD005;Madera;Tableros;OSB 9mm 1.22x2.44m;Arauco;Plancha;9500;18990;18;5;/imagenes/productos/MD005.webp
+MD006;Madera;Tableros;Volcanita estándar 10mm 1.2x2.4m;Volcán;Plancha;4500;8990;30;8;/imagenes/productos/MD006.webp
+MD007;Madera;Tableros;Volcanita resistente humedad 10mm;Volcán;Plancha;6200;11990;15;4;/imagenes/productos/MD007.webp
+SE001;Seguridad;EPP;Casco seguridad blanco;3M;Unidad;3500;6990;15;5;/imagenes/productos/SE001.webp
+SE002;Seguridad;EPP;Guantes de cuero talla L;3M;Par;1800;3690;20;6;/imagenes/productos/SE002.webp
+SE003;Seguridad;EPP;Antiparras de seguridad clear;3M;Unidad;1200;2490;25;8;/imagenes/productos/SE003.webp
+SE004;Seguridad;EPP;Mascarilla respirador N95 (caja x10);3M;Caja;5500;10990;10;3;/imagenes/productos/SE004.webp
+SE005;Seguridad;EPP;Arnés de seguridad 1 punto;3M;Unidad;18000;34990;4;1;/imagenes/productos/SE005.webp
 JA001;Jardín;Mangueras;Manguera riego 3/4" x 25m;Tigre;Unidad;12000;22990;6;2;/imagenes/productos/JA001-manguera-riego-25m.webp
 JA002;Jardín;Mangueras;Manguera expandible 30m;Bestway;Unidad;15000;28990;5;2;/imagenes/productos/JA002-manguera-expandible-30m.webp
-JA003;Jardín;Mangueras;Pistola de riego 8 modos;Bestway;Unidad;2800;5490;10;3;
-JA004;Jardín;Herramientas;Pala punta redonda #2 con mango;Corona;Unidad;5500;10990;8;2;
-JA005;Jardín;Herramientas;Rastrillo 16 dientes con mango;Corona;Unidad;4800;9490;6;2;
+JA003;Jardín;Mangueras;Pistola de riego 8 modos;Bestway;Unidad;2800;5490;10;3;/imagenes/productos/JA003.webp
+JA004;Jardín;Herramientas;Pala punta redonda #2 con mango;Corona;Unidad;5500;10990;8;2;/imagenes/productos/JA004.webp
+JA005;Jardín;Herramientas;Rastrillo 16 dientes con mango;Corona;Unidad;4800;9490;6;2;/imagenes/productos/JA005.webp
