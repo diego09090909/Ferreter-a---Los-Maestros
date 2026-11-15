@@ -90,7 +90,7 @@ public class AdminController {
                description = "Modifica el nombre, el email y el rol de un usuario y devuelve el usuario actualizado. Un administrador no puede cambiar su propio rol y solo el administrador general puede modificar su cuenta.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuario actualizado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o intento de cambiar el propio rol"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos, intento de cambiar el propio rol, de editar a un cliente o de pasar a alguien a rol CLIENTE"),
         @ApiResponse(responseCode = "401", description = "No autenticado (token faltante, inválido o vencido)"),
         @ApiResponse(responseCode = "403", description = "Acceso denegado: se requiere rol administrador, o se intenta modificar al administrador general"),
         @ApiResponse(responseCode = "404", description = "El usuario no existe"),
