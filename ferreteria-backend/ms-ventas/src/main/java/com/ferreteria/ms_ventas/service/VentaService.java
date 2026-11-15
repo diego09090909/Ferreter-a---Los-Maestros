@@ -43,7 +43,10 @@ public class VentaService {
 
         Venta venta = new Venta();
         venta.setUsuarioId(usuarioId);
+        venta.setNombreCliente(request.getNombreCliente().trim());
+        venta.setEmailCliente(request.getEmailCliente().trim().toLowerCase());
         venta.setTipoEntrega(request.getTipoEntrega());
+        venta.setMedioPago(request.getMedioPago());
         venta.setDireccionDespacho(conDespacho ? request.getDireccionDespacho().trim() : null);
         venta.setComunaDespacho(comuna);
 

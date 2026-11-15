@@ -98,6 +98,14 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Solo el administrador general puede modificar su propia cuenta");
         }
+        if (usuario.getRol() == Rol.CLIENTE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Los datos de un cliente solo los puede cambiar el propio cliente desde Mi Cuenta");
+        }
+        if (req.getRol() == Rol.CLIENTE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Una cuenta de personal no se puede convertir en cliente");
+        }
         if (id.equals(adminId) && req.getRol() != usuario.getRol()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puedes cambiar tu propio rol");

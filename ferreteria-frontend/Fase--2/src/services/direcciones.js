@@ -43,5 +43,3 @@ export function marcarPredeterminada(_usuario, id) {
 export function eliminarDireccion(_usuario, id) {
   return llamar(api.delete(`${BASE}/${id}`))
 }
-
-export function borrarDireccionesDe() {}

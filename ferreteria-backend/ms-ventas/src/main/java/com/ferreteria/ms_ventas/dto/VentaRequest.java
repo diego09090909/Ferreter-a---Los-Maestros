@@ -1,10 +1,13 @@
 package com.ferreteria.ms_ventas.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ferreteria.ms_ventas.model.MedioPago;
 import com.ferreteria.ms_ventas.model.TipoEntrega;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,6 +29,21 @@ public class VentaRequest {
     @NotNull(message = "Debe elegir retiro en tienda o despacho a domicilio")
     @Schema(example = "DESPACHO_A_DOMICILIO")
     private TipoEntrega tipoEntrega;
+
+    @NotNull(message = "Debe elegir un medio de pago")
+    @Schema(example = "CREDITO")
+    private MedioPago medioPago;
+
+    @NotBlank(message = "El nombre del cliente es obligatorio")
+    @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
+    @Schema(description = "Nombre del cliente para este pedido", example = "Ana Soto")
+    private String nombreCliente;
+
+    @NotBlank(message = "El correo del cliente es obligatorio")
+    @Email(message = "El correo no tiene un formato válido")
+    @Size(max = 100, message = "El correo no puede tener más de 100 caracteres")
+    @Schema(description = "Correo de contacto para este pedido", example = "ana@correo.cl")
+    private String emailCliente;
 
     @Size(max = 300, message = "La dirección no puede tener más de 300 caracteres")
     @Schema(description = "Obligatoria si tipoEntrega es DESPACHO_A_DOMICILIO",

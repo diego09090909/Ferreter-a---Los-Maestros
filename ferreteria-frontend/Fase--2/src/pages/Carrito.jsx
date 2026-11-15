@@ -5,8 +5,7 @@ import { useCarrito } from '../context/CarritoContext'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { MAX_DIRECCIONES, agregarDireccion, listarDirecciones } from '../services/direcciones'
-import { obtenerProductos } from '../data/almacen'
-import { leerSesion, mensajeDeError } from '../services/api'
+import { mensajeDeError } from '../services/api'
 import { armarVentaRequest, crearVenta } from '../services/ventas'
 import {
     ENTREGA_DOMICILIO,
@@ -21,9 +20,8 @@ import { costoDespacho, faltaParaDespachoGratis } from '../utils/despacho'
 import { formatearPrecio } from '../utils/formato'
 import { enfocarPrimerError, erroresDatos, hayErrores } from '../utils/validaciones'
 
-function rutaImagen(item, catalogo) {
-    const producto = catalogo.find((p) => `producto-${p.id}` === item.codigo)
-    const origen = item.imagen ?? producto?.imagen
+function rutaImagen(item) {
+    const origen = item.imagen
 
     if (!origen) return null
     if (/^(https?:|data:|\/)/.test(origen)) return origen
@@ -47,15 +45,13 @@ export default function Carrito() {
 
 function PaginaCarrito() {
     const { carrito, total, cambiarCantidad, eliminar, vaciar } = useCarrito()
-    const { usuario } = useAuth()
+    const { usuario, conectado } = useAuth()
     const navigate = useNavigate()
 
     const [entrega, setEntrega] = useState('')
     const [pago, setPago] = useState('')
     const [mensaje, setMensaje] = useState(null)
     const [enviando, setEnviando] = useState(false)
-
-    const catalogo = obtenerProductos()
 
     const [datosCliente, setDatosCliente] = useState(() => ({
         nombre: usuario?.nombre ?? '',
@@ -127,8 +123,7 @@ function PaginaCarrito() {
             return
         }
 
-        // el token no viaja en "usuario" (api.js lo quita), se revisa en la sesion guardada
-        if (!leerSesion()?.token) {
+        if (!conectado) {
             return setMensaje({
                 tipo: 'danger',
                 texto: 'Tu sesión no está conectada con el servidor. Cierra sesión y vuelve a ingresar.',
@@ -141,7 +136,7 @@ function PaginaCarrito() {
         let venta
         setEnviando(true)
         try {
-            venta = await crearVenta(armarVentaRequest({ carrito, entrega, direccion: direccionFinal }))
+            venta = await crearVenta(armarVentaRequest({ carrito, entrega, direccion: direccionFinal, pago, cliente: datosCliente }))
         } catch (error) {
             setMensaje({ tipo: 'danger', texto: mensajeDeError(error) })
             return
@@ -198,7 +193,7 @@ function PaginaCarrito() {
                         )}
 
                         {carrito.map((item) => {
-                            const imagen = rutaImagen(item, catalogo)
+                            const imagen = rutaImagen(item)
 
                             return (
                                 <tr key={item.codigo}>

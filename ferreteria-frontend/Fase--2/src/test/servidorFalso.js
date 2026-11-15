@@ -15,6 +15,8 @@ const usuarios = () => leer('usuarios', [])
 const guardarUsuarios = (lista) => guardar('usuarios', lista)
 const todasLasDirecciones = () => leer('direcciones', {})
 const guardarDirecciones = (todas) => guardar('direcciones', todas)
+// ventas con la misma forma que VentaResponse de ms-ventas, la mas reciente primero
+const ventas = () => [...leer('ventas', [])].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
 
 function aRespuesta(usuario) {
   return {
@@ -109,6 +111,10 @@ function buscarPorId(id) {
 }
 
 const rutas = [
+  ['POST', /^\/auth\/refresh$/, (cuerpo) => {
+    if (cuerpo.refreshToken !== 'refresh-de-prueba') throw new ErrorHttp(401, 'Token de renovación inválido')
+    return [200, aAuth(usuarioActual())]
+  }],
   ['POST', /^\/auth\/login$/, (cuerpo) => {
     const identificador = String(cuerpo.usuario ?? '').trim()
     const usuario = usuarios().find((u) => mismoEmail(u.email, identificador) || mismoRut(u.rut, identificador))
@@ -207,6 +213,19 @@ const rutas = [
     validarEmailLibre(cuerpo.email, usuario.rut)
     const cambios = { nombre: cuerpo.nombre, email: cuerpo.email, rol: etiquetaRol(cuerpo.rol) }
     return [200, aRespuesta(actualizarUsuario(usuario.rut, cambios))]
+  }],
+  ['GET', /^\/ventas\/mis-ventas$/, () => {
+    const id = idDe(usuarioActual())
+    return [200, ventas().filter((v) => v.usuarioId === id)]
+  }],
+  ['GET', /^\/ventas$/, () => [200, ventas()]],
+  ['PATCH', /^\/ventas\/(\d+)\/estado$/, (cuerpo, [id]) => {
+    const lista = leer('ventas', [])
+    const venta = lista.find((v) => v.id === id)
+    if (!venta) throw new ErrorHttp(404, 'Venta no encontrada')
+    const actualizada = { ...venta, estado: cuerpo.estado }
+    guardar('ventas', lista.map((v) => (v.id === id ? actualizada : v)))
+    return [200, actualizada]
   }],
   ['DELETE', /^\/admin\/usuarios\/(\d+)$/, (_cuerpo, [id]) => {
     const usuario = buscarPorId(id)

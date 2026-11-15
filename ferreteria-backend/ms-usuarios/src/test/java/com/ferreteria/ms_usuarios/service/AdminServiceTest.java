@@ -167,6 +167,31 @@ class AdminServiceTest {
     }
 
     @Test
+    void actualizarUsuario_cliente_lanza400() {
+        Usuario cliente = usuario(9L, "55555555-5", Rol.CLIENTE);
+        when(usuarioRepository.findById(9L)).thenReturn(Optional.of(cliente));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> adminService.actualizarUsuario(9L, actualizarReq(Rol.CLIENTE), 1L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void actualizarUsuario_personalARolCliente_lanza400() {
+        Usuario vendedor = usuario(7L, "44444444-4", Rol.VENDEDOR);
+        when(usuarioRepository.findById(7L)).thenReturn(Optional.of(vendedor));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> adminService.actualizarUsuario(7L, actualizarReq(Rol.CLIENTE), 1L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertEquals(Rol.VENDEDOR, vendedor.getRol());
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
     void actualizarUsuario_emailDeOtro_lanza409() {
         Usuario vendedor = usuario(7L, "44444444-4", Rol.VENDEDOR);
         when(usuarioRepository.findById(7L)).thenReturn(Optional.of(vendedor));

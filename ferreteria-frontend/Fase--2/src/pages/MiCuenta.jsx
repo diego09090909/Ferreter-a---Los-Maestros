@@ -6,8 +6,7 @@ import MisDirecciones from '../components/MisDirecciones'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import api, { URL_USUARIOS, mensajeDeError } from '../services/api'
-import { ENTREGAS_VENTA, ESTADOS_VENTA, obtenerMisVentas } from '../services/ventas'
-import { leer } from '../utils/storage'
+import { ENTREGAS_VENTA, ESTADOS_VENTA, MEDIOS_PAGO, obtenerMisVentas } from '../services/ventas'
 import { formatearPrecio } from '../utils/formato'
 import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
 
@@ -16,7 +15,7 @@ const REVISAR_CAMPOS = { tipo: 'danger', texto: 'Revisa los campos marcados en r
 function MiCuenta() {
   useTitulo('Mi Cuenta - Ferretería Los Maestros')
 
-  const { usuario, esAdmin, esVendedor, esCliente, actualizarUsuario, cerrarSesion } = useAuth()
+  const { usuario, esAdmin, esVendedor, esCliente, conectado, actualizarUsuario, cerrarSesion } = useAuth()
   const navigate = useNavigate()
 
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email })
@@ -31,32 +30,24 @@ function MiCuenta() {
   const errDatos = intentoDatos ? erroresDatos(datos) : {}
   const errClave = intentoClave ? erroresClaves(claves) : {}
 
-  const [pedidosLocales] = useState(() =>
-    leer('pedidos', [])
-      .filter((p) => (p.rut ? p.rut === usuario.rut : p.cliente === usuario.nombre))
-      .reverse(),
-  )
-
   const [ventas, setVentas] = useState(null)
   const [errorVentas, setErrorVentas] = useState(null)
-  const cargandoVentas = esCliente && ventas === null && !errorVentas
+  const cargandoVentas = conectado && esCliente && ventas === null && !errorVentas
 
   useEffect(() => {
-    if (!esCliente) return
+    if (!conectado || !esCliente) return
     obtenerMisVentas()
       .then(setVentas)
       .catch((error) => setErrorVentas(mensajeDeError(error)))
-  }, [esCliente])
+  }, [conectado, esCliente])
 
-  const pedidos = ventas
-    ? ventas.map((v) => ({
-        id: v.id,
-        tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
-        tipoPago: '—',
-        total: v.total,
-        estado: ESTADOS_VENTA[v.estado] ?? v.estado,
-      }))
-    : pedidosLocales
+  const pedidos = (ventas ?? []).map((v) => ({
+    id: v.id,
+    tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
+    tipoPago: MEDIOS_PAGO[v.medioPago] ?? '—',
+    total: v.total,
+    estado: ESTADOS_VENTA[v.estado] ?? v.estado,
+  }))
 
   const guardarDatos = async (evento) => {
     evento.preventDefault()

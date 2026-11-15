@@ -48,8 +48,11 @@ const CLIENTE = {
 }
 
 function montar(ruta = '/', { sesion } = {}) {
-  if (sesion) localStorage.setItem('usuarioActivo', JSON.stringify(sesion))
-  localStorage.setItem('usuarios', JSON.stringify([ADMIN, CLIENTE]))
+  if (sesion) localStorage.setItem('usuarioActivo', JSON.stringify({ ...sesion, token: 'token-de-prueba', refreshToken: 'refresh-de-prueba' }))
+  // quien tiene sesion existe en ms-usuarios (el servidor falso lo busca al cargar la app)
+  const usuarios = [ADMIN, CLIENTE]
+  if (sesion && !usuarios.some((u) => u.rut === sesion.rut)) usuarios.push(sesion)
+  localStorage.setItem('usuarios', JSON.stringify(usuarios))
   return render(
     <MemoryRouter initialEntries={[ruta]}>
       <AuthProvider>
@@ -340,12 +343,12 @@ describe('panel del vendedor', () => {
   const VENDEDOR = {
     rut: '22.222.222-2', nombre: 'Pedro Vendedor', email: 'pedro@losmaestros.cl', password: 'vende123', rol: 'Vendedor',
   }
-  const PEDIDO = {
-    id: '2715', cliente: 'Ana Soto', email: 'ana@correo.cl', rut: CLIENTE.rut,
-    tipoPago: 'Crédito', tipoEntrega: 'Despacho a domicilio',
-    direccionEntrega: { calle: 'Balmaceda', numero: '123', departamento: '', comuna: 'La Serena', region: 'Región de Coquimbo' },
-    items: [{ nombre: 'Cemento Polpaico gris 25 kg', cantidad: 2, precio: 5990 }],
-    subtotal: 11980, costoDespacho: 3990, total: 15970, estado: 'Pendiente',
+  const VENTA = {
+    id: 2715, usuarioId: 12345678, nombreCliente: 'Ana Soto', emailCliente: 'ana@correo.cl',
+    fecha: '2026-11-14T10:30:00', estado: 'PENDIENTE', tipoEntrega: 'DESPACHO_A_DOMICILIO', medioPago: 'CREDITO',
+    direccionDespacho: 'Balmaceda 123, La Serena, Región de Coquimbo', comunaDespacho: 'La Serena',
+    subtotal: 11980, costoDespacho: 3990, total: 15970,
+    detalles: [{ id: 1, productoId: 4, nombreProducto: 'Cemento Polpaico gris 25 kg', precioUnitario: 5990, cantidad: 2, subtotal: 11980 }],
   }
 
   it('el vendedor inicia sesión y llega a su panel', async () => {
@@ -377,12 +380,16 @@ describe('panel del vendedor', () => {
 
   it('ve el detalle de un pedido con sus productos y la dirección', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('pedidos', JSON.stringify([PEDIDO]))
+    localStorage.setItem('ventas', JSON.stringify([VENTA]))
     montar('/admin', { sesion: VENDEDOR })
 
-    await user.click(screen.getByRole('button', { name: 'Ver detalle del pedido #PED-2715' }))
+    const fila = (await screen.findByText('#PED-2715')).closest('tr')
+    expect(fila).toHaveTextContent('Ana Soto')
+    expect(fila).toHaveTextContent('Crédito')
+    await user.click(within(fila).getByRole('button', { name: 'Ver detalle del pedido #PED-2715' }))
     const modal = await screen.findByRole('dialog')
     expect(modal).toHaveTextContent('Pedido #PED-2715')
+    expect(modal).toHaveTextContent('ana@correo.cl')
     expect(modal).toHaveTextContent('2 x Cemento Polpaico gris 25 kg')
     expect(modal).toHaveTextContent('Balmaceda 123, La Serena')
     expect(modal).toHaveTextContent(/Total\s*\$15\.970/)
@@ -733,16 +740,21 @@ describe('Mi cuenta', () => {
     expect(JSON.parse(localStorage.getItem('usuarios')).find((u) => u.rut === CLIENTE.rut).password).toBe('nueva123')
   })
 
-  it('lista solo los pedidos del usuario, el más reciente primero', () => {
-    localStorage.setItem('pedidos', JSON.stringify([
-      { id: '1111', cliente: 'Ana Soto', rut: CLIENTE.rut, tipoPago: 'Crédito', tipoEntrega: 'Retiro en tienda', total: 10000, estado: 'Pendiente' },
-      { id: '2222', cliente: 'Otra Persona', rut: '9.999.999-9', tipoPago: 'Crédito', tipoEntrega: 'Retiro en tienda', total: 5000, estado: 'Pendiente' },
-      { id: '3333', cliente: 'Ana Soto', rut: CLIENTE.rut, tipoPago: 'Cuenta Corriente', tipoEntrega: 'Despacho a domicilio', total: 25000, estado: 'Pendiente' },
+  it('lista solo los pedidos del usuario, el más reciente primero', async () => {
+    const venta = (id, usuarioId, fecha, medioPago) => ({
+      id, usuarioId, fecha, medioPago, estado: 'PENDIENTE', tipoEntrega: 'RETIRO_EN_TIENDA', total: 10000, detalles: [],
+    })
+    localStorage.setItem('ventas', JSON.stringify([
+      venta(1111, 12345678, '2026-11-10T09:00:00', 'CREDITO'),
+      venta(2222, 99999999, '2026-11-11T09:00:00', 'CREDITO'),
+      venta(3333, 12345678, '2026-11-12T09:00:00', 'DEBITO'),
     ]))
     montar('/mi-cuenta', { sesion: CLIENTE })
+    expect(await screen.findByText('#PED-3333')).toBeInTheDocument()
     const filas = screen.getAllByRole('row').slice(1)
     expect(filas).toHaveLength(2)
     expect(filas[0]).toHaveTextContent('#PED-3333')
+    expect(filas[0]).toHaveTextContent('Débito')
     expect(filas[1]).toHaveTextContent('#PED-1111')
     expect(screen.queryByText('#PED-2222')).not.toBeInTheDocument()
   })
