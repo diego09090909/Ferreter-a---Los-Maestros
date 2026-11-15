@@ -6,12 +6,15 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { CarritoProvider } from './context/CarritoContext'
 import { obtenerCategorias, obtenerProducto, obtenerProductos } from './services/catalogo'
+import api from './services/api'
+import servidorFalso from './test/servidorFalso'
 
 vi.mock('./services/catalogo', () => ({
   obtenerProductos: vi.fn(),
   obtenerCategorias: vi.fn(),
   obtenerProducto: vi.fn(),
 }))
+vi.mock('./services/inventario')
 
 const PRODUCTOS_API = [
   { id: 1, codigo: 'HE001', nombre: 'Taladro Percutor 710W', precio: 49990, unidad: 'Unidad', stock: 10, disponible: true, marca: 'Bauker', subcategoria: 'Taladros', categoria: 'Herramientas', imagen: null },
@@ -26,6 +29,7 @@ const CATEGORIAS_API = [
 ]
 
 beforeEach(() => {
+  api.defaults.adapter = servidorFalso
   obtenerProductos.mockResolvedValue(PRODUCTOS_API)
   obtenerCategorias.mockResolvedValue(CATEGORIAS_API)
   obtenerProducto.mockImplementation(async (id) => {
@@ -699,7 +703,7 @@ describe('Mi cuenta', () => {
     await user.clear(correo)
     await user.type(correo, 'admin@losmaestros.cl')
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('Ya existe otra cuenta con ese correo')
+    expect(screen.getByRole('alert')).toHaveTextContent('El email ya esta registrado')
   })
 
   it('cambia la contraseña solo si la actual es correcta y las nuevas coinciden', async () => {
@@ -712,7 +716,7 @@ describe('Mi cuenta', () => {
     await user.type(tarjeta.getByLabelText('Nueva contraseña'), 'nueva123')
     await user.type(tarjeta.getByLabelText('Repetir nueva contraseña'), 'nueva123')
     await enviar()
-    expect(tarjeta.getByRole('alert')).toHaveTextContent('La contraseña actual no es correcta')
+    expect(tarjeta.getByRole('alert')).toHaveTextContent('La contraseña actual es incorrecta')
 
     await user.clear(tarjeta.getByLabelText('Contraseña actual'))
     await user.type(tarjeta.getByLabelText('Contraseña actual'), 'secreto1')
@@ -726,7 +730,7 @@ describe('Mi cuenta', () => {
     await user.type(tarjeta.getByLabelText('Repetir nueva contraseña'), 'nueva123')
     await enviar()
     expect(tarjeta.getByRole('alert')).toHaveTextContent('actualizada correctamente')
-    expect(JSON.parse(localStorage.getItem('usuarioActivo')).password).toBe('nueva123')
+    expect(JSON.parse(localStorage.getItem('usuarios')).find((u) => u.rut === CLIENTE.rut).password).toBe('nueva123')
   })
 
   it('lista solo los pedidos del usuario, el más reciente primero', () => {
