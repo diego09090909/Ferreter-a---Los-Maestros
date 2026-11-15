@@ -32,7 +32,8 @@ public class DatosIniciales implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws IOException {
         if (productoRepository.count() > 0) {
-            log.info("Catalogo con datos: se omite la carga inicial");
+            int actualizadas = completarImagenes();
+            log.info("Catalogo con datos: se omite la carga inicial ({} imagenes completadas)", actualizadas);
             return;
         }
 
@@ -73,9 +74,32 @@ public class DatosIniciales implements CommandLineRunner {
             producto.setPrecio(Integer.parseInt(fila[7]));
             producto.setStock(Integer.parseInt(fila[8]));
             producto.setStockMinimo(Integer.parseInt(fila[9]));
+            producto.setImagen(imagenDe(fila));
             productoRepository.save(producto);
         }
         return filas.size();
+    }
+
+    // pone la imagen del csv a los productos que aun no tienen una
+    private int completarImagenes() throws IOException {
+        int actualizadas = 0;
+        for (String[] fila : leerCsv("data/productos.csv")) {
+            String imagen = imagenDe(fila);
+            if (imagen == null) {
+                continue;
+            }
+            Producto producto = productoRepository.findByCodigo(fila[0]).orElse(null);
+            if (producto != null && (producto.getImagen() == null || producto.getImagen().isBlank())) {
+                producto.setImagen(imagen);
+                productoRepository.save(producto);
+                actualizadas++;
+            }
+        }
+        return actualizadas;
+    }
+
+    private String imagenDe(String[] fila) {
+        return fila.length > 10 && !fila[10].isBlank() ? fila[10].trim() : null;
     }
 
     private List<String[]> leerCsv(String ruta) throws IOException {
