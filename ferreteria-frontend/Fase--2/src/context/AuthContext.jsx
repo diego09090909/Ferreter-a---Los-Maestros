@@ -76,6 +76,7 @@ export function AuthProvider({ children }) {
   const esAdmin = usuario?.rol === ROLES.ADMIN
   const esVendedor = usuario?.rol === ROLES.VENDEDOR
   const esCliente = usuario?.rol === ROLES.CLIENTE
+  const conectado = Boolean(usuario) && Boolean(leerSesion()?.token)
 
   return (
     <AuthContext.Provider
@@ -84,6 +85,7 @@ export function AuthProvider({ children }) {
         esAdmin,
         esVendedor,
         esCliente,
+        conectado,
         ingresar,
         registrar,
         cerrarSesion,

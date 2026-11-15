@@ -16,7 +16,7 @@ const REVISAR_CAMPOS = { tipo: 'danger', texto: 'Revisa los campos marcados en r
 function MiCuenta() {
   useTitulo('Mi Cuenta - Ferretería Los Maestros')
 
-  const { usuario, esAdmin, esVendedor, esCliente, actualizarUsuario, cerrarSesion } = useAuth()
+  const { usuario, esAdmin, esVendedor, esCliente, conectado, actualizarUsuario, cerrarSesion } = useAuth()
   const navigate = useNavigate()
 
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email })
@@ -39,14 +39,14 @@ function MiCuenta() {
 
   const [ventas, setVentas] = useState(null)
   const [errorVentas, setErrorVentas] = useState(null)
-  const cargandoVentas = Boolean(usuario.token) && esCliente && ventas === null && !errorVentas
+  const cargandoVentas = conectado && esCliente && ventas === null && !errorVentas
 
   useEffect(() => {
-    if (!usuario.token || !esCliente) return
+    if (!conectado || !esCliente) return
     obtenerMisVentas()
       .then(setVentas)
       .catch((error) => setErrorVentas(mensajeDeError(error)))
-  }, [usuario.token, esCliente])
+  }, [conectado, esCliente])
 
   const pedidos = ventas
     ? ventas.map((v) => ({

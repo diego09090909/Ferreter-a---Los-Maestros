@@ -47,7 +47,7 @@ export default function Carrito() {
 
 function PaginaCarrito() {
     const { carrito, total, cambiarCantidad, eliminar, vaciar } = useCarrito()
-    const { usuario } = useAuth()
+    const { usuario, conectado } = useAuth()
     const navigate = useNavigate()
 
     const [entrega, setEntrega] = useState('')
@@ -127,7 +127,7 @@ function PaginaCarrito() {
             return
         }
 
-        if (!usuario.token) {
+        if (!conectado) {
             return setMensaje({
                 tipo: 'danger',
                 texto: 'Tu sesión no está conectada con el servidor. Cierra sesión y vuelve a ingresar.',
