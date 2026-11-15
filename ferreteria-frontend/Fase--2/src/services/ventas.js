@@ -10,12 +10,18 @@ export const ESTADOS_VENTA = {
   ANULADA: 'Anulada',
 }
 
+export const MEDIOS_PAGO = {
+  DEBITO: 'Débito',
+  CREDITO: 'Crédito',
+  CUENTA_CORRIENTE: 'Cuenta Corriente',
+}
+
 export const ENTREGAS_VENTA = {
   RETIRO_EN_TIENDA: 'Retiro en tienda',
   DESPACHO_A_DOMICILIO: 'Despacho a domicilio',
 }
 
-export function armarVentaRequest({ carrito, entrega, direccion }) {
+export function armarVentaRequest({ carrito, entrega, direccion, pago, cliente }) {
   const conDespacho = entrega === ENTREGA_DOMICILIO
 
   const venta = {
@@ -24,6 +30,9 @@ export function armarVentaRequest({ carrito, entrega, direccion }) {
       cantidad: item.cantidad,
     })),
     tipoEntrega: conDespacho ? 'DESPACHO_A_DOMICILIO' : 'RETIRO_EN_TIENDA',
+    medioPago: Object.keys(MEDIOS_PAGO).find((codigo) => MEDIOS_PAGO[codigo] === pago),
+    nombreCliente: cliente?.nombre.trim(),
+    emailCliente: cliente?.email.trim(),
   }
 
   if (conDespacho) {

@@ -6,7 +6,7 @@ import MisDirecciones from '../components/MisDirecciones'
 import { useAuth } from '../context/AuthContext'
 import { useTitulo } from '../hooks/useTitulo'
 import api, { URL_USUARIOS, mensajeDeError } from '../services/api'
-import { ENTREGAS_VENTA, ESTADOS_VENTA, obtenerMisVentas } from '../services/ventas'
+import { ENTREGAS_VENTA, ESTADOS_VENTA, MEDIOS_PAGO, obtenerMisVentas } from '../services/ventas'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 import { claseCampo, enfocarPrimerError, erroresClaves, erroresDatos, hayErrores } from '../utils/validaciones'
@@ -52,7 +52,7 @@ function MiCuenta() {
     ? ventas.map((v) => ({
         id: v.id,
         tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
-        tipoPago: '—',
+        tipoPago: MEDIOS_PAGO[v.medioPago] ?? '—',
         total: v.total,
         estado: ESTADOS_VENTA[v.estado] ?? v.estado,
       }))

@@ -5,7 +5,7 @@ export const CANTIDAD_MAXIMA = 10
 
 export const OPCIONES_ENTREGA = ['Retiro en tienda', 'Despacho a domicilio']
 export const ENTREGA_DOMICILIO = 'Despacho a domicilio'
-export const OPCIONES_PAGO = ['Crédito', 'Cuenta Corriente']
+export const OPCIONES_PAGO = ['Débito', 'Crédito', 'Cuenta Corriente']
 
 export function codigoDe(producto) {
     return 'producto-' + producto.id
