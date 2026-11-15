@@ -79,4 +79,14 @@ class JwtServiceTest {
 
         assertThat(jwtService.validarAccessToken(tokenAdmin).get("rol", String.class)).isEqualTo("ADMIN");
     }
+
+    @Test
+    @DisplayName("Token de servicio: lo firma ms-ventas con rol SERVICIO y es de tipo access")
+    void tokenServicio() {
+        Claims claims = jwtService.validarAccessToken(jwtService.generarTokenServicio());
+
+        assertThat(claims.getSubject()).isEqualTo("ms-ventas");
+        assertThat(claims.get("rol", String.class)).isEqualTo("SERVICIO");
+        assertThat(claims.getExpiration()).isAfter(new Date());
+    }
 }
