@@ -13,9 +13,12 @@ public class VentaMapper {
         return new VentaResponse(
                 venta.getId(),
                 venta.getUsuarioId(),
+                venta.getNombreCliente(),
+                venta.getEmailCliente(),
                 venta.getFecha(),
                 venta.getEstado(),
                 venta.getTipoEntrega(),
+                venta.getMedioPago(),
                 venta.getDireccionDespacho(),
                 venta.getComunaDespacho(),
                 venta.getSubtotal(),

@@ -31,6 +31,9 @@ Authorization: Bearer {{tokenCliente}}
 {
   "items": [ { "productoId": 1, "cantidad": 2 } ],
   "tipoEntrega": "DESPACHO_A_DOMICILIO",
+  "medioPago": "CREDITO",
+  "nombreCliente": "Cliente Prueba",
+  "emailCliente": "cliente@prueba.cl",
   "direccionDespacho": "Av. Francisco de Aguirre 123",
   "comunaDespacho": "La Serena"
 }
@@ -90,6 +93,9 @@ Authorization: Bearer {{tokenCliente}}
 {
   "items": [ { "productoId": 1, "cantidad": 1 } ],
   "tipoEntrega": "DESPACHO_A_DOMICILIO",
+  "medioPago": "CREDITO",
+  "nombreCliente": "Cliente Prueba",
+  "emailCliente": "cliente@prueba.cl",
   "direccionDespacho": "Calle Uno 1",
   "comunaDespacho": "La Higuera"
 }

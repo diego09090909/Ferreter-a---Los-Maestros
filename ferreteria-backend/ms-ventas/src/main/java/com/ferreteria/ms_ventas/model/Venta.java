@@ -33,6 +33,13 @@ public class Venta {
     @Column(nullable = false)
     private Long usuarioId;
 
+    // nombre y correo del cliente al momento de comprar (datos del checkout)
+    @Column(length = 100)
+    private String nombreCliente;
+
+    @Column(length = 100)
+    private String emailCliente;
+
     @Column(nullable = false)
     private LocalDateTime fecha;
 
@@ -43,6 +50,10 @@ public class Venta {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private TipoEntrega tipoEntrega;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private MedioPago medioPago;
 
     @Column(length = 300)
     private String direccionDespacho;

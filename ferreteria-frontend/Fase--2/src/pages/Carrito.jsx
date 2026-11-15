@@ -140,7 +140,7 @@ function PaginaCarrito() {
         let venta
         setEnviando(true)
         try {
-            venta = await crearVenta(armarVentaRequest({ carrito, entrega, direccion: direccionFinal }))
+            venta = await crearVenta(armarVentaRequest({ carrito, entrega, direccion: direccionFinal, pago, cliente: datosCliente }))
         } catch (error) {
             setMensaje({ tipo: 'danger', texto: mensajeDeError(error) })
             return

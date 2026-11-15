@@ -10,7 +10,7 @@ import { mensajeDeError } from '../services/api'
 import { obtenerCategorias } from '../services/catalogo'
 import { listarInventario } from '../services/inventario'
 import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
-import { ENTREGAS_VENTA, ESTADOS_VENTA, cambiarEstadoVenta, obtenerTodasLasVentas } from '../services/ventas'
+import { ENTREGAS_VENTA, ESTADOS_VENTA, MEDIOS_PAGO, cambiarEstadoVenta, obtenerTodasLasVentas } from '../services/ventas'
 import { textoDireccion } from '../utils/direccion'
 import { imagenDe } from '../utils/imagen'
 import { ROLES, colorRol } from '../utils/roles'
@@ -45,8 +45,9 @@ function fechaCorta(fechaIso) {
 function pedidoDesdeVenta(v) {
   return {
     id: v.id,
-    cliente: `Usuario #${v.usuarioId}`,
-    tipoPago: '—',
+    cliente: v.nombreCliente ?? `Usuario #${v.usuarioId}`,
+    email: v.emailCliente,
+    tipoPago: MEDIOS_PAGO[v.medioPago] ?? '—',
     tipoEntrega: ENTREGAS_VENTA[v.tipoEntrega] ?? v.tipoEntrega,
     direccionTexto: v.direccionDespacho,
     subtotal: v.subtotal,

@@ -39,4 +39,25 @@ describe('armarVentaRequest', () => {
     expect(venta.direccionDespacho).toBe('Av. Francisco de Aguirre 123, Depto 4, La Serena, Coquimbo')
     expect(venta.comunaDespacho).toBe('La Serena')
   })
+
+  it('envía el medio de pago con el código del backend y los datos del cliente', () => {
+    const venta = armarVentaRequest({
+      carrito: CARRITO,
+      entrega: 'Retiro en tienda',
+      pago: 'Cuenta Corriente',
+      cliente: { nombre: ' Ana Soto ', email: 'ana@correo.cl ' },
+    })
+
+    expect(venta.medioPago).toBe('CUENTA_CORRIENTE')
+    expect(venta.nombreCliente).toBe('Ana Soto')
+    expect(venta.emailCliente).toBe('ana@correo.cl')
+  })
+
+  it('cada medio de pago del carrito tiene su código en ms-ventas', () => {
+    const codigo = (pago) => armarVentaRequest({ carrito: CARRITO, entrega: 'Retiro en tienda', pago }).medioPago
+
+    expect(codigo('Débito')).toBe('DEBITO')
+    expect(codigo('Crédito')).toBe('CREDITO')
+    expect(codigo('Cuenta Corriente')).toBe('CUENTA_CORRIENTE')
+  })
 })
