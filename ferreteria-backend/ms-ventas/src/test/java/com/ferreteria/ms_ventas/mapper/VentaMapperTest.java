@@ -6,6 +6,7 @@ import com.ferreteria.ms_ventas.client.ProductoCatalogo;
 import com.ferreteria.ms_ventas.dto.VentaResponse;
 import com.ferreteria.ms_ventas.model.DetalleVenta;
 import com.ferreteria.ms_ventas.model.EstadoVenta;
+import com.ferreteria.ms_ventas.model.MedioPago;
 import com.ferreteria.ms_ventas.model.TipoEntrega;
 import com.ferreteria.ms_ventas.model.Venta;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,9 @@ class VentaMapperTest {
         Venta venta = new Venta();
         venta.setId(7L);
         venta.setUsuarioId(5L);
+        venta.setNombreCliente("Ana Soto");
+        venta.setEmailCliente("ana@correo.cl");
+        venta.setMedioPago(MedioPago.CUENTA_CORRIENTE);
         venta.setEstado(EstadoVenta.PAGADA);
         venta.setTipoEntrega(TipoEntrega.DESPACHO_A_DOMICILIO);
         venta.setDireccionDespacho("Av. Francisco de Aguirre 123");
@@ -47,6 +51,9 @@ class VentaMapperTest {
 
         assertThat(respuesta.getId()).isEqualTo(7L);
         assertThat(respuesta.getUsuarioId()).isEqualTo(5L);
+        assertThat(respuesta.getNombreCliente()).isEqualTo("Ana Soto");
+        assertThat(respuesta.getEmailCliente()).isEqualTo("ana@correo.cl");
+        assertThat(respuesta.getMedioPago()).isEqualTo(MedioPago.CUENTA_CORRIENTE);
         assertThat(respuesta.getEstado()).isEqualTo(EstadoVenta.PAGADA);
         assertThat(respuesta.getComunaDespacho()).isEqualTo("La Serena");
         assertThat(respuesta.getCostoDespacho()).isEqualTo(3_990L);

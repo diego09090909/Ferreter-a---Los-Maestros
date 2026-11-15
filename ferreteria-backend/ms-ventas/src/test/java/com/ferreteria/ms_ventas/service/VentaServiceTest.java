@@ -23,6 +23,7 @@ import com.ferreteria.ms_ventas.exception.ServicioNoDisponibleException;
 import com.ferreteria.ms_ventas.mapper.VentaMapper;
 import com.ferreteria.ms_ventas.model.DetalleVenta;
 import com.ferreteria.ms_ventas.model.EstadoVenta;
+import com.ferreteria.ms_ventas.model.MedioPago;
 import com.ferreteria.ms_ventas.model.TipoEntrega;
 import com.ferreteria.ms_ventas.model.Venta;
 import com.ferreteria.ms_ventas.repository.VentaRepository;
@@ -63,6 +64,9 @@ class VentaServiceTest {
         VentaResponse venta = ventaService.crear(5L, retiro(item(1L, 1), item(2L, 3)));
 
         assertThat(venta.getUsuarioId()).isEqualTo(5L);
+        assertThat(venta.getNombreCliente()).isEqualTo("Ana Soto");
+        assertThat(venta.getEmailCliente()).isEqualTo("ana@correo.cl");
+        assertThat(venta.getMedioPago()).isEqualTo(MedioPago.CREDITO);
         assertThat(venta.getSubtotal()).isEqualTo(36_000);
         assertThat(venta.getCostoDespacho()).isZero();
         assertThat(venta.getTotal()).isEqualTo(36_000);
@@ -258,6 +262,9 @@ class VentaServiceTest {
         VentaRequest request = new VentaRequest();
         request.setItems(List.of(items));
         request.setTipoEntrega(TipoEntrega.RETIRO_EN_TIENDA);
+        request.setMedioPago(MedioPago.CREDITO);
+        request.setNombreCliente(" Ana Soto ");
+        request.setEmailCliente("Ana@Correo.cl");
         return request;
     }
 
@@ -265,6 +272,9 @@ class VentaServiceTest {
         VentaRequest request = new VentaRequest();
         request.setItems(List.of(items));
         request.setTipoEntrega(TipoEntrega.DESPACHO_A_DOMICILIO);
+        request.setMedioPago(MedioPago.CREDITO);
+        request.setNombreCliente(" Ana Soto ");
+        request.setEmailCliente("Ana@Correo.cl");
         request.setDireccionDespacho("Av. Francisco de Aguirre 123");
         request.setComunaDespacho(comuna);
         return request;

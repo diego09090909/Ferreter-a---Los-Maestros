@@ -1,6 +1,7 @@
 package com.ferreteria.ms_ventas.dto;
 
 import com.ferreteria.ms_ventas.model.EstadoVenta;
+import com.ferreteria.ms_ventas.model.MedioPago;
 import com.ferreteria.ms_ventas.model.TipoEntrega;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,9 +15,12 @@ import lombok.NoArgsConstructor;
 public class VentaResponse {
     private Long id;
     private Long usuarioId;
+    private String nombreCliente;
+    private String emailCliente;
     private LocalDateTime fecha;
     private EstadoVenta estado;
     private TipoEntrega tipoEntrega;
+    private MedioPago medioPago;
     private String direccionDespacho;
     private String comunaDespacho;
     private Long subtotal;
