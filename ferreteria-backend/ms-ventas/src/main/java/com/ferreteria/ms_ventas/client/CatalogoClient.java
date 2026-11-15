@@ -3,11 +3,13 @@ package com.ferreteria.ms_ventas.client;
 import com.ferreteria.ms_ventas.exception.RecursoNoEncontradoException;
 import com.ferreteria.ms_ventas.exception.ReglaNegocioException;
 import com.ferreteria.ms_ventas.exception.ServicioNoDisponibleException;
+import com.ferreteria.ms_ventas.security.JwtService;
 import java.time.Duration;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -20,10 +22,13 @@ public class CatalogoClient {
     private static final Logger log = LoggerFactory.getLogger(CatalogoClient.class);
 
     private final RestClient restClient;
+    private final JwtService jwtService;
 
     public CatalogoClient(@Value("${catalogo.url}") String catalogoUrl,
                           @Value("${catalogo.connect-timeout:2s}") Duration connectTimeout,
-                          @Value("${catalogo.read-timeout:5s}") Duration readTimeout) {
+                          @Value("${catalogo.read-timeout:5s}") Duration readTimeout,
+                          JwtService jwtService) {
+        this.jwtService = jwtService;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
@@ -53,6 +58,7 @@ public class CatalogoClient {
         try {
             restClient.put()
                     .uri("/api/v1/productos/{id}/descontar-stock", productoId)
+                    .header(HttpHeaders.AUTHORIZATION, tokenServicio())
                     .body(Map.of("cantidad", cantidad))
                     .retrieve()
                     .toBodilessEntity();
@@ -70,12 +76,18 @@ public class CatalogoClient {
         try {
             restClient.put()
                     .uri("/api/v1/productos/{id}/reponer-stock", productoId)
+                    .header(HttpHeaders.AUTHORIZATION, tokenServicio())
                     .body(Map.of("cantidad", cantidad))
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientException e) {
             throw traducirError(e, productoId, "reponer stock");
         }
+    }
+
+    // descontar y reponer stock en ms-catalogo son solo para ADMIN o SERVICIO
+    private String tokenServicio() {
+        return "Bearer " + jwtService.generarTokenServicio();
     }
 
     private RuntimeException traducirError(RestClientException e, Long productoId, String operacion) {

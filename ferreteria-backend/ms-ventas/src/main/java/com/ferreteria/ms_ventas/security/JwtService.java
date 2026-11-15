@@ -1,5 +1,7 @@
 package com.ferreteria.ms_ventas.security;
 
+import java.util.Date;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,8 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
     private static final String TIPO_ACCESS = "access";
+    private static final String ROL_SERVICIO = "SERVICIO";
+    private static final long DURACION_TOKEN_SERVICIO_MS = 5 * 60 * 1000;
 
     private final SecretKey key;
 
@@ -29,5 +33,20 @@ public class JwtService {
             throw new JwtException("Tipo de token inválido");
         }
         return claims;
+    }
+
+    // token corto con rol SERVICIO para que ms-ventas pueda descontar y reponer stock en ms-catalogo.
+    // Se firma con la misma clave app.jwt.secret que comparten los microservicios.
+    public String generarTokenServicio() {
+        Date ahora = new Date();
+        return Jwts.builder()
+                .subject("ms-ventas")
+                .claim("id", 0)
+                .claim("rol", ROL_SERVICIO)
+                .claim("tipo", TIPO_ACCESS)
+                .issuedAt(ahora)
+                .expiration(new Date(ahora.getTime() + DURACION_TOKEN_SERVICIO_MS))
+                .signWith(key)
+                .compact();
     }
 }

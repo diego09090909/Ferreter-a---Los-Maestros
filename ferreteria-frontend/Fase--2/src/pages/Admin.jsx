@@ -17,7 +17,6 @@ import { ROLES, colorRol } from '../utils/roles'
 import { leer } from '../utils/storage'
 import { formatearPrecio } from '../utils/formato'
 
-// soloAdmin: secciones que el vendedor no ve (el vendedor solo revisa pedidos y productos)
 const SECCIONES = [
   { id: 'pedidos', etiqueta: 'Pedidos', icono: 'bi-box-seam' },
   { id: 'usuarios', etiqueta: 'Usuarios', icono: 'bi-people', soloAdmin: true },
@@ -60,8 +59,7 @@ function pedidoDesdeVenta(v) {
 }
 
 function useVentasBackend() {
-  const { usuario } = useAuth()
-  const conBackend = Boolean(usuario?.token)
+  const { conectado: conBackend } = useAuth()
   const [ventas, setVentas] = useState(null)
   const [error, setError] = useState(null)
 
@@ -244,7 +242,6 @@ function SeccionUsuarios() {
   }
 
   const alEditar = (editado) => {
-    // si el admin se edita a si mismo, tambien se actualiza su sesion (nombre y correo del navbar)
     if (editado.id === admin.id) actualizarUsuario({ nombre: editado.nombre, email: editado.email })
     setEditando(null)
     recargar()
@@ -359,16 +356,13 @@ function SeccionStock() {
   const [productos, setProductos] = useState([])
   const [soloBajo, setSoloBajo] = useState(false)
   const [detalle, setDetalle] = useState(null)
-  // { producto, modo: 'reponer' | 'ajustar' } mientras el admin mueve stock
   const [movimiento, setMovimiento] = useState(null)
-  // { producto } para editar, { producto: null } para crear uno nuevo
   const [formulario, setFormulario] = useState(null)
   const [categorias, setCategorias] = useState([])
   const [aviso, setAviso] = useState(null)
 
   useEffect(() => {
     listarInventario().then(setProductos)
-    // las categorias vienen de ms-catalogo (ruta publica), asi cada producto queda con un categoriaId real
     obtenerCategorias().then(setCategorias).catch(() => setCategorias([]))
   }, [])
 

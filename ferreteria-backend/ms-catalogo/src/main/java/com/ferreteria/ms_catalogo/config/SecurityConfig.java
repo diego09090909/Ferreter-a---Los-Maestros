@@ -33,9 +33,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/admin/**", "/api/v1/productos/stock-bajo")
                         .hasAnyRole("ADMIN", "VENDEDOR")
+                        // ms-ventas las llama con un token de rol SERVICIO; el admin las usa desde el inventario
                         .requestMatchers(HttpMethod.PUT, "/api/v1/productos/*/descontar-stock",
                                 "/api/v1/productos/*/reponer-stock")
-                        .permitAll()
+                        .hasAnyRole("ADMIN", "SERVICIO")
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/productos/**", "/api/v1/categorias/**")
                         .hasRole("ADMIN")
