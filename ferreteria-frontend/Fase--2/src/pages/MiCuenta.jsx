@@ -16,7 +16,7 @@ const REVISAR_CAMPOS = { tipo: 'danger', texto: 'Revisa los campos marcados en r
 function MiCuenta() {
   useTitulo('Mi Cuenta - Ferretería Los Maestros')
 
-  const { usuario, esAdmin, esVendedor, actualizarUsuario, cerrarSesion } = useAuth()
+  const { usuario, esAdmin, esVendedor, esCliente, actualizarUsuario, cerrarSesion } = useAuth()
   const navigate = useNavigate()
 
   const [datos, setDatos] = useState({ nombre: usuario.nombre, email: usuario.email })
@@ -39,14 +39,14 @@ function MiCuenta() {
 
   const [ventas, setVentas] = useState(null)
   const [errorVentas, setErrorVentas] = useState(null)
-  const cargandoVentas = Boolean(usuario.token) && ventas === null && !errorVentas
+  const cargandoVentas = Boolean(usuario.token) && esCliente && ventas === null && !errorVentas
 
   useEffect(() => {
-    if (!usuario.token) return
+    if (!usuario.token || !esCliente) return
     obtenerMisVentas()
       .then(setVentas)
       .catch((error) => setErrorVentas(mensajeDeError(error)))
-  }, [usuario.token])
+  }, [usuario.token, esCliente])
 
   const pedidos = ventas
     ? ventas.map((v) => ({
@@ -260,47 +260,49 @@ function MiCuenta() {
 
       {!esAdmin && !esVendedor && <MisDirecciones usuario={usuario} />}
 
-      <section className="card shadow-sm mt-4">
-        <div className="card-body p-4">
-          <h2 className="h5 fw-bold mb-3">Mis pedidos</h2>
-          {errorVentas ? (
-            <p className="text-danger mb-0">No se pudo cargar tu historial: {errorVentas}</p>
-          ) : cargandoVentas ? (
-            <p className="text-muted mb-0">Cargando tus pedidos...</p>
-          ) : pedidos.length === 0 ? (
-            <p className="text-muted mb-0">
-              Aún no tienes pedidos. Ve al <Link to="/catalogo">catálogo</Link> para comprar.
-            </p>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-striped align-middle small mb-0 tabla-apilable">
-                <thead className="table-dark">
-                  <tr>
-                    <th>N° Pedido</th>
-                    <th>Entrega</th>
-                    <th>Pago</th>
-                    <th className="text-end">Total</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pedidos.map((p, i) => (
-                    <tr key={`${p.id}-${i}`}>
-                      <td data-label="N° Pedido">#PED-{p.id}</td>
-                      <td data-label="Entrega">{p.tipoEntrega}</td>
-                      <td data-label="Pago">{p.tipoPago}</td>
-                      <td data-label="Total" className="text-end">{formatearPrecio(p.total)}</td>
-                      <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
+      {esCliente && (
+        <section className="card shadow-sm mt-4">
+          <div className="card-body p-4">
+            <h2 className="h5 fw-bold mb-3">Mis pedidos</h2>
+            {errorVentas ? (
+              <p className="text-danger mb-0">No se pudo cargar tu historial: {errorVentas}</p>
+            ) : cargandoVentas ? (
+              <p className="text-muted mb-0">Cargando tus pedidos...</p>
+            ) : pedidos.length === 0 ? (
+              <p className="text-muted mb-0">
+                Aún no tienes pedidos. Ve al <Link to="/catalogo">catálogo</Link> para comprar.
+              </p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-striped align-middle small mb-0 tabla-apilable">
+                  <thead className="table-dark">
+                    <tr>
+                      <th>N° Pedido</th>
+                      <th>Entrega</th>
+                      <th>Pago</th>
+                      <th className="text-end">Total</th>
+                      <th>Estado</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </section>
+                  </thead>
+                  <tbody>
+                    {pedidos.map((p, i) => (
+                      <tr key={`${p.id}-${i}`}>
+                        <td data-label="N° Pedido">#PED-{p.id}</td>
+                        <td data-label="Entrega">{p.tipoEntrega}</td>
+                        <td data-label="Pago">{p.tipoPago}</td>
+                        <td data-label="Total" className="text-end">{formatearPrecio(p.total)}</td>
+                        <td data-label="Estado"><span className="badge bg-info text-dark">{p.estado}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   )
 }
 
-export default MiCuenta
+export default MiCuenta
