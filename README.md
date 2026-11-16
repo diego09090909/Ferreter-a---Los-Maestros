@@ -16,7 +16,7 @@ Plataforma web de comercio electrónico para **Ferretería Los Maestros**, una f
 - [Tecnologías](#-tecnologías)
 - [Microservicios](#-microservicios)
 - [Zonas de despacho](#-zonas-de-despacho)
-- [Cómo ejecutar el proyecto](#-cómo-ejecutar-el-proyecto)
+- [Cómo ejecutar el proyecto](#-cómo-ejecutar-el-proyecto) (local o con Docker)
 - [Flujo de trabajo con Git](#-flujo-de-trabajo-con-git)
 - [Estado del proyecto](#-estado-del-proyecto)
 
@@ -269,6 +269,28 @@ Repite lo mismo en `ms-catalogo` y `ms-ventas`, cada uno en una terminal distint
 
 > En Linux o macOS se usa `./mvnw` en lugar de `.\mvnw.cmd`.
 
+
+### 4. Todo junto con Docker (opcional)
+
+Con [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado, el sistema completo se levanta con un solo comando, sin XAMPP ni Node ni JDK:
+
+```powershell
+copy .env.example .env      # luego completa las claves (ver nota abajo)
+docker compose up --build
+```
+
+| Servicio | Dirección |
+|---|---|
+| Tienda | http://localhost:8080 |
+| Swagger de ms-usuarios / ms-catalogo / ms-ventas | http://localhost:8081/swagger-ui/index.html · http://localhost:8082/swagger-ui.html · http://localhost:8083/swagger-ui.html |
+| MySQL (para Workbench) | localhost:3307, usuario root |
+
+En Docker, Nginx cumple el papel del proxy de Vite: sirve el front y envía cada `/api/v1/...` a su microservicio. Para detener todo: `docker compose down` (agrega `-v` para borrar también los datos de MySQL).
+
+> ⚠️ **Completa el `.env` antes de levantar:** `JWT_SECRET` debe ser la misma clave de `app.jwt.secret` de los `secrets.properties` (si se deja el texto de ejemplo, los microservicios se caen y Docker los reinicia sin parar). `ADMIN_PASSWORD` es la clave de la cuenta Principal y `DB_PASSWORD` la del MySQL de Docker. Si cambias el `.env` después, recrea todo con `docker compose down -v` y `docker compose up`.
+>
+> La tienda usa el puerto **8080** para no chocar con Apache de XAMPP (puerto 80). `.env` está en `.gitignore`: igual que `secrets.properties`, nunca se sube al repositorio.
+
 ---
 
 ## 🌿 Flujo de trabajo con Git
@@ -306,6 +328,7 @@ Repite lo mismo en `ms-catalogo` y `ms-ventas`, cada uno en una terminal distint
 - [x] CRUD de productos, reposición y ajuste de stock, y cambio de estado de pedidos
 - [x] Fotos para el catálogo, nombradas por código de producto
 - [x] Pruebas unitarias: 36 en `ms-usuarios`, 18 en `ms-catalogo`, 25 en `ms-ventas` y 77 en el frontend
+- [x] `docker-compose.yml` con MySQL, los 3 microservicios y el front servido por Nginx
 - [x] Documentación de APIs e integración (Anexos 2 y 3), manual de usuario (Anexo 4) y planilla de requisitos
 
 ---
