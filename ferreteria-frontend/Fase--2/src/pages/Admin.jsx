@@ -8,7 +8,7 @@ import ModalStock from '../components/ModalStock'
 import { useAuth } from '../context/AuthContext'
 import { mensajeDeError } from '../services/api'
 import { obtenerCategorias } from '../services/catalogo'
-import { listarInventario } from '../services/inventario'
+import { eliminarProducto, listarInventario } from '../services/inventario'
 import { eliminarUsuarioAdmin, esCuentaPrincipal, obtenerUsuarios } from '../services/usuarios'
 import { ENTREGAS_VENTA, ESTADOS_VENTA, MEDIOS_PAGO, cambiarEstadoVenta, obtenerTodasLasVentas } from '../services/ventas'
 import { textoDireccion } from '../utils/direccion'
@@ -353,6 +353,8 @@ function SeccionStock() {
   const [formulario, setFormulario] = useState(null)
   const [categorias, setCategorias] = useState([])
   const [aviso, setAviso] = useState(null)
+  const [porEliminar, setPorEliminar] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     listarInventario().then(setProductos)
@@ -374,12 +376,30 @@ function SeccionStock() {
     setAviso(esNuevo ? `Se creó el producto ${guardado.nombre}.` : `Se actualizó el producto ${guardado.nombre}.`)
   }
 
+  const eliminar = async (producto) => {
+    try {
+      await eliminarProducto(producto.id)
+      setProductos(productos.filter((p) => p.id !== producto.id))
+      setAviso(`Se eliminó el producto ${producto.nombre}.`)
+      setError(null)
+    } catch (e) {
+      setError(e.message)
+    }
+    setPorEliminar(null)
+  }
+
   return (
     <>
       {aviso && (
         <div className="alert alert-success alert-dismissible" role="status">
           {aviso}
           <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setAviso(null)}></button>
+        </div>
+      )}
+      {error && (
+        <div className="alert alert-danger alert-dismissible" role="alert">
+          {error}
+          <button type="button" className="btn-close" aria-label="Cerrar aviso" onClick={() => setError(null)}></button>
         </div>
       )}
       <Tabla
@@ -428,6 +448,13 @@ function SeccionStock() {
               <td data-label="Stock mínimo">{p.stockMinimo}</td>
               <td data-label="Estado">{estado}</td>
               <td data-label="Acciones">
+                {porEliminar === p.id ? (
+                  <div className="d-flex flex-wrap align-items-center gap-2">
+                    <span>¿Eliminar {p.nombre}?</span>
+                    <button type="button" className="btn btn-sm btn-danger" onClick={() => eliminar(p)}>Sí, eliminar</button>
+                    <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setPorEliminar(null)}>No</button>
+                  </div>
+                ) : (
                 <div className="d-flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -464,9 +491,18 @@ function SeccionStock() {
                       >
                         <i className="bi bi-sliders"></i> Ajustar
                       </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        aria-label={`Eliminar producto ${p.nombre}`}
+                        onClick={() => setPorEliminar(p.id)}
+                      >
+                        <i className="bi bi-trash"></i> Eliminar
+                      </button>
                     </>
                   )}
                 </div>
+                )}
               </td>
             </tr>
           )

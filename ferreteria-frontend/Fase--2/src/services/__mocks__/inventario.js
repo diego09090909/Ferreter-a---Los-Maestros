@@ -91,3 +91,9 @@ export async function actualizarProducto(id, datos, categorias) {
   guardarProductos(productos.map((p) => (p.id === id ? actualizado : p)))
   return aRespuestaAdmin(actualizado)
 }
+
+export async function eliminarProducto(id) {
+  const productos = obtenerProductos()
+  if (!productos.some((p) => p.id === id)) throw new Error('No existe el producto')
+  guardarProductos(productos.filter((p) => p.id !== id))
+}
