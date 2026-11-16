@@ -487,6 +487,7 @@ describe('inventario del panel', () => {
     expect(screen.queryByRole('button', { name: /Ajustar stock/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Editar producto/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '+ Nuevo producto' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Eliminar producto/ })).not.toBeInTheDocument()
   })
 })
 
@@ -558,6 +559,23 @@ describe('inventario: crear y editar productos', () => {
 
     expect(await modal.findByRole('alert')).toHaveTextContent('Ya existe un producto con el codigo HE001')
     expect(productosGuardados()).toHaveLength(1)
+  })
+
+  it('elimina un producto solo después de confirmar', async () => {
+    const user = userEvent.setup()
+    await abrirInventario(user)
+    const boton = 'Eliminar producto Taladro percutor 650W 13mm'
+
+    await user.click(screen.getByRole('button', { name: boton }))
+    await user.click(screen.getByRole('button', { name: 'No' }))
+    expect(productosGuardados()).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: boton }))
+    await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }))
+
+    expect(await screen.findByText('Se eliminó el producto Taladro percutor 650W 13mm.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: boton })).not.toBeInTheDocument()
+    expect(productosGuardados()).toHaveLength(0)
   })
 
   it('edita el precio de un producto sin tocar su stock', async () => {

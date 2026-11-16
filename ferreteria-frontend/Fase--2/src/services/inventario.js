@@ -56,3 +56,7 @@ export function crearProducto(datos) {
 export function actualizarProducto(id, datos) {
   return llamar(api.put(`/api/v1/productos/${id}`, aProductoRequest(datos)))
 }
+
+export function eliminarProducto(id) {
+  return llamar(api.delete(`/api/v1/productos/${id}`))
+}
