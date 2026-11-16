@@ -16,7 +16,7 @@ Plataforma web de comercio electrónico para **Ferretería Los Maestros**, una f
 - [Tecnologías](#-tecnologías)
 - [Microservicios](#-microservicios)
 - [Zonas de despacho](#-zonas-de-despacho)
-- [Cómo ejecutar el proyecto](#-cómo-ejecutar-el-proyecto)
+- [Cómo ejecutar el proyecto](#-cómo-ejecutar-el-proyecto) (local o con Docker)
 - [Flujo de trabajo con Git](#-flujo-de-trabajo-con-git)
 - [Estado del proyecto](#-estado-del-proyecto)
 
@@ -35,18 +35,22 @@ Plataforma web de comercio electrónico para **Ferretería Los Maestros**, una f
 ## ✨ Funcionalidades
 
 ### Tienda (clientes)
-- **Catálogo de productos** con buscador, filtros por categoría, marca y precio, y ordenamiento por precio.
+- **Catálogo de productos** con buscador, filtros por categoría, marca y precio, ordenamiento por precio y página de detalle de cada producto.
 - **Carrito de compras** con cantidades, subtotal, costo de despacho y total a pagar.
+- **Compra:** solo los clientes con sesión iniciada; se elige medio de pago (débito, crédito o cuenta corriente) y el stock se descuenta al confirmar.
 - **Tipos de entrega:** retiro en tienda (gratis) o despacho a domicilio con costo según la comuna.
 - **Despacho gratis** en La Serena y Coquimbo por compras sobre $50.000.
 - **Registro e inicio de sesión** con RUT o correo, validación de RUT chileno (dígito verificador) y errores marcados campo por campo.
-- **Mi Cuenta:** editar datos personales, cambiar contraseña, guardar la dirección de entrega y revisar el historial de pedidos.
+- **Mi Cuenta:** editar datos personales, cambiar contraseña, guardar hasta 5 direcciones de despacho y revisar el historial de pedidos con su estado.
 - **Cobertura y ubicación:** mapa de la tienda, horarios de atención y tabla de zonas de despacho con plazos y costos.
 - **Diseño responsivo:** las tablas se apilan en el celular y el menú se abre como panel lateral.
 
 ### Panel de administración
-- Pedidos del mes, usuarios registrados, control de inventario (stock en tienda y en bodega) e histórico de ventas.
-- Acceso restringido según el rol del usuario.
+- **Pedidos:** lista y detalle de todos los pedidos. El administrador cambia su estado (Pendiente → Pagada → Despachada → Entregada); al anular un pedido, su stock vuelve al inventario.
+- **Inventario:** stock y stock mínimo de cada producto, con aviso de stock bajo. El administrador crea, edita y elimina productos, y repone o ajusta el stock.
+- **Usuarios:** el administrador crea cuentas de administrador o vendedor, las edita y las elimina. La cuenta **Principal** no se puede eliminar.
+- **Ventas:** histórico de ventas filtrado por año y mes.
+- El vendedor solo ve **Pedidos** e **Inventario**, y no puede modificar nada.
 
 ---
 
@@ -54,9 +58,11 @@ Plataforma web de comercio electrónico para **Ferretería Los Maestros**, una f
 
 | Rol | Acceso |
 |---|---|
-| **Administrador** | Acceso total al sistema: productos, pedidos, usuarios y ventas. |
-| **Vendedor** | Ve la lista y el detalle de productos, y la lista y el detalle de órdenes. No ve ninguna otra sección. |
+| **Administrador** | Acceso total al panel: pedidos y sus estados, productos (crear, editar y eliminar), stock, usuarios y ventas. No compra. |
+| **Vendedor** | Ve la lista y el detalle de productos, y la lista y el detalle de órdenes. No ve ninguna otra sección ni modifica datos. No compra. |
 | **Cliente** | Solo accede a la tienda: catálogo, carrito, compras y su cuenta. |
+
+Las restricciones se aplican en el frontend (menús y rutas) y también en cada microservicio: sin token la API responde **401** y con un rol sin permiso responde **403**.
 
 ---
 
@@ -73,20 +79,29 @@ El proyecto es un **monorepo** con un frontend en React y un backend de **micros
           ▼                      ▼                      ▼
    ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
    │ ms-usuarios │        │ ms-catalogo │        │  ms-ventas  │
-   │ login · JWT │        │ productos   │◄───────│ boletas     │
+   │ login · JWT │        │ productos   │◄───────│ ventas      │
    │ usuarios    │        │ categorías  │ stock  │ despacho    │
    └──────┬──────┘        └──────┬──────┘        └──────┬──────┘
           ▼                      ▼                      ▼
        MySQL                  MySQL                  MySQL
 ```
 
-**Modelo de datos (propuesta de la asignatura):**
+- **ms-usuarios** entrega el token (dura 1 hora) y el refresh token (7 días). Los tres microservicios validan el token con la misma clave secreta, así que no necesitan consultar a ms-usuarios en cada petición.
+- **ms-ventas** es el único que llama a otro microservicio: descuenta o repone stock en ms-catalogo con un **token de servicio** propio (rol `SERVICIO`, 5 minutos).
+- En desarrollo, el frontend llama a catálogo y ventas a través del **proxy de Vite**, y a ms-usuarios directo en el puerto 8081 (con CORS).
+
+**Modelo de datos (una base por microservicio):**
 
 ```
-USUARIO ┄┄► BOLETA ──► DETALLE_BOLETA ◄── PRODUCTO ◄── CATEGORIA
+ferreteria_usuarios   USUARIOS   ──< DIRECCIONES
+ferreteria_catalogo   CATEGORIAS ──< PRODUCTOS
+ferreteria_ventas     VENTAS     ──< DETALLE_VENTAS
+
+VENTAS.usuario_id          ┄┄► USUARIOS  (otra base)
+DETALLE_VENTAS.producto_id ┄┄► PRODUCTOS (otra base)
 ```
 
-La línea punteada indica que BOLETA guarda la referencia al usuario, pero esa información vive en otro microservicio.
+Las líneas punteadas son referencias sin clave foránea, porque esos datos viven en otro microservicio. Cada detalle de venta guarda una copia del nombre y del precio del producto, así el historial no cambia si después se edita o se elimina un producto.
 
 ---
 
@@ -97,34 +112,40 @@ Ferreter-a---Los-Maestros/
 ├── ferreteria-frontend/
 │   ├── Fase--1/              # Primera entrega: HTML, CSS, Bootstrap y JavaScript
 │   └── Fase--2/              # Aplicación React (versión actual)
-│       ├── public/imagenes/  # Imágenes de productos y logo
+│       ├── public/imagenes/  # Logo y fotos de productos (productos/<código>.webp)
 │       └── src/
 │           ├── components/   # Navbar, Footer, formularios, rutas protegidas…
 │           ├── context/      # AuthContext (sesión) y CarritoContext
-│           ├── data/         # Datos temporales (se reemplazan por la API)
+│           ├── data/         # Costos y plazos de despacho por comuna
 │           ├── hooks/        # Hooks propios (useTitulo)
 │           ├── pages/        # Inicio, Catálogo, Carrito, Cobertura, Login, MiCuenta, Admin
-│           ├── services/     # Acceso a datos
+│           ├── services/     # Llamadas a la API con axios (api.js agrega el token)
 │           ├── styles/       # Estilos por página
+│           ├── test/         # Datos y servidor falso para las pruebas
 │           └── utils/        # Lógica reutilizable y validaciones (con pruebas)
 │
 └── ferreteria-backend/
     ├── ms-usuarios/          # Usuarios, roles, direcciones y autenticación
     ├── ms-catalogo/          # Productos, categorías y stock
-    └── ms-ventas/            # Boletas, detalle de venta y despacho
+    └── ms-ventas/            # Ventas, detalle, estados del pedido y despacho
 ```
 
 Cada microservicio sigue la misma estructura por capas:
 
 ```
 src/main/java/com/ferreteria/ms_<nombre>/
+├── config/        # Seguridad (SecurityConfig), Swagger y datos iniciales
 ├── controller/    # Endpoints REST
 ├── dto/           # Objetos de entrada (Request) y salida (Response)
 ├── exception/     # Errores personalizados y manejador global
+├── mapper/        # Conversión entre entidades y DTOs
 ├── model/         # Entidades JPA
 ├── repository/    # Acceso a la base de datos (Spring Data JPA)
+├── security/      # Generación y validación del JWT
 └── service/       # Lógica de negocio
 ```
+
+`ms-ventas` tiene además `client/`, con el cliente HTTP que llama a ms-catalogo.
 
 ---
 
@@ -157,11 +178,13 @@ src/main/java/com/ferreteria/ms_<nombre>/
 
 ## 🧩 Microservicios
 
-| Microservicio | Responsabilidad | Entidades principales | Puerto (propuesto) |
-|---|---|---|---|
-| `ms-usuarios` | Registro, login, emisión y renovación de tokens JWT, roles y direcciones | `Usuario`, `Rol`, `Direccion` | 8081 |
-| `ms-catalogo` | Catálogo, categorías, búsqueda y control de stock | `Producto`, `Categoria` | 8082 |
-| `ms-ventas` | Boletas, detalle de compra, estados del pedido y costo de despacho | `Venta`, `DetalleVenta`, `EstadoVenta` | 8083 |
+| Microservicio | Responsabilidad | Entidades principales | Puerto | Base de datos |
+|---|---|---|---|---|
+| `ms-usuarios` | Registro, login, emisión y renovación de tokens JWT, roles, direcciones y cuentas del personal | `Usuario`, `Rol`, `Direccion` | 8081 | `ferreteria_usuarios` |
+| `ms-catalogo` | Catálogo, categorías, búsqueda, CRUD de productos y control de stock | `Producto`, `Categoria` | 8082 | `ferreteria_catalogo` |
+| `ms-ventas` | Compras, detalle de venta, estados del pedido, medio de pago y costo de despacho | `Venta`, `DetalleVenta`, `EstadoVenta`, `MedioPago` | 8083 | `ferreteria_ventas` |
+
+Al primer arranque, `ms-catalogo` carga 9 categorías y 85 productos desde `src/main/resources/data/` y `ms-usuarios` crea la cuenta del administrador **Principal**.
 
 Todas las rutas usan versionado: `/api/v1/...`
 
@@ -220,6 +243,17 @@ La aplicación queda disponible en **http://localhost:5173**
 | `npm run lint` | Revisa el código con Oxlint |
 
 ### 3. Backend
+
+**Configurar las claves (solo la primera vez).** En cada microservicio, copia `secrets.properties.example` como `secrets.properties` y completa los valores:
+
+| Clave | Dónde | Qué es |
+|---|---|---|
+| `app.jwt.secret` | Los tres | Clave para firmar el JWT. **Debe ser la misma en los tres microservicios** |
+| `DB_PASSWORD` | Los tres | Contraseña de MySQL (vacía si usas XAMPP sin contraseña) |
+| `app.admin.password` | `ms-usuarios` | Contraseña de la cuenta Principal que se crea al primer arranque |
+
+> ⚠️ `secrets.properties` está en `.gitignore` y **nunca** se sube al repositorio. Las bases de datos se crean solas al arrancar.
+
 Con MySQL encendido, cada microservicio se levanta desde su propia carpeta:
 ```powershell
 cd ferreteria-backend/ms-usuarios
@@ -234,6 +268,28 @@ Repite lo mismo en `ms-catalogo` y `ms-ventas`, cada uno en una terminal distint
 | `.\mvnw.cmd spring-boot:run` | Levanta el microservicio |
 
 > En Linux o macOS se usa `./mvnw` en lugar de `.\mvnw.cmd`.
+
+
+### 4. Todo junto con Docker (opcional)
+
+Con [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado, el sistema completo se levanta con un solo comando, sin XAMPP ni Node ni JDK:
+
+```powershell
+copy .env.example .env      # luego completa las claves (ver nota abajo)
+docker compose up --build
+```
+
+| Servicio | Dirección |
+|---|---|
+| Tienda | http://localhost:8080 |
+| Swagger de ms-usuarios / ms-catalogo / ms-ventas | http://localhost:8081/swagger-ui/index.html · http://localhost:8082/swagger-ui.html · http://localhost:8083/swagger-ui.html |
+| MySQL (para Workbench) | localhost:3307, usuario root |
+
+En Docker, Nginx cumple el papel del proxy de Vite: sirve el front y envía cada `/api/v1/...` a su microservicio. Para detener todo: `docker compose down` (agrega `-v` para borrar también los datos de MySQL).
+
+> ⚠️ **Completa el `.env` antes de levantar:** `JWT_SECRET` debe ser la misma clave de `app.jwt.secret` de los `secrets.properties` (si se deja el texto de ejemplo, los microservicios se caen y Docker los reinicia sin parar). `ADMIN_PASSWORD` es la clave de la cuenta Principal y `DB_PASSWORD` la del MySQL de Docker. Si cambias el `.env` después, recrea todo con `docker compose down -v` y `docker compose up`.
+>
+> La tienda usa el puerto **8080** para no chocar con Apache de XAMPP (puerto 80). `.env` está en `.gitignore`: igual que `secrets.properties`, nunca se sube al repositorio.
 
 ---
 
@@ -253,7 +309,7 @@ Repite lo mismo en `ms-catalogo` y `ms-ventas`, cada uno en una terminal distint
 5. Después del merge, volver a `main` y actualizar.
 
 **Reglas del equipo**
-- No subir `node_modules/`, `target/`, `dist/`, `.env` ni configuraciones personales del editor.
+- No subir `node_modules/`, `target/`, `dist/`, `.env`, `secrets.properties` ni configuraciones personales del editor.
 - Cada integrante trabaja en su microservicio; si hay que tocar el de otro, se coordina antes.
 
 ---
@@ -263,23 +319,17 @@ Repite lo mismo en `ms-catalogo` y `ms-ventas`, cada uno en una terminal distint
 ### ✅ Completado
 - [x] **Fase 1:** sitio estático con HTML, CSS, Bootstrap y JavaScript
 - [x] **Fase 2:** migración a React con componentes, contextos, rutas protegidas y pruebas con Vitest
-- [x] Diseño responsivo para celular (tablas apilables y navbar)
-- [x] Costo de despacho por comuna y despacho gratis sobre $50.000
-- [x] Dirección con calle y número separados, limitada a comunas con cobertura
-- [x] Validación de formularios con errores por campo
-- [x] Estructura de monorepo y microservicios
-- [x] Entidades, repositorios y DTOs de `ms-usuarios` y `ms-catalogo`
-
-### 🚧 En desarrollo (Fase 3)
-- [ ] Servicios y controladores REST de los tres microservicios
-- [ ] Autenticación con Spring Security y JWT (con refresh token)
-- [ ] Documentación de los endpoints con Swagger
-- [ ] Conexión del frontend a la API (reemplazar los datos de `localStorage`)
-- [ ] Sesión persistente con token y rol **Vendedor** en el frontend
-- [ ] Vistas de detalle de producto y de pedido
-- [ ] CRUD de productos y cambio de estado de pedidos en el panel
-- [ ] Pruebas de integración entre frontend y backend
-- [ ] Manual de usuario y documentación de APIs e integración
+- [x] **Fase 3:** backend con tres microservicios Spring Boot y MySQL, conectados al frontend
+- [x] Servicios, controladores REST, mappers y manejo global de errores en los tres microservicios
+- [x] Autenticación con Spring Security y JWT (con refresh token) y token de servicio entre microservicios
+- [x] Documentación de los endpoints con Swagger y versionado `/api/v1`
+- [x] Frontend conectado a la API con sesión persistente y renovación automática del token
+- [x] Panel por rol: administrador completo y vendedor de solo lectura (Pedidos e Inventario)
+- [x] CRUD de productos, reposición y ajuste de stock, y cambio de estado de pedidos
+- [x] Fotos para el catálogo, nombradas por código de producto
+- [x] Pruebas unitarias: 36 en `ms-usuarios`, 18 en `ms-catalogo`, 25 en `ms-ventas` y 77 en el frontend
+- [x] `docker-compose.yml` con MySQL, los 3 microservicios y el front servido por Nginx
+- [x] Documentación de APIs e integración (Anexos 2 y 3), manual de usuario (Anexo 4) y planilla de requisitos
 
 ---
 

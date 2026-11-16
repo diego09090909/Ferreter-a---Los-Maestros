@@ -1,0 +1,84 @@
+# Levanta todo el sistema: MySQL, los 3 microservicios y el front con Nginx.
+# Uso: copiar .env.example como .env, completar las claves y ejecutar "docker compose up --build".
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      TZ: America/Santiago
+    volumes:
+      - mysql-datos:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  ms-usuarios:
+    build: ./ferreteria-backend/ms-usuarios
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ferreteria_usuarios?createDatabaseIfNotExist=true&serverTimezone=America/Santiago
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_SHOW_SQL: "false"
+      APP_JWT_SECRET: ${JWT_SECRET}
+      APP_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ms-catalogo:
+    build: ./ferreteria-backend/ms-catalogo
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ferreteria_catalogo?createDatabaseIfNotExist=true&serverTimezone=America/Santiago
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_SHOW_SQL: "false"
+      APP_JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ms-ventas:
+    build: ./ferreteria-backend/ms-ventas
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ferreteria_ventas?createDatabaseIfNotExist=true&serverTimezone=America/Santiago
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_SHOW_SQL: "false"
+      APP_JWT_SECRET: ${JWT_SECRET}
+      CATALOGO_URL: http://ms-catalogo:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ms-catalogo:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./ferreteria-frontend/Fase--2
+      args:
+        VITE_API_USUARIOS: /api/v1
+    ports:
+      - "${FRONT_PORT:-8080}:80"
+    depends_on:
+      - ms-usuarios
+      - ms-catalogo
+      - ms-ventas
+    restart: unless-stopped
+
+volumes:
+  mysql-datos:
